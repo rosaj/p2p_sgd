@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+opencv-python = "*"
+tensorflow = "==2.3.0"
+matplotlib = "*"
+tensorflow-privacy = "*"
+nltk = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.7"

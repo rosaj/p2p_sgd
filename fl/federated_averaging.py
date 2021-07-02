@@ -1,0 +1,177 @@
+import environ
+
+if environ.is_collab():
+    import nest_asyncio
+    nest_asyncio.apply()
+    from tqdm.notebook import tqdm
+else:
+    from tqdm import tqdm
+
+
+import time
+import tensorflow_federated as tff
+from tensorflow_federated.python.learning import ClientWeighting
+from common.model import *
+
+DATA_SPEC = 1
+MODEL_VERSION = 1
+
+
+def create_keras_model_fed():
+    return create_keras_model(MODEL_VERSION, do_compile=False)
+
+
+def create_model_fed():
+    km = create_keras_model_fed()
+    return tff.learning.from_keras_model(km,
+                                         loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
+                                         input_spec=DATA_SPEC)
+
+
+def create_tf_dataset_for_client(c, batch_size=15):
+    x, y = tf.convert_to_tensor(np.array(c[0])), tf.convert_to_tensor(np.array(c[1]))
+    return tf.data.Dataset.from_tensor_slices((x, y)).shuffle(batch_size).batch(batch_size)
+
+
+def get_sample_clients(c_list, num_clients):
+    random_indices = np.random.choice(len(c_list), size=num_clients, replace=False)
+    return np.array(c_list)[random_indices]
+
+
+def state_to_model(s_state):
+    model = create_keras_model_fed()
+    s_state.model.assign_weights_to(model)
+    compile_model(model)
+    return model
+
+
+def avg_model_acc(model, dataset, cl_keys, desc=''):
+    accs = []
+    for key in tqdm(cl_keys, desc="Evaluating {}".format(desc), position=0, leave=False):
+        if len(dataset[key][1]) < 1:
+            continue
+        metrics = model.evaluate(dataset[key][0], dataset[key][1], verbose=0)
+        accs.append(metrics[1])
+    accs = np.array(accs)
+    return np.average(accs), np.median(accs)
+
+
+def print_avg_model_acc(model, dataset_dict, cl_keys):
+    for key in dataset_dict.keys():
+        print("\t{}\t{:.3%}\t{:.3%}".format(key, *avg_model_acc(model, dataset_dict[key], cl_keys, key)), flush=True)
+
+
+def print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
+                   round_num=1, epoch=1, round_examples=0, total_examples=0):
+    fed_model = state_to_model(server_state)
+    # '\tVal Acc: {:.3%}\n'.format(fed_model.evaluate(v_x, v_y, verbose=0)[1]) + \
+    # '\tTest Acc: {:.3%}\n'.format(fed_model.evaluate(t_x, t_y, verbose=0)[1]) + \
+    msg = "Round: {}\tEpoch: {}\n".format(round_num, epoch) + \
+          "\tExamples: ({}/{})\n".format(round_examples, total_examples) + \
+          "\tAgents\tMean\tMedian"
+    print(msg, flush=True)
+    print_avg_model_acc(fed_model, {"Train": train_clients, "Valid": val_clients, "Test": test_clients}, client_inds)
+    # "\tTrain\t{:.3%}\t{:.3%}\n".format(*avg_model_acc(fed_model, train_clients, client_inds)) + \
+    # "\tValid\t{:.3%}\t{:.3%}\n".format(*avg_model_acc(fed_model, val_clients, client_inds)) + \
+    # "\tTest\t{:.3%}\t{:.3%}\n".format(*avg_model_acc(fed_model, test_clients, client_inds))
+
+
+def train_fed_avg(train_clients,
+                  val_clients,
+                  test_clients,
+                  num_train_clients,
+                  batch_size=15,
+                  epochs=5,
+                  client_pars=None,
+                  server_pars=None,
+                  model_v=1,
+                  client_weighting=None,
+                  checkpoint_round=-1):
+    start_time = time.time()
+
+    global MODEL_VERSION
+    MODEL_VERSION = model_v
+
+    client_default = {"lr": 0.005, "decay": 0}
+    client_pars = client_default if client_pars is None else {**client_default, **client_pars}
+    server_default = {"lr": 0.005, "decay": 0}
+    server_pars = server_default if server_pars is None else {**server_default, **server_pars}
+
+    client_inds = list(range(len(train_clients)))
+    clients_num = len(client_inds)
+    examples = sum([len(train_clients[ind][1]) for ind in range(clients_num)])
+    max_examples = examples * epochs
+    total_examples = 0
+    client_weighting = client_weighting or "num_examples"
+
+    msg = "FL training (V={} {}), Num clients per round: {}, batch size: {}, epochs: {}, examples: {}, server_pars: {}, client_pars: {}" \
+        .format(model_v, client_weighting, num_train_clients, batch_size, epochs, examples, server_pars, client_pars)
+    print(msg, flush=True)
+
+    global DATA_SPEC
+    DATA_SPEC = create_tf_dataset_for_client(train_clients[0], batch_size).element_spec
+
+    iterative_process = tff.learning.federated_averaging.build_federated_averaging_process(
+        model_fn=create_model_fed,
+        server_optimizer_fn=lambda: Adam(learning_rate=server_pars['lr'], decay=server_pars['decay']),
+        client_optimizer_fn=lambda: Adam(learning_rate=client_pars['lr'], decay=client_pars['decay']),
+        client_weighting=ClientWeighting.UNIFORM if client_weighting == 'uniform' else ClientWeighting.NUM_EXAMPLES
+    )
+
+    server_state = iterative_process.initialize()
+
+    ckpt_manager = tff.simulation.FileCheckpointManager(
+        root_dir='models/fl_ckpts/{}V_{}_{}TR_{}CL_{}B_{}E/'.format(model_v, client_weighting, clients_num, num_train_clients, batch_size, epochs),
+        prefix='ckpt_',
+        keep_total=999999999,
+        keep_first=True
+    )
+
+    pbar = tqdm(total=max_examples, position=0, leave=False)
+
+    round_num = 0
+    if type(checkpoint_round) == str:
+        server_state = ckpt_manager.load_checkpoint(server_state, checkpoint_round)
+        print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds, checkpoint_round)
+        return
+    if type(checkpoint_round) == int and checkpoint_round > 0:
+        round_num = checkpoint_round
+        total_examples += int(((examples / clients_num) * num_train_clients) * round_num)
+        pbar.update(total_examples)
+        print("Loading checkpoint:", checkpoint_round)
+        server_state = ckpt_manager.load_checkpoint(server_state, checkpoint_round)
+
+    accuracy_step = 'epoch'
+    if accuracy_step == 'epoch':
+        accuracy_step = int(examples / ((examples / clients_num) * num_train_clients))
+    elif accuracy_step == 'never':
+        accuracy_step = 9999999999
+
+    while total_examples < max_examples:
+        round_num += 1
+        # Sample train clients to create a train dataset
+        if len(client_inds) <= num_train_clients:
+            train_clients_ds = client_inds
+        else:
+            train_clients_ds = get_sample_clients(client_inds, num_train_clients)
+        # print('\nSampling {} new clients.'.format(len(train_clients_ds)), flush=True)
+
+        train_datasets = [create_tf_dataset_for_client(train_clients[c], batch_size) for c in train_clients_ds]
+
+        # Apply federated training round
+        server_state, server_metrics = iterative_process.next(server_state, train_datasets)
+        ckpt_manager.save_checkpoint(server_state, round_num=round_num)
+
+        round_examples = server_metrics['stat']['num_examples']
+        pbar.update(round_examples)
+        total_examples += round_examples
+
+        if round_num % accuracy_step == 0:  # and round_num != checkpoint_round:
+            epoch = int(total_examples / examples)
+            print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
+                           round_num, epoch, round_examples, total_examples)
+    pbar.close()
+    print("Train clients: {} minutes".format(round((time.time() - start_time) / 60)), flush=True)
+
+
+
