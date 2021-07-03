@@ -1,2 +1,2 @@
-from common.util import set_seed
+from common.util import *
 from common.model import *

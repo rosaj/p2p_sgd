@@ -1,5 +1,6 @@
 import environ
 
+
 if environ.is_collab():
     import nest_asyncio
     nest_asyncio.apply()
@@ -7,7 +8,8 @@ if environ.is_collab():
 else:
     from tqdm import tqdm
 
-
+from common import set_tf_log_level
+import logging
 import time
 import tensorflow_federated as tff
 from tensorflow_federated.python.learning import ClientWeighting
@@ -87,6 +89,9 @@ def train_fed_avg(train_clients,
                   model_v=1,
                   client_weighting=None,
                   checkpoint_round=-1):
+
+    set_tf_log_level(logging.FATAL)
+
     start_time = time.time()
 
     global MODEL_VERSION
@@ -115,7 +120,8 @@ def train_fed_avg(train_clients,
         model_fn=create_model_fed,
         server_optimizer_fn=lambda: Adam(learning_rate=server_pars['lr'], decay=server_pars['decay']),
         client_optimizer_fn=lambda: Adam(learning_rate=client_pars['lr'], decay=client_pars['decay']),
-        client_weighting=ClientWeighting.UNIFORM if client_weighting == 'uniform' else ClientWeighting.NUM_EXAMPLES
+        client_weighting=ClientWeighting.UNIFORM if client_weighting == 'uniform' else ClientWeighting.NUM_EXAMPLES,
+        use_experimental_simulation_loop=True
     )
 
     server_state = iterative_process.initialize()

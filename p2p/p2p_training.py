@@ -1,5 +1,5 @@
 from p2p.agent import *
-
+from common import set_tf_log_level
 import numpy as np
 import tensorflow as tf
 import os
@@ -17,18 +17,6 @@ else:
 MODE = 'RAM'
 PRINT_MODE = 'SHORT'
 NUM_CACHED_AGENTS = 200
-
-
-def set_tf_log_level(level):
-    if level >= logging.FATAL:
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    if level >= logging.ERROR:
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-    if level >= logging.WARNING:
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-    else:
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
-    logging.getLogger('tensorflow').setLevel(level)
 
 
 def choose(self_rank, high):
