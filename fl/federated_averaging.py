@@ -115,8 +115,8 @@ def train_fed_avg(train_clients,
 
     global DATA_SPEC
     DATA_SPEC = create_tf_dataset_for_client(train_clients[0], batch_size).element_spec
-    server_decay, client_decay = tf.Variable(server_pars['decay']), tf.Variable(client_pars['decay'])
-
+    server_decay, client_decay = tf.convert_to_tensor(server_pars['decay']), tf.convert_to_tensor(client_pars['decay'])
+    
     iterative_process = tff.learning.federated_averaging.build_federated_averaging_process(
         model_fn=create_model_fed,
         server_optimizer_fn=lambda: Adam(learning_rate=server_pars['lr'], decay=server_decay),
