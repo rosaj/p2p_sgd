@@ -118,8 +118,8 @@ def train_fed_avg(train_clients,
 
     iterative_process = tff.learning.federated_averaging.build_federated_averaging_process(
         model_fn=create_model_fed,
-        server_optimizer_fn=lambda: Adam(learning_rate=server_pars['lr'], decay=server_pars['decay']),
-        client_optimizer_fn=lambda: Adam(learning_rate=client_pars['lr'], decay=client_pars['decay']),
+        server_optimizer_fn=lambda: Adam(learning_rate=server_pars['lr']),
+        client_optimizer_fn=lambda: Adam(learning_rate=client_pars['lr']),
         client_weighting=ClientWeighting.UNIFORM if client_weighting == 'uniform' else ClientWeighting.NUM_EXAMPLES,
         use_experimental_simulation_loop=True
     )
