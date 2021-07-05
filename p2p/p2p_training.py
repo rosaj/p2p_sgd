@@ -198,6 +198,7 @@ def init_agents(train_clients,
         if MODE != 'RAM':
             a.serialize()
         pbar.update()
+        pbar.set_postfix(memory_info())
     pbar.close()
     print("Init agents: {} minutes".format(round((time.time() - start_time)/60)))
     environ.save_env_vars()
@@ -230,13 +231,33 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
     start_time = time.time()
     examples = sum([a.train_len for a in agents])
-
     print("Training {} agents, num neighbors: {}, examples: {}, share method: {}".format(len(agents), num_neighbors, examples, share_method), flush=True)
 
     max_examples = epochs * examples
     total_examples = 0
     pbar = tqdm(total=len(agents), position=0, leave=False, desc='Training')
     msgs = {"total_useful": 0, "total_useless": 0, "useful": 0, "useless": 0}
+
+    devices = environ.get_logical_devices()
+    agents_device = list(None for _ in range(len(agents)))
+    single_device = len(devices) < 2
+
+    def resolve_agent_device(ag, ind):
+        if agents_device[ind] is None:
+            for device in devices:
+                if available_mb_gpu_memory(device) > ag.memory_footprint * 3:
+                    agents_device[ind] = device
+                    break
+
+            for i in range(len(agents_device)):
+                if agents_device[i] is not None:
+                    agents_device[ind] = agents_device[i]
+                    agents_device[i] = None
+                    agents[i].serialize()
+                    agent.deserialize()
+                    break
+        return agents_device[ind]
+
     round_num = 0
     num_cached = 0
     while total_examples < max_examples:
@@ -245,28 +266,42 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
         agent = agents[a_i]
         if agent.trainable:
             pbar.update()
+            pbar.set_postfix(memory_info())
 
         total_examples += agent.train_len * agent._train_rounds
-        if MODE != 'RAM' and agent.base_model is None:
+        if MODE != 'RAM' and agent.base_model is None and single_device:
             agent.deserialize()
             num_cached += 1
         clear_session()
-        neighbors = train_loop_fn(a_i, agent)
+
+        if single_device:
+            neighbors = train_loop_fn(a_i, agent)
+        else:
+            a_device = resolve_agent_device(agent, a_i)
+            with tf.device(a_device):
+                neighbors = train_loop_fn(a_i, agent)
 
         for a_j in neighbors:
             agent_j = agents[a_j]
-            if MODE != 'RAM' and agent_j.base_model is None:
+            if MODE != 'RAM' and agent_j.base_model is None and single_device:
                 agent_j.deserialize()
                 num_cached += 1
-
-            if not agent_j.receive_model(agent, mode=share_method, only_improvement=False):
-                msgs["useless"] += 1
+            if single_device:
+                if not agent_j.receive_model(agent, mode=share_method, only_improvement=False):
+                    msgs["useless"] += 1
+                else:
+                    msgs["useful"] += 1
             else:
-                msgs["useful"] += 1
-            if MODE != 'RAM' and NUM_CACHED_AGENTS < num_cached:
+                a_device = resolve_agent_device(agent, a_i)
+                with tf.device(a_device):
+                    if not agent_j.receive_model(agent, mode=share_method, only_improvement=False):
+                        msgs["useless"] += 1
+                    else:
+                        msgs["useful"] += 1
+            if MODE != 'RAM' and NUM_CACHED_AGENTS < num_cached and single_device:
                 agent_j.serialize()
                 num_cached -= 1
-        if MODE != 'RAM':
+        if MODE != 'RAM' and single_device:
             agent.serialize()
             num_cached -= 1
         num_train = sum([1 for a in agents if a.trainable])

@@ -91,6 +91,10 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
     return model
 
 
+def calculate_memory_model_size(model):
+    return model.count_params() * 4 / (1024 ** 2) * 3
+
+
 def load(model_path):
     if not model_path.endswith('.h5'):
         model_path += '.h5'

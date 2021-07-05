@@ -1,7 +1,7 @@
 from p2p.train import do_train
 
 if __name__ == '__main__':
-    do_train(client_num=400,
+    do_train(client_num=200,
              num_neighbors=15,
              examples_range=(0, 900000),
              batch_size=50,
@@ -9,7 +9,7 @@ if __name__ == '__main__':
              base_pars={"v": 2, "lr": 0.005, "decay": 0},
              complex_pars={"v": 2, "lr": 0.005, "decay": 0},
              seed=123,
-             mode='DISK',
+             mode='RAM',
              share_method='average',
              epochs=30,
              resume_agent_id=-1

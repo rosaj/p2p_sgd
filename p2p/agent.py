@@ -95,6 +95,12 @@ class Agent:
     def trainable(self):
         return self._train_rounds > 0
 
+    @property
+    def memory_footprint(self):
+        if self.has_complex:
+            return calculate_memory_model_size(self.base_model) + calculate_memory_model_size(self.base_model)
+        return calculate_memory_model_size(self.base_model)
+
     @staticmethod
     def _update_metrics(metrics, preds, y_true):
         results = []
