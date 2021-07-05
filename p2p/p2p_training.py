@@ -244,6 +244,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
     def resolve_agent_device(ag, ind):
         if agents_device[ind] is None:
+            ag.deserialize()
             for device in devices:
                 if available_mb_gpu_memory(device) > ag.memory_footprint * 3:
                     agents_device[ind] = device
