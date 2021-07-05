@@ -1,7 +1,10 @@
+import os
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+
+# import logging
 import tensorflow as tf
 import numpy as np
-import logging
-import os
 
 
 def set_seed(seed):
@@ -11,6 +14,7 @@ def set_seed(seed):
         print("SEED:", seed)
 
 
+"""
 def set_tf_log_level(level):
     if level >= logging.FATAL:
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
@@ -21,3 +25,4 @@ def set_tf_log_level(level):
     else:
         os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
     logging.getLogger('tensorflow').setLevel(level)
+"""

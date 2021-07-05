@@ -1,3 +1,4 @@
+from common import *
 import environ
 
 
@@ -8,12 +9,11 @@ if environ.is_collab():
 else:
     from tqdm import tqdm
 
-from common import set_tf_log_level
-import logging
+
 import time
 import tensorflow_federated as tff
 from tensorflow_federated.python.learning import ClientWeighting
-from common.model import *
+
 
 DATA_SPEC = 1
 MODEL_VERSION = 1
@@ -60,7 +60,7 @@ def avg_model_acc(model, dataset, cl_keys, desc=''):
 
 def print_avg_model_acc(model, dataset_dict, cl_keys):
     for key in dataset_dict.keys():
-        print("\t{}\t{:.3%}\t{:.3%}".format(key, *avg_model_acc(model, dataset_dict[key], cl_keys, key)), flush=True)
+        print("\t{}\t{:.3%}\t{:.3%}\n".format(key, *avg_model_acc(model, dataset_dict[key], cl_keys, key)), flush=True, end='')
 
 
 def print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
@@ -89,8 +89,6 @@ def train_fed_avg(train_clients,
                   model_v=1,
                   client_weighting=None,
                   checkpoint_round=-1):
-
-    set_tf_log_level(logging.FATAL)
 
     start_time = time.time()
 

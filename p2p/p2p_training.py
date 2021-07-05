@@ -1,9 +1,8 @@
+from common import *
 from p2p.agent import *
-from common import set_tf_log_level
 import numpy as np
 import tensorflow as tf
 import os
-import logging
 import time
 
 import environ
@@ -229,7 +228,6 @@ def load_agents(train_clients,
 
 def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_fn):
 
-    set_tf_log_level(logging.FATAL)
     start_time = time.time()
     examples = sum([a.train_len for a in agents])
 
