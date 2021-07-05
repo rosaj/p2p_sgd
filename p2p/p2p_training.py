@@ -266,7 +266,9 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
         agent = agents[a_i]
         if agent.trainable:
             pbar.update()
-            pbar.set_postfix(memory_info())
+            postfix = memory_info()
+            postfix["MEM_AG"] = sum([1 for i in agents_device if i is not None])
+            pbar.set_postfix(postfix)
 
         total_examples += agent.train_len * agent._train_rounds
         if MODE != 'RAM' and agent.base_model is None and single_device:
