@@ -247,7 +247,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
             for device in devices:
                 if available_mb_gpu_memory(device) > ag.memory_footprint * 3:
                     agents_device[ind] = device
-                    break
+                    return device
 
             for i in range(len(agents_device)):
                 if agents_device[i] is not None:
