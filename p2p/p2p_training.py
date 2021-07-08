@@ -155,6 +155,8 @@ def set_mode(mode):
 
 
 def resolve_agent_device(agents, agent, devices):
+    if len(devices) == 0:
+        return None
     if agent is None:
         free_mem, mem_dev = 0, ''
         for device in devices:
@@ -211,30 +213,37 @@ def init_agents(train_clients,
     pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init agents')
     devices = environ.get_devices()
     agents = []
+
+    def create_agent():
+        base_model = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"])
+        if base_pars["default_weights"]:
+            base_model.set_weights(base_pars["default_weights"])
+            print("Setting default weights")
+
+        complex_model = None
+        if 0 < complex_ds_size <= len(train[0]):
+            complex_model = create_keras_model(model_v=complex_pars["v"], lr=complex_pars["lr"],
+                                               decay=complex_pars["decay"])
+
+        a = Agent(train=train,
+                  val=val,
+                  test=test,
+                  batch_size=batch_size,
+                  base_model=base_model,
+                  complex_model=complex_model
+                  )
+        a.device = device
+        agents.append(a)
+        if MODE != 'RAM':
+            a.serialize()
+
     for train, val, test in zip(train_clients, val_clients, test_clients):
         device = resolve_agent_device(agents, None, devices)
-        with tf.device(device):
-            base_model = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"])
-            if base_pars["default_weights"]:
-                base_model.set_weights(base_pars["default_weights"])
-                print("Setting default weights")
-
-            complex_model = None
-            if 0 < complex_ds_size <= len(train[0]):
-                complex_model = create_keras_model(model_v=complex_pars["v"], lr=complex_pars["lr"],
-                                                   decay=complex_pars["decay"])
-
-            a = Agent(train=train,
-                      val=val,
-                      test=test,
-                      batch_size=batch_size,
-                      base_model=base_model,
-                      complex_model=complex_model
-                      )
-            a.device = device
-            agents.append(a)
-            if MODE != 'RAM':
-                a.serialize()
+        if device is None:
+            create_agent()
+        else:
+            with tf.device(device):
+                create_agent()
         pbar.update()
         pbar.set_postfix(memory_info())
     pbar.close()
@@ -298,19 +307,29 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
             num_cached += 1
         clear_session()
 
-        with tf.device(resolve_agent_device(agents, agent, devices)):
+        device = resolve_agent_device(agents, agent, devices)
+        if device is None:
             neighbors = train_loop_fn(a_i, agent)
+        else:
+            with tf.device(device):
+                neighbors = train_loop_fn(a_i, agent)
 
         for a_j in neighbors:
             agent_j = agents[a_j]
             if MODE != 'RAM' and agent_j.base_model is None and single_device:
                 agent_j.deserialize()
                 num_cached += 1
-            with tf.device(resolve_agent_device(agents, agent_j, devices)):
-                if not agent_j.receive_model(agent, mode=share_method, only_improvement=False):
-                    msgs["useless"] += 1
-                else:
-                    msgs["useful"] += 1
+
+            device_j = resolve_agent_device(agents, agent_j, devices)
+            if device_j is None:
+                msg = agent_j.receive_model(agent, mode=share_method, only_improvement=False)
+            else:
+                with tf.device(device_j):
+                    msg = agent_j.receive_model(agent, mode=share_method, only_improvement=False)
+            if not msg:
+                msgs["useless"] += 1
+            else:
+                msgs["useful"] += 1
             if MODE != 'RAM' and NUM_CACHED_AGENTS < num_cached and single_device:
                 agent_j.serialize()
                 num_cached -= 1
