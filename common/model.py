@@ -56,7 +56,6 @@ def compile_model(model, lr=0.01, decay=0):
 
 def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_size=10, do_compile=True):
     global _MODEL_COUNT
-    clear_session()
     if model_v == 1:
         model = Sequential(
 
