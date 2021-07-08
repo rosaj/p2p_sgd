@@ -4,12 +4,14 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 logging.getLogger('tensorflow').setLevel(logging.FATAL)
 import psutil
 
+import random
 import tensorflow as tf
 import numpy as np
 
 
 def set_seed(seed):
     if seed:
+        random.seed(seed)
         tf.random.set_seed(seed)
         np.random.seed(seed)
         print("SEED:", seed)

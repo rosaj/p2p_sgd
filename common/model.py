@@ -19,6 +19,8 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 import numpy as np
 import gc
 
+_MODEL_COUNT = 0
+
 
 class MaskedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
     """An accuracy metric that masks some tokens."""
@@ -53,6 +55,8 @@ def compile_model(model, lr=0.01, decay=0):
 
 
 def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_size=10, do_compile=True):
+    global _MODEL_COUNT
+    clear_session()
     if model_v == 1:
         model = Sequential(
 
@@ -63,7 +67,7 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
                 Dense(10),
                 Dense(vocab_size, activation='softmax')
             ],
-            name="model_1"
+            name="model_1_{}".format(_MODEL_COUNT)
         )
     elif model_v == 2:
         model = Sequential(
@@ -73,7 +77,7 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
                 Dense(100),
                 Dense(vocab_size, activation='softmax')
             ],
-            name="model_2"
+            name="model_2_{}".format(_MODEL_COUNT)
         )
     else:
         model = Sequential(
@@ -83,11 +87,12 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
                 Dense(256),
                 Dense(vocab_size, activation='softmax')
             ],
-            name="model_3"
+            name="model_3_{}".format(_MODEL_COUNT)
         )
 
     if do_compile:
         compile_model(model, lr, decay)
+    _MODEL_COUNT += 1
     return model
 
 

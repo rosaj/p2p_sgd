@@ -17,9 +17,9 @@ class Agent:
         # self.val_x, self.val_y = tf.convert_to_tensor(val[0]), tf.convert_to_tensor(val[1])
         # self.test_x, self.test_y = tf.convert_to_tensor(test[0]), tf.convert_to_tensor(test[1])
         self.batch_size = batch_size
-        self.train = self._create_dataset(tf.convert_to_tensor(train[0]), tf.convert_to_tensor(train[1]))
-        self.val = self._create_dataset(tf.convert_to_tensor(val[0]), tf.convert_to_tensor(val[1]))
-        self.test = self._create_dataset(tf.convert_to_tensor(test[0]), tf.convert_to_tensor(test[1]))
+        self.train = self._create_dataset(train[0], train[1])
+        self.val = self._create_dataset(val[0], val[1])
+        self.test = self._create_dataset(test[0], test[1])
         self.train_len = len(train[1])
 
         self.base_model = base_model
@@ -305,12 +305,6 @@ class Agent:
     def fit(self):
         for _ in range(self._train_rounds):
             self.train_epoch()
-
-    def _train_batch(self, x, y):
-        return Agent._model_train_batch(self.base_model, x, y)
-
-    def _train_dml(self, x, y):
-        return Agent._model_train_dml(self.base_model, self.complex_model, x, y, self.kl_loss)
 
     @staticmethod
     def _model_train_batch(model, x, y):
