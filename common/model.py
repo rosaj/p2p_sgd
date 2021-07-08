@@ -116,6 +116,7 @@ def save(model, model_path, signatures=None):
 
 def clear_session():
     tf.keras.backend.clear_session()
+    gc.collect()
 
 
 def load_tf(model_path):

@@ -154,6 +154,39 @@ def set_mode(mode):
     MODE = mode
 
 
+def resolve_agent_device(agents, agent, devices):
+    if agent is None:
+        free_mem, mem_dev = 0, ''
+        for device in devices:
+            available_mem = available_device_memory(device)
+            if available_mem > free_mem:
+                free_mem = available_mem
+                mem_dev = device
+        return mem_dev
+
+    if agent.device is None:
+        free_mem, mem_dev = 0, ''
+        for device in devices:
+            available_mem = available_device_memory(device)
+            if available_mem > free_mem:
+                free_mem = available_mem
+                mem_dev = device
+
+        agent.device = mem_dev
+        with tf.device(agent.device):
+            agent.deserialize()
+        if available_device_memory(agent.device) > agent.memory_footprint * 3:
+            return agent.device
+
+        for a in agents:
+            if a != agent and a.device == agent.device:
+                with tf.device(a.device):
+                    a.serialize()
+                    a.device = None
+                break
+    return agent.device
+
+
 def init_agents(train_clients,
                 val_clients,
                 test_clients,
@@ -168,35 +201,40 @@ def init_agents(train_clients,
     base_pars = base_default if base_pars is None else {**base_default, **base_pars}
     complex_pars = complex_default if complex_pars is None else {**complex_default, **complex_pars}
 
+    num_agents = len(train_clients)
     print("{} agents, batch size: {}, complex_ds_size: {}, base_pars: {}, complex_pars: {}, mode: {}"
-          .format(len(train_clients), batch_size, complex_ds_size, base_pars, complex_pars, MODE))
+          .format(num_agents, batch_size, complex_ds_size, base_pars, complex_pars, MODE))
 
     if base_pars["default_weights"]:
         base_pars["default_weights"] = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"]).get_weights()
 
-    pbar = tqdm(total=len(train_clients), position=0, leave=False, desc='Init agents')
+    pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init agents')
+    devices = environ.get_devices()
     agents = []
     for train, val, test in zip(train_clients, val_clients, test_clients):
-        base_model = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"])
-        if base_pars["default_weights"]:
-            base_model.set_weights(base_pars["default_weights"])
-            print("Setting default weights")
+        device = resolve_agent_device(agents, None, devices)
+        with tf.device(device):
+            base_model = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"])
+            if base_pars["default_weights"]:
+                base_model.set_weights(base_pars["default_weights"])
+                print("Setting default weights")
 
-        complex_model = None
-        if 0 < complex_ds_size <= len(train[0]):
-            complex_model = create_keras_model(model_v=complex_pars["v"], lr=complex_pars["lr"],
-                                               decay=complex_pars["decay"])
+            complex_model = None
+            if 0 < complex_ds_size <= len(train[0]):
+                complex_model = create_keras_model(model_v=complex_pars["v"], lr=complex_pars["lr"],
+                                                   decay=complex_pars["decay"])
 
-        a = Agent(train=train,
-                  val=val,
-                  test=test,
-                  batch_size=batch_size,
-                  base_model=base_model,
-                  complex_model=complex_model
-                  )
-        agents.append(a)
-        if MODE != 'RAM':
-            a.serialize()
+            a = Agent(train=train,
+                      val=val,
+                      test=test,
+                      batch_size=batch_size,
+                      base_model=base_model,
+                      complex_model=complex_model
+                      )
+            a.device = device
+            agents.append(a)
+            if MODE != 'RAM':
+                a.serialize()
         pbar.update()
         pbar.set_postfix(memory_info())
     pbar.close()
@@ -238,26 +276,8 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
     pbar = tqdm(total=len(agents), position=0, leave=False, desc='Training')
     msgs = {"total_useful": 0, "total_useless": 0, "useful": 0, "useless": 0}
 
-    devices = environ.get_logical_devices()
-    agents_device = list(None for _ in range(len(agents)))
+    devices = environ.get_devices()
     single_device = len(devices) < 2
-
-    def resolve_agent_device(ag, ind):
-        if agents_device[ind] is None:
-            ag.deserialize()
-            for device in devices:
-                if available_mb_gpu_memory(device) > ag.memory_footprint * 3:
-                    agents_device[ind] = device
-                    return device
-
-            for i in range(len(agents_device)):
-                if agents_device[i] is not None:
-                    agents_device[ind] = agents_device[i]
-                    agents_device[i] = None
-                    agents[i].serialize()
-                    agent.deserialize()
-                    break
-        return agents_device[ind]
 
     round_num = 0
     num_cached = 0
@@ -268,7 +288,8 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
         if agent.trainable:
             pbar.update()
             postfix = memory_info()
-            postfix["MEM_AG"] = sum([1 for i in agents_device if i is not None])
+            for dev in devices:
+                postfix["N_{}".format(dev)] = sum([1 for a in agents if a.device == dev])
             pbar.set_postfix(postfix)
 
         total_examples += agent.train_len * agent._train_rounds
@@ -277,30 +298,19 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
             num_cached += 1
         clear_session()
 
-        if single_device:
+        with tf.device(resolve_agent_device(agents, agent, devices)):
             neighbors = train_loop_fn(a_i, agent)
-        else:
-            a_device = resolve_agent_device(agent, a_i)
-            with tf.device(a_device):
-                neighbors = train_loop_fn(a_i, agent)
 
         for a_j in neighbors:
             agent_j = agents[a_j]
             if MODE != 'RAM' and agent_j.base_model is None and single_device:
                 agent_j.deserialize()
                 num_cached += 1
-            if single_device:
+            with tf.device(resolve_agent_device(agents, agent_j, devices)):
                 if not agent_j.receive_model(agent, mode=share_method, only_improvement=False):
                     msgs["useless"] += 1
                 else:
                     msgs["useful"] += 1
-            else:
-                a_device = resolve_agent_device(agent, a_i)
-                with tf.device(a_device):
-                    if not agent_j.receive_model(agent, mode=share_method, only_improvement=False):
-                        msgs["useless"] += 1
-                    else:
-                        msgs["useful"] += 1
             if MODE != 'RAM' and NUM_CACHED_AGENTS < num_cached and single_device:
                 agent_j.serialize()
                 num_cached -= 1
@@ -320,6 +330,11 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
             print_all_accs(agents, int(total_examples / examples))
             print('', end='', flush=True)
             pbar.close()
+            if MODE != 'RAM' and round_num % 10 == 0:
+                for live_agent in agents:
+                    if live_agent.device is not None:
+                        with tf.device(live_agent.device):
+                            live_agent.serialize(True)
             pbar = tqdm(total=len(agents), position=0, leave=False, desc='Training')
         if num_train == 0:
             pbar.close()

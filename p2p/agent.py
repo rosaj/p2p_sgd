@@ -13,11 +13,14 @@ class Agent:
                  batch_size=5,
                  ensemble_metrics=[MaskedSparseCategoricalAccuracy()]):
 
-        self.train_x, self.train_y = tf.convert_to_tensor(train[0]), tf.convert_to_tensor(train[1])
-        self.val_x, self.val_y = tf.convert_to_tensor(val[0]), tf.convert_to_tensor(val[1])
-        self.test_x, self.test_y = tf.convert_to_tensor(test[0]), tf.convert_to_tensor(test[1])
-
+        # self.train_x, self.train_y = tf.convert_to_tensor(train[0]), tf.convert_to_tensor(train[1])
+        # self.val_x, self.val_y = tf.convert_to_tensor(val[0]), tf.convert_to_tensor(val[1])
+        # self.test_x, self.test_y = tf.convert_to_tensor(test[0]), tf.convert_to_tensor(test[1])
         self.batch_size = batch_size
+        self.train = self._create_dataset(tf.convert_to_tensor(train[0]), tf.convert_to_tensor(train[1]))
+        self.val = self._create_dataset(tf.convert_to_tensor(val[0]), tf.convert_to_tensor(val[1]))
+        self.test = self._create_dataset(tf.convert_to_tensor(test[0]), tf.convert_to_tensor(test[1]))
+        self.train_len = len(train[1])
 
         self.base_model = base_model
         self.complex_model = complex_model
@@ -25,7 +28,6 @@ class Agent:
         self.ensemble_metrics = ensemble_metrics or []
         self.kl_loss = KLDivergence()
 
-        self.tr_iter = self._create_train_iter()
         self.val_metric = 0
         self._train_rounds = 1
 
@@ -42,6 +44,7 @@ class Agent:
         self.id = environ.next_agent_id()
         self.train_fn = None
         self.temp = []
+        self.device = None
 
     @property
     def train_complex_acc(self):
@@ -82,14 +85,11 @@ class Agent:
     @property
     def has_complex(self):
         return self.complex_model is not None
-
+    """
     @property
     def train_len(self):
         return len(self.train_y)
-
-    @property
-    def val_len(self):
-        return len(self.val_y)
+    """
 
     @property
     def trainable(self):
@@ -130,7 +130,7 @@ class Agent:
         if self.has_complex:
             self.complex_model = load('p2p_models/agent_{}_complex'.format(self.id))
 
-    def serialize(self):
+    def serialize(self, save_only=False):
         """
         signatures = self.make_train_function().get_concrete_function(
             x=tf.TensorSpec(shape=(None, 10), dtype=tf.int32, name='x'),
@@ -141,50 +141,35 @@ class Agent:
         # signatures = self.make_train_function().get_concrete_function()
         # signatures = {cfn.name.decode(): cfn}
         # signatures = self.make_train_function()
-        self.train_fn = None
+
         signatures = None
         save(self.base_model, 'p2p_models/agent_{}_base'.format(self.id), signatures)
-        self.base_model = None
+        if not save_only:
+            self.base_model = None
+            self.train_fn = None
         if self.has_complex:
             save(self.complex_model, 'p2p_models/agent_{}_complex'.format(self.id), signatures)
-            self.complex_model = True
+            if not save_only:
+                self.complex_model = True
 
-    def _create_dataset(self):
-        return tf.data.Dataset.from_tensor_slices((self.train_x, self.train_y)) \
-            .shuffle(self.batch_size) \
-            .batch(self.batch_size)
-
-    def _create_train_iter(self):
-        self.tr_iter = self._create_dataset().as_numpy_iterator()
-        return self.tr_iter
-
-    def receive_update(self, new_weights):
-        weights_delta = tf.nest.map_structure(lambda a, b: a - b,
-                                              self.get_share_weights(),
-                                              new_weights)
-        self.temp.append(weights_delta)
-        if len(self.temp) == 5:
-            weights = average_weights(self.temp)
-            # wd_mean = [-1.0 * x for x in wd_mean]
-            self.base_model.optimizer.apply_gradients(zip(weights, self.base_model.trainable_variables))
-            self._train_rounds = 1
-            self.temp.clear()
-        """ 
-        weights_delta = tf.nest.map_structure(lambda a, b: a - b,
-                                              trainable_variables,
-                                              self.base_model.trainable_variables)
-        self.base_model.optimizer.apply_gradients(zip(weights_delta, self.base_model.trainable_variables))
-        self._train_rounds = 1
-        
-        self.temp.append(weights_delta)
-        if len(self.temp) == 5:
-            wd_mean = average_trainable_variables(self.temp)
-            # wd_mean = [-1.0 * x for x in wd_mean]
-            self.base_model.optimizer.apply_gradients(zip(wd_mean, self.base_model.trainable_variables))
-            self.temp.clear()
-            self._train_rounds = 1
+    def _create_dataset(self, x, y):
         """
-        return True
+        data = []
+        prev_ind, cur_ind = 0, self.batch_size
+        while True:
+            dx = x[prev_ind:min(cur_ind, len(x))]
+            dy = y[prev_ind:min(cur_ind, len(y))]
+            data.append((dx, dy))
+            if len(x) <= cur_ind:
+                break
+            prev_ind = cur_ind
+            cur_ind += self.batch_size
+        return data
+        """
+        return tf.data.Dataset.from_tensor_slices((x, y)) \
+            .shuffle(self.batch_size) \
+            .batch(self.batch_size) \
+            .prefetch(1)
 
     def weighted_update(self, new_weights, num_examples):
         w1, w2 = self.get_share_weights(), new_weights
@@ -215,7 +200,7 @@ class Agent:
         elif mode == 'weighted_update':
             return self.weighted_update(new_weights, other_agent.train_len)
         elif mode == 'peer_sgd':
-            Agent._peer_sgd_update_weights(self.base_model, other_agent.base_model, self.next_train_batch())
+            Agent._peer_sgd_update_weights(self.base_model, other_agent.base_model, self.train[0])
             self._train_rounds = 1
             return True
         elif mode == 'test':
@@ -238,49 +223,6 @@ class Agent:
             else:
                 self.temp.append(new_weights)
             return True
-
-        if mode is not None:
-            return False
-        m = self.base_model
-        new_model = clone_model(m)
-        new_model.set_weights(new_weights)
-        compile_model(new_model)
-        new_val_metric = self._train_acc(new_model)[0]
-
-        """
-        m_logits = m(self.train_x, training=False)
-        n_logits = new_model(self.train_x, training=False)
-        loss_m = m.loss(self.train_y, m_logits)
-        loss_n = new_model.loss(self.train_y, n_logits)
-        print(loss_m, loss_n)
-        """
-        # d_loss = self.kl_loss(m_logits, n_logits)
-        # print(d_loss)
-        # if d_loss.numpy() >= 1:
-        #     return False
-
-        if not only_improvement or new_val_metric > self.val_metric:
-            if mode == 'average':
-                m.set_weights(average_weights([m.get_weights(), new_model.get_weights()]))
-                new_val_metric = self._train_acc(m)[0]
-            elif mode == 'replace':
-                m.set_weights(new_weights)
-            elif mode == 'cache_average':
-                if len(self.temp) == 14:
-                    self.temp.append(m.get_weights())
-                    m.set_weights(average_weights(self.temp))
-                    new_val_metric = self._train_acc(m)[0]
-                    self.temp.clear()
-                else:
-                    self.temp.append(new_weights)
-                    return True
-            elif mode == 'peer_sgd':
-                Agent._peer_sgd_update_weights(m, new_model, (self.train_x, self.train_y))
-                new_val_metric = self._train_acc(m)[0]
-            self.val_metric = new_val_metric
-            self._train_rounds = max(self._train_rounds, 1)
-            return True
-        return False
 
     @staticmethod
     def _peer_sgd_update_weights(mi, mj, data):
@@ -308,16 +250,7 @@ class Agent:
     def get_share_weights(self):
         return self.base_model.get_weights()
 
-    def next_train_batch(self):
-        try:
-            return self.tr_iter.next()
-        except StopIteration:
-            self._create_train_iter()
-            return self.tr_iter.next()
-
-    def _train_on_batch(self, x=None, y=None):
-        if x is None and y is None:
-            x, y = self.next_train_batch()
+    def _train_on_batch(self, x, y):
 
         train_step_fn = self.make_train_function()
         train_step_fn(self.base_model, self.complex_model, x, y, self.kl_loss)
@@ -333,12 +266,7 @@ class Agent:
     def make_train_function(self):
         if self.train_fn is not None:
             return self.train_fn
-        """
-        if not self.has_complex:
-            train_fn = self._train_batch
-        else:
-            train_fn = self._train_dml
-        """
+
         def train_step(base_model, complex_model, x, y, kl_loss):
             if complex_model is None:
                 Agent._model_train_batch(base_model, x, y)
@@ -365,7 +293,7 @@ class Agent:
         if self.has_complex:
             Agent._reset_compiled_metrics(self.complex_model)
 
-        for (x, y) in self._create_dataset():
+        for (x, y) in self.train:
             self._train_on_batch(x, y)
 
         self._calc_new_accs()
@@ -444,26 +372,56 @@ class Agent:
             self.hist_acc["test_ensemble"].append(self.ensemble_test_acc()[0])
 
     @staticmethod
-    def _model_acc(m, x, y):
+    def _model_acc_all(m, x, y):
         preds = m(x, training=False)
         return Agent._update_compiled_metrics(m, preds, y)
 
     @staticmethod
-    def _ensemble_acc(m1, m2, x, y, metrics):
+    def _model_acc(m, dataset):
+        if len(m.compiled_metrics.metrics) == 0:
+            m.compiled_metrics.build(0, 0)
+        metrics = m.compiled_metrics.metrics
+        for metric in metrics:
+            if hasattr(metric, "reset_state"):
+                metric.reset_state()
+            else:
+                metric.reset_states()
+        for (dx, dy) in dataset:
+            preds = m(dx, training=False)
+            for metric in metrics:
+                metric.update_state(dy, preds)
+        return [metric.result().numpy() for metric in metrics]
+
+    @staticmethod
+    def _ensemble_acc(m1, m2, dataset, metrics):
         alpha = 0.5
+        """
         m1_pred = m1(x, training=False)
         m2_pred = m2(x, training=False)
         results = Agent._update_metrics(metrics, (m1_pred * (1 - alpha) + m2_pred * alpha), y)
         return results
+        """
+        for metric in metrics:
+            if hasattr(metric, "reset_state"):
+                metric.reset_state()
+            else:
+                metric.reset_states()
+
+        for (dx, dy) in dataset:
+            m1_pred = m1(dx, training=False)
+            m2_pred = m2(dx, training=False)
+            for metric in metrics:
+                metric.update_state(dy, (m1_pred * (1 - alpha) + m2_pred * alpha))
+        return [metric.result().numpy() for metric in metrics]
 
     def _train_acc(self, m):
-        return Agent._model_acc(m, self.train_x, self.train_y)
+        return self._model_acc(m, self.train)
 
     def _val_acc(self, m):
-        return Agent._model_acc(m, self.val_x, self.val_y)
+        return self._model_acc(m, self.val)
 
     def _test_acc(self, m):
-        return Agent._model_acc(m, self.test_x, self.test_y)
+        return self._model_acc(m, self.test)
 
     def base_train_acc(self):
         return self._train_acc(self.base_model)
@@ -472,7 +430,7 @@ class Agent:
         return self._train_acc(self.complex_model)
 
     def ensemble_train_acc(self):
-        return Agent._ensemble_acc(self.base_model, self.complex_model, self.train_x, self.train_y, self.ensemble_metrics)
+        return Agent._ensemble_acc(self.base_model, self.complex_model, self.train, self.ensemble_metrics)
 
     def base_val_acc(self):
         return self._val_acc(self.base_model)
@@ -481,7 +439,7 @@ class Agent:
         return self._val_acc(self.complex_model)
 
     def ensemble_val_acc(self):
-        return Agent._ensemble_acc(self.base_model, self.complex_model, self.val_x, self.val_y, self.ensemble_metrics)
+        return Agent._ensemble_acc(self.base_model, self.complex_model, self.val, self.ensemble_metrics)
 
     def base_test_acc(self):
         return self._test_acc(self.base_model)
@@ -490,4 +448,4 @@ class Agent:
         return self._test_acc(self.complex_model)
 
     def ensemble_test_acc(self):
-        return Agent._ensemble_acc(self.base_model, self.complex_model, self.test_x, self.test_y, self.ensemble_metrics)
+        return Agent._ensemble_acc(self.base_model, self.complex_model, self.test, self.ensemble_metrics)

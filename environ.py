@@ -23,6 +23,6 @@ def set_agent_id(agent_id):
     os.environ['AGENT_COUNTER'] = str(agent_id)
 
 
-def get_logical_devices():
-    devices = os.environ.get('DEVICES', '').split(',')
+def get_devices():
+    devices = os.environ.get('DEVICES', 'CPU').split(',')
     return [d.strip() for d in devices if len(d.strip()) > 0]

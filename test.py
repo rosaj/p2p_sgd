@@ -4,14 +4,16 @@ from data import clients_data
 seed = 13
 p2p_training.tf.random.set_seed(seed)
 p2p_training.np.random.seed(seed)
-train_clients, val_clients, test_clients = clients_data.load_client_datasets(1_000)
-train_cli, val_cli, test_cli = p2p_training.filter_clients(train_clients, val_clients, test_clients, 1, (0, 100000000))
-agents = p2p_training.init_agents(train_cli, val_cli, test_cli, 50, -1,
+train_clients, val_clients, test_clients = clients_data.filtered_clients(10, (0, 99999999))
+agents = p2p_training.init_agents(train_clients, val_clients, test_clients, 50, -1,
                                   base_pars={"v": 2, "lr": 0.005, "decay": 0}, complex_pars={"v": 2, "lr": 0.005, "decay": 0})
 
 
-a1 = agents[0]
+a1 = agents[1]
+a1._train_rounds = 1
 a1.fit()
+a1._model_acc(a1.base_model, a1.train_x, a1.train_y)
+a1._model_acc_all(a1.base_model, a1.train_x, a1.train_y)
 a1.base_model.save_weights('test_weights.h5')
 
 """

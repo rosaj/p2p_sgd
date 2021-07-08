@@ -31,7 +31,7 @@ def create_model_fed():
 
 
 def create_tf_dataset_for_client(c, batch_size=15):
-    x, y = tf.convert_to_tensor(np.array(c[0])), tf.convert_to_tensor(np.array(c[1]))
+    x, y = np.array(c[0]), np.array(c[1])
     return tf.data.Dataset.from_tensor_slices((x, y)).shuffle(batch_size).batch(batch_size)
 
 
@@ -47,24 +47,24 @@ def state_to_model(s_state):
     return model
 
 
-def avg_model_acc(model, dataset, cl_keys, desc=''):
+def avg_model_acc(model, dataset, cl_keys, desc, batch_size):
     accs = []
     for key in tqdm(cl_keys, desc="Evaluating {}".format(desc), position=0, leave=False):
         if len(dataset[key][1]) < 1:
             continue
-        metrics = model.evaluate(dataset[key][0], dataset[key][1], verbose=0)
+        metrics = model.evaluate(dataset[key][0], dataset[key][1], batch_size=batch_size, verbose=0)
         accs.append(metrics[1])
     accs = np.array(accs)
     return np.average(accs), np.median(accs)
 
 
-def print_avg_model_acc(model, dataset_dict, cl_keys):
+def print_avg_model_acc(model, dataset_dict, cl_keys, batch_size):
     for key in dataset_dict.keys():
-        print("\t{}\t{:.3%}\t{:.3%}\n".format(key, *avg_model_acc(model, dataset_dict[key], cl_keys, key)), flush=True, end='')
+        print("\t{}\t{:.3%}\t{:.3%}\n".format(key, *avg_model_acc(model, dataset_dict[key], cl_keys, key, batch_size)), flush=True, end='')
 
 
 def print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
-                   round_num=1, epoch=1, round_examples=0, total_examples=0):
+                   round_num=1, epoch=1, round_examples=0, total_examples=0, batch_size=50):
     fed_model = state_to_model(server_state)
     # '\tVal Acc: {:.3%}\n'.format(fed_model.evaluate(v_x, v_y, verbose=0)[1]) + \
     # '\tTest Acc: {:.3%}\n'.format(fed_model.evaluate(t_x, t_y, verbose=0)[1]) + \
@@ -72,7 +72,7 @@ def print_accuracy(server_state, train_clients, val_clients, test_clients, clien
           "\tExamples: ({}/{})\n".format(round_examples, total_examples) + \
           "\tAgents\tMean\tMedian"
     print(msg, flush=True)
-    print_avg_model_acc(fed_model, {"Train": train_clients, "Valid": val_clients, "Test": test_clients}, client_inds)
+    print_avg_model_acc(fed_model, {"Train": train_clients, "Valid": val_clients, "Test": test_clients}, client_inds, batch_size)
     # "\tTrain\t{:.3%}\t{:.3%}\n".format(*avg_model_acc(fed_model, train_clients, client_inds)) + \
     # "\tValid\t{:.3%}\t{:.3%}\n".format(*avg_model_acc(fed_model, val_clients, client_inds)) + \
     # "\tTest\t{:.3%}\t{:.3%}\n".format(*avg_model_acc(fed_model, test_clients, client_inds))
@@ -136,7 +136,7 @@ def train_fed_avg(train_clients,
     round_num = 0
     if type(checkpoint_round) == str:
         server_state = ckpt_manager.load_checkpoint(server_state, checkpoint_round)
-        print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds, checkpoint_round)
+        print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds, checkpoint_round, batch_size=batch_size)
         return
     if type(checkpoint_round) == int and checkpoint_round > 0:
         round_num = checkpoint_round
@@ -168,12 +168,13 @@ def train_fed_avg(train_clients,
 
         round_examples = server_metrics['stat']['num_examples']
         pbar.update(round_examples)
+        pbar.set_postfix(memory_info())
         total_examples += round_examples
 
         if round_num % accuracy_step == 0:  # and round_num != checkpoint_round:
             epoch = int(total_examples / examples)
             print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
-                           round_num, epoch, round_examples, total_examples)
+                           round_num, epoch, round_examples, total_examples, batch_size)
     pbar.close()
     print("Train clients: {} minutes".format(round((time.time() - start_time) / 60)), flush=True)
 
