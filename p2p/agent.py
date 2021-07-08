@@ -131,24 +131,12 @@ class Agent:
             self.complex_model = load('p2p_models/agent_{}_complex'.format(self.id))
 
     def serialize(self, save_only=False):
-        """
-        signatures = self.make_train_function().get_concrete_function(
-            x=tf.TensorSpec(shape=(None, 10), dtype=tf.int32, name='x'),
-            y=tf.TensorSpec(shape=(None,), dtype=tf.int32, name='y')
-        )
-        """
-        # signatures = self.make_train_function()
-        # signatures = self.make_train_function().get_concrete_function()
-        # signatures = {cfn.name.decode(): cfn}
-        # signatures = self.make_train_function()
-
-        signatures = None
-        save(self.base_model, 'p2p_models/agent_{}_base'.format(self.id), signatures)
+        save(self.base_model, 'p2p_models/agent_{}_base'.format(self.id))
         if not save_only:
             self.base_model = None
             self.train_fn = None
         if self.has_complex:
-            save(self.complex_model, 'p2p_models/agent_{}_complex'.format(self.id), signatures)
+            save(self.complex_model, 'p2p_models/agent_{}_complex'.format(self.id))
             if not save_only:
                 self.complex_model = True
 
@@ -274,14 +262,10 @@ class Agent:
                 Agent._model_train_dml(base_model, complex_model, x, y, kl_loss)
 
         train_fn = train_step
-        train_fn = tf.function(train_fn, experimental_relax_shapes=True)
+        # tf.function consumes a lot of RAM but is gradually faster on CPU
+        # Training on GPU is around twice the time slower than without it
+        # train_fn = tf.function(train_fn, experimental_relax_shapes=True)
 
-        """
-        train_fn = tf.function(train_fn, input_signature=[
-            tf.TensorSpec(shape=(None, 10), dtype=tf.int32, name='x'),
-            tf.TensorSpec(shape=(None,), dtype=tf.int32, name='y')
-        ])
-        """
         self.train_fn = train_fn
         return train_fn
 
