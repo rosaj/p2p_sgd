@@ -215,6 +215,7 @@ def init_agents(train_clients,
     agents = []
 
     def create_agent():
+        clear_session()
         base_model = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"])
         if base_pars["default_weights"]:
             base_model.set_weights(base_pars["default_weights"])
