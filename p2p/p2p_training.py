@@ -98,11 +98,25 @@ def print_f_train_accs(e, agents):
     print_accs(accs, e)
 
 
-def print_all_accs(agents, e, breakdown=True):
+def print_all_accs(agents, e, breakdown=False):
     print("Epoch:", e)
     # print_b_accs("\tB", agents)
     # print_c_accs("\tC", agents)
     # print_e_accs("\tE", agents)
+    devices = environ.get_devices()
+    for a in agents:
+        device = resolve_agent_device(agents, a, devices)
+        if device is None:
+            a.calc_new_accs()
+        else:
+            with tf.device(device):
+                a.calc_new_accs()
+
+    print_f_train_accs("\tTrain", agents)
+    if breakdown:
+        print_accs([agent.train_base_acc for agent in agents], "\t\tB")
+        print_accs([agent.train_complex_acc for agent in agents if agent.has_complex], "\t\tC")
+        print_accs([agent.train_ensemble_acc for agent in agents if agent.has_complex], "\t\tE")
     print_f_val_accs("\tVal", agents)
     if breakdown:
         print_accs([agent.val_base_acc for agent in agents], "\t\tB")
@@ -113,11 +127,6 @@ def print_all_accs(agents, e, breakdown=True):
         print_accs([agent.test_base_acc for agent in agents], "\t\tB")
         print_accs([agent.test_complex_acc for agent in agents if agent.has_complex], "\t\tC")
         print_accs([agent.test_ensemble_acc for agent in agents if agent.has_complex], "\t\tE")
-    print_f_train_accs("\tTrain", agents)
-    if breakdown:
-        print_accs([agent.train_base_acc for agent in agents], "\t\tB")
-        print_accs([agent.train_complex_acc for agent in agents if agent.has_complex], "\t\tC")
-        print_accs([agent.train_ensemble_acc for agent in agents if agent.has_complex], "\t\tE")
 
 
 def get_sample_neighbors(agents, num_clients, self_ind):

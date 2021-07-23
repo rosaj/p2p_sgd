@@ -280,7 +280,7 @@ class Agent:
         for (x, y) in self.train:
             self._train_on_batch(x, y)
 
-        self._calc_new_accs()
+        # self.calc_new_accs()
         self._train_rounds = max(self._train_rounds - 1, 0)
         self.val_metric = self.train_base_acc
 
@@ -337,7 +337,7 @@ class Agent:
     def set_complex_weights(self, weights):
         Agent._assign_weights(self.complex_model, weights)
 
-    def _calc_new_accs(self):
+    def calc_new_accs(self):
         self.hist_acc["train_base"].append(self.base_train_acc()[0])
         self.hist_acc["val_base"].append(self.base_val_acc()[0])
         self.hist_acc["test_base"].append(self.base_test_acc()[0])
