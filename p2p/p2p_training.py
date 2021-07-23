@@ -104,7 +104,7 @@ def print_all_accs(agents, e, breakdown=False):
     # print_c_accs("\tC", agents)
     # print_e_accs("\tE", agents)
     devices = environ.get_devices()
-    pbar = tqdm(total=len(agents), position=0, leave=False, desc='Init agents')
+    pbar = tqdm(total=len(agents), position=0, leave=False, desc='Evaluating agents')
     for a in agents:
         device = resolve_agent_device(agents, a, devices)
         if device is None:
