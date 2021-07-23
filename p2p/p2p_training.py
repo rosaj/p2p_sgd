@@ -104,6 +104,7 @@ def print_all_accs(agents, e, breakdown=False):
     # print_c_accs("\tC", agents)
     # print_e_accs("\tE", agents)
     devices = environ.get_devices()
+    pbar = tqdm(total=len(agents), position=0, leave=False, desc='Init agents')
     for a in agents:
         device = resolve_agent_device(agents, a, devices)
         if device is None:
@@ -111,6 +112,9 @@ def print_all_accs(agents, e, breakdown=False):
         else:
             with tf.device(device):
                 a.calc_new_accs()
+        pbar.update()
+        pbar.set_postfix(memory_info())
+    pbar.close()
 
     print_f_train_accs("\tTrain", agents)
     if breakdown:
