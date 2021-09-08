@@ -212,7 +212,7 @@ def init_agents(train_clients,
 
     start_time = time.time()
     base_default = {"v": 1, "lr": 0.01, "decay": 0, "default_weights": False}
-    complex_default = {"v": 2, "lr": 0.01, "decay": 0}
+    complex_default = {"v": 2, "lr": 0.01, "decay": 0, "default_weights": False}
     base_pars = base_default if base_pars is None else {**base_default, **base_pars}
     complex_pars = complex_default if complex_pars is None else {**complex_default, **complex_pars}
 
@@ -223,6 +223,9 @@ def init_agents(train_clients,
     if base_pars["default_weights"]:
         base_pars["default_weights"] = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"]).get_weights()
 
+    if complex_pars["default_weights"]:
+        complex_pars["default_weights"] = create_keras_model(model_v=complex_pars["v"], lr=complex_pars["lr"], decay=complex_pars["decay"]).get_weights()
+
     pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init agents')
     devices = environ.get_devices()
     agents = []
@@ -232,12 +235,14 @@ def init_agents(train_clients,
         base_model = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"])
         if base_pars["default_weights"]:
             base_model.set_weights(base_pars["default_weights"])
-            print("Setting default weights")
+            # print("Setting default weights")
 
         complex_model = None
         if 0 < complex_ds_size <= len(train[0]):
             complex_model = create_keras_model(model_v=complex_pars["v"], lr=complex_pars["lr"],
                                                decay=complex_pars["decay"])
+            if complex_pars["default_weights"]:
+                complex_model.set_weights(complex_pars["default_weights"])
 
         a = Agent(train=train,
                   val=val,
@@ -304,6 +309,14 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
     round_num = 0
     num_cached = 0
+    """
+    print("---PRETRAINING---")
+    for a in agents:
+        a._train_rounds = 1
+        a.fit()
+        a._train_rounds = 1
+    print_all_accs(agents, 0)
+    """
     while total_examples < max_examples:
         possible_a = [i for i in range(len(agents)) if agents[i].trainable]
         a_i = possible_a[choose(-1, len(possible_a))]
@@ -352,6 +365,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
             num_cached -= 1
         num_train = sum([1 for a in agents if a.trainable])
         if pbar.total == pbar.n:
+            pbar.close()
             print("Training:", num_train, "Useful:", msgs["useful"], "Useless:", msgs["useless"], flush=True)
             msgs["total_useful"] += msgs["useful"]
             msgs["useful"] = 0
@@ -362,16 +376,16 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
             print("Round: {}\t".format(round_num), end='')
             print_all_accs(agents, int(total_examples / examples))
             print('', end='', flush=True)
-            pbar.close()
+
             if MODE != 'RAM' and round_num % 10 == 0:
                 for live_agent in agents:
                     if live_agent.device is not None:
                         with tf.device(live_agent.device):
                             live_agent.serialize(True)
             pbar = tqdm(total=len(agents), position=0, leave=False, desc='Training')
-        if num_train == 0:
-            pbar.close()
-            break
+            # if num_train == 0:
+            # pbar.close()
+            # break
     print("Total useful:", msgs["total_useful"], "Total useles's:", msgs["total_useless"], flush=True)
     print("Train agents: {} minutes".format(round((time.time() - start_time)/60)), flush=True)
 

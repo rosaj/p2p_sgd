@@ -181,8 +181,18 @@ class Agent:
             return True
         elif mode == 'average':
             weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_share_weights(), new_weights)
-            # self.base_model.set_weights(weights)
             self.set_base_weights(weights)
+            self._train_rounds = 1
+            return True
+        elif mode == 'layer_average':
+            # averaging_layers = [0, 1, 3, 5] #  [2, 4]
+            # for avg_lay in averaging_layers:
+            for avg_lay, a1_l in enumerate(self.base_model.layers):
+                if a1_l.name in ['batch_normalization']:
+                    continue
+                # a1_l = self.base_model.layers[avg_lay]
+                a2_l = other_agent.base_model.layers[avg_lay]
+                a1_l.set_weights(tf.nest.map_structure(lambda a, b: (a + b) / 2.0, a1_l.get_weights(), a2_l.get_weights()))
             self._train_rounds = 1
             return True
         elif mode == 'weighted_update':
@@ -264,6 +274,7 @@ class Agent:
         train_fn = train_step
         # tf.function consumes a lot of RAM but is gradually faster on CPU
         # Training on GPU is around twice the time slower than without it
+        # print("Using tf.function for training")
         # train_fn = tf.function(train_fn, experimental_relax_shapes=True)
 
         self.train_fn = train_fn

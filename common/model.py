@@ -3,7 +3,7 @@ from tensorflow.keras.metrics import SparseCategoricalAccuracy
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 from tensorflow.keras.losses import KLDivergence
 
-from tensorflow.keras.layers import Embedding, LSTM, Dense, GRU, Flatten
+from tensorflow.keras.layers import Embedding, LSTM, Dense, GRU, Flatten, BatchNormalization
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.optimizers import Adam
 
@@ -60,10 +60,10 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
         model = Sequential(
 
             [
-                Embedding(vocab_size, 10, input_length=embedding_size, trainable=True, mask_zero=True),
+                Embedding(vocab_size, 25, input_length=embedding_size, trainable=True, mask_zero=True),
                 # Flatten(),
-                LSTM(10),
-                Dense(10),
+                LSTM(25),
+                Dense(25),
                 Dense(vocab_size, activation='softmax')
             ],
             name="model_1_{}".format(_MODEL_COUNT)
@@ -73,7 +73,9 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
             [
                 Embedding(vocab_size, 100, input_length=embedding_size, trainable=True, mask_zero=True),
                 LSTM(100),
+                # BatchNormalization(),
                 Dense(100),
+                # BatchNormalization(),
                 Dense(vocab_size, activation='softmax')
             ],
             name="model_2_{}".format(_MODEL_COUNT)
