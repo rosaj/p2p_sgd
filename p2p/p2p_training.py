@@ -98,7 +98,7 @@ def print_f_train_accs(e, agents):
     print_accs(accs, e)
 
 
-def print_all_accs(agents, e, breakdown=False):
+def print_all_accs(agents, e, breakdown=True):
     print("Epoch:", e)
     # print_b_accs("\tB", agents)
     # print_c_accs("\tC", agents)
@@ -148,6 +148,10 @@ def single_model(train_data, val_data, test_data, model_pars=None, batch_size=50
         x.extend(tx)
         y.extend(ty)
     print("Examples:", len(y))
+    vx, vy = [], []
+    for val_x, val_y in val_data:
+        vx.extend(val_x)
+        vy.extend(val_y)
 
     if model_pars is None:
         model_pars = {"v": 1, "lr": 0.005, "decay": 0}
@@ -155,7 +159,7 @@ def single_model(train_data, val_data, test_data, model_pars=None, batch_size=50
 
     x, y = np.array(x), np.array(y)
     for e in range(epochs):
-        model.fit(x, y, epochs=1, batch_size=batch_size)
+        model.fit(x, y, epochs=1, batch_size=batch_size, validation_data=(np.array(vx), np.array(vy)))
         print("Val: {:.3%}".format(np.average(
             np.array([model.evaluate(val_data[key][0], val_data[key][1], verbose=0) for key in range(len(val_data))])[:, 1])))
         print("Test: {:.3%}".format(np.average(
@@ -299,28 +303,38 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
     examples = sum([a.train_len for a in agents])
     print("Training {} agents, num neighbors: {}, examples: {}, share method: {}".format(len(agents), num_neighbors, examples, share_method), flush=True)
 
-    max_examples = epochs * examples
-    total_examples = 0
-    pbar = tqdm(total=len(agents), position=0, leave=False, desc='Training')
-    msgs = {"total_useful": 0, "total_useless": 0, "useful": 0, "useless": 0}
 
     devices = environ.get_devices()
     single_device = len(devices) < 2
 
-    round_num = 0
-    num_cached = 0
-    """
+    # """
     print("---PRETRAINING---")
-    for a in agents:
+    for i, a in enumerate(agents):
         a._train_rounds = 1
+        # if i == 0:
+        #     continue
         a.fit()
         a._train_rounds = 1
+    # agents[0]._train_rounds = 1
     print_all_accs(agents, 0)
-    """
+    # """
+    # for a in agents:
+    #     a._train_rounds = 0
+    # agents[0]._train_rounds = 1
+
+    max_examples = epochs * examples
+    total_examples, round_num, num_cached = 0, 0, 0
+    pbar = tqdm(total=len(agents), position=0, leave=False, desc='Training')
+    msgs = {"total_useful": 0, "total_useless": 0, "useful": 0, "useless": 0}
+
     while total_examples < max_examples:
         possible_a = [i for i in range(len(agents)) if agents[i].trainable]
+        # print("Possible:", possible_a)
+        if len(possible_a) == 0:
+            break
         a_i = possible_a[choose(-1, len(possible_a))]
         agent = agents[a_i]
+        # print("Choosen", a_i, end=' ')
         if agent.trainable:
             pbar.update()
             postfix = memory_info()
@@ -340,7 +354,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
         else:
             with tf.device(device):
                 neighbors = train_loop_fn(a_i, agent)
-
+        # print('Neighbors:', neighbors)
         for a_j in neighbors:
             agent_j = agents[a_j]
             if MODE != 'RAM' and agent_j.base_model is None and single_device:
@@ -349,10 +363,10 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
             device_j = resolve_agent_device(agents, agent_j, devices)
             if device_j is None:
-                msg = agent_j.receive_model(agent, mode=share_method, only_improvement=False)
+                msg = agent_j.receive_model(agent, share_method)
             else:
                 with tf.device(device_j):
-                    msg = agent_j.receive_model(agent, mode=share_method, only_improvement=False)
+                    msg = agent_j.receive_model(agent, share_method)
             if not msg:
                 msgs["useless"] += 1
             else:
@@ -393,6 +407,12 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 def train_loop(agents, num_neighbors, epochs, share_method):
     def train_fn(a_i, agent):
         agent.fit()
+        possible_a = [i for i in range(len(agents)) if not agents[i].trainable]
+        if a_i in possible_a:
+            possible_a.remove(a_i)
+        if len(possible_a) >= num_neighbors:
+            random_indices = np.random.choice(len(possible_a), size=num_neighbors, replace=False)
+            return np.array(possible_a)[random_indices]
         return get_sample_neighbors(agents, num_neighbors, a_i)
 
     abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn)

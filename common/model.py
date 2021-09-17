@@ -12,6 +12,7 @@ from tensorflow.keras.models import save_model
 from tensorflow.keras.models import clone_model
 
 from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.callbacks import EarlyStopping
 
 # from tensorflow.python.framework.ops import disable_eager_execution
 # disable_eager_execution()
@@ -56,14 +57,32 @@ def compile_model(model, lr=0.01, decay=0):
 
 def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_size=10, do_compile=True):
     global _MODEL_COUNT
+    units = 25 if model_v % 2 == 1 else 100
+    use_bn = model_v > 2
+
+    layers = [Embedding(vocab_size, units, input_length=embedding_size, trainable=True, mask_zero=True),
+              LSTM(units)]
+
+    if use_bn:
+        layers.append(BatchNormalization(momentum=0.0, scale=False))
+    layers.append(Dense(units))
+
+    if use_bn:
+        layers.append(BatchNormalization(momentum=0.0, scale=False))
+    layers.append(Dense(vocab_size, activation='softmax'))
+
+    model = Sequential(layers, "model_{}_{}".format(model_v, _MODEL_COUNT))
+
+    """
     if model_v == 1:
         model = Sequential(
 
             [
                 Embedding(vocab_size, 25, input_length=embedding_size, trainable=True, mask_zero=True),
-                # Flatten(),
                 LSTM(25),
+                BatchNormalization(momentum=0.0, scale=False),
                 Dense(25),
+                BatchNormalization(momentum=0.0, scale=False),
                 Dense(vocab_size, activation='softmax')
             ],
             name="model_1_{}".format(_MODEL_COUNT)
@@ -73,9 +92,9 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
             [
                 Embedding(vocab_size, 100, input_length=embedding_size, trainable=True, mask_zero=True),
                 LSTM(100),
-                # BatchNormalization(),
+                BatchNormalization(momentum=0.0, scale=False),
                 Dense(100),
-                # BatchNormalization(),
+                BatchNormalization(momentum=0.0, scale=False),
                 Dense(vocab_size, activation='softmax')
             ],
             name="model_2_{}".format(_MODEL_COUNT)
@@ -90,7 +109,7 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
             ],
             name="model_3_{}".format(_MODEL_COUNT)
         )
-
+    """
     if do_compile:
         compile_model(model, lr, decay)
     _MODEL_COUNT += 1

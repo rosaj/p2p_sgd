@@ -159,7 +159,7 @@ class Agent:
             .batch(self.batch_size) \
             .prefetch(1)
 
-    def weighted_update(self, new_weights, num_examples):
+    def weighted_average(self, new_weights, num_examples):
         w1, w2 = self.get_share_weights(), new_weights
         n1, n2 = self.train_len, num_examples
         total_count = n1 + n2
@@ -169,11 +169,19 @@ class Agent:
         self._train_rounds = 1
         return True
 
-    def receive_model(self, other_agent, mode='replace', only_improvement=True):
+    def receive_model(self, other_agent, mode='average'):
+        only_improvement = 'improve' in mode
+        if only_improvement:
+            mode = mode.replace('improve', '').replace('_', '')
+
+        if mode == 'auto':
+            mode = 'replace' if self.has_complex else 'average'
+            only_improvement = True
+
         new_weights = other_agent.get_share_weights()
         if only_improvement:
-            print("only_improvement not implemented yet")
-            return False
+            if Agent._model_acc(self.base_model, self.val) >= Agent._model_acc(other_agent.base_model, self.val):
+                return False
 
         if mode == 'replace':
             self.set_base_weights(new_weights)
@@ -184,42 +192,28 @@ class Agent:
             self.set_base_weights(weights)
             self._train_rounds = 1
             return True
-        elif mode == 'layer_average':
-            # averaging_layers = [0, 1, 3, 5] #  [2, 4]
-            # for avg_lay in averaging_layers:
-            for avg_lay, a1_l in enumerate(self.base_model.layers):
-                if a1_l.name in ['batch_normalization']:
+        elif mode == 'layer-replace':
+            for li, al1 in enumerate(self.base_model.layers):
+                if al1.name in ['batch_normalization']:
                     continue
-                # a1_l = self.base_model.layers[avg_lay]
-                a2_l = other_agent.base_model.layers[avg_lay]
-                a1_l.set_weights(tf.nest.map_structure(lambda a, b: (a + b) / 2.0, a1_l.get_weights(), a2_l.get_weights()))
+                al2 = other_agent.base_model.layers[li]
+                al1.set_weights(al2.get_weights())
             self._train_rounds = 1
             return True
-        elif mode == 'weighted_update':
-            return self.weighted_update(new_weights, other_agent.train_len)
-        elif mode == 'peer_sgd':
+        elif mode == 'layer-average':
+            for li, al1 in enumerate(self.base_model.layers):
+                if al1.name in ['batch_normalization']:
+                    continue
+                al2 = other_agent.base_model.layers[li]
+                aw = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, al1.get_weights(), al2.get_weights())
+                al1.set_weights(aw)
+            self._train_rounds = 1
+            return True
+        elif mode == 'weighted-average':
+            return self.weighted_average(new_weights, other_agent.train_len)
+        elif mode == 'peer-sgd':
             Agent._peer_sgd_update_weights(self.base_model, other_agent.base_model, self.train[0])
             self._train_rounds = 1
-            return True
-        elif mode == 'test':
-            # weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_share_weights(), new_weights)
-            weights = tf.nest.map_structure(lambda a, b: (b / 2.0), self.get_share_weights(), new_weights)
-            self.base_model.optimizer.apply_gradients(zip(weights, self.base_model.trainable_variables))
-            # self.base_model.set_weights(weights)
-            self._train_rounds = 1
-            return True
-        elif mode == 'cache_average':
-            if len(self.temp) == 15:
-                self.temp.append(self.base_model.get_weights())
-                # avg_weights = average_weights([self.base_model.get_weights(), average_weights(self.temp)])
-                avg_weights = average_weights(self.temp)
-                # avg_weights = average_weights([self.base_model.get_weights(), avg_weights])
-                self.set_base_weights(avg_weights)
-                # tf.nest.map_structure(lambda v, t: v.assign(t), self.base_model.trainable_variables, avg_weights)
-                self.temp.clear()
-                self._train_rounds = 1
-            else:
-                self.temp.append(new_weights)
             return True
 
     @staticmethod
@@ -298,8 +292,24 @@ class Agent:
         return True
 
     def fit(self):
-        for _ in range(self._train_rounds):
+        if self._train_rounds == 1:
             self.train_epoch()
+        else:
+            early_stop = EarlyStopping(monitor='val_acc', patience=2, restore_best_weights=True)
+            early_stop.set_model(self.base_model)
+            early_stop.on_train_begin()
+
+            for epoch in range(self._train_rounds):
+                self.train_epoch()
+
+                logs = {'val_acc': self._val_acc(self.base_model)[0]}
+                # print("Epoch:", epoch, "Logs ", logs)
+                early_stop.on_epoch_end(epoch, logs)
+                if self.base_model.stop_training:
+                    # print("Stooopppping training")
+                    self.base_model.stop_training = False
+                    break
+            self._train_rounds = 0
 
     @staticmethod
     def _model_train_batch(model, x, y):
@@ -312,12 +322,13 @@ class Agent:
 
     @staticmethod
     def _model_train_dml(base_model, complex_model, x, y, kl_loss):
-        alpha = 0.5
+        # alpha = 0.5
         with tf.GradientTape(persistent=True) as tape:
             b_logits = base_model(x, training=True)
             c_logits = complex_model(x, training=True)
 
-            d_loss = kl_loss(c_logits, b_logits)
+            bd_loss = kl_loss(b_logits, c_logits)
+            cd_loss = kl_loss(c_logits, b_logits)
             b_loss = base_model.loss(y, b_logits)
             c_loss = complex_model.loss(y, c_logits)
 
@@ -326,8 +337,13 @@ class Agent:
             # tf.print(alpha, c, b)
             # alpha = 0.5
             # Bigger Alpha => complex model advantage
-            base_loss = tf.add(tf.math.scalar_mul(1 - alpha, b_loss), tf.math.scalar_mul(alpha, d_loss))
-            complex_loss = tf.add(tf.math.scalar_mul(alpha, c_loss), tf.math.scalar_mul(1 - alpha, d_loss))
+            # base_loss = tf.add(tf.math.scalar_mul(1 - alpha, b_loss), tf.math.scalar_mul(alpha, d_loss))
+            # complex_loss = tf.add(tf.math.scalar_mul(alpha, c_loss), tf.math.scalar_mul(1 - alpha, d_loss))
+            base_loss = tf.add(b_loss, bd_loss)
+            complex_loss = tf.add(c_loss, cd_loss)
+
+            # base_loss = tf.add(b_loss, tf.math.scalar_mul(alpha, d_loss))
+            # complex_loss = tf.add(c_loss, tf.math.scalar_mul(1 - alpha, d_loss))
 
         b_grads = tape.gradient(base_loss, base_model.trainable_variables)
         base_model.optimizer.apply_gradients(zip(b_grads, base_model.trainable_variables))
@@ -336,7 +352,7 @@ class Agent:
         c_grads = tape.gradient(complex_loss, complex_model.trainable_variables)
         complex_model.optimizer.apply_gradients(zip(c_grads, complex_model.trainable_variables))
         complex_model.compiled_metrics.update_state(y, c_logits)
-        return d_loss
+        return tf.divide(tf.add(bd_loss, cd_loss), 2)
 
     @staticmethod
     def _assign_weights(model, weights):
