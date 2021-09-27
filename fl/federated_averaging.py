@@ -88,7 +88,8 @@ def train_fed_avg(train_clients,
                   server_pars=None,
                   model_v=1,
                   client_weighting=None,
-                  checkpoint_round=-1):
+                  checkpoint_round=-1,
+                  accuracy_step='epoch'):
 
     start_time = time.time()
 
@@ -145,9 +146,11 @@ def train_fed_avg(train_clients,
         print("Loading checkpoint:", checkpoint_round)
         server_state = ckpt_manager.load_checkpoint(server_state, checkpoint_round)
 
-    accuracy_step = 'epoch'
-    if accuracy_step == 'epoch':
-        accuracy_step = int(examples / ((examples / clients_num) * num_train_clients))
+    if 'epoch' in accuracy_step:
+        epochs_num = accuracy_step.replace('epoch', '').strip() or 1
+        accuracy_step = int(examples / ((examples / clients_num) * num_train_clients)) * epochs_num
+    elif 'round' in accuracy_step:
+        accuracy_step = int(accuracy_step.replace('round', '').strip() or 1)
     elif accuracy_step == 'never':
         accuracy_step = 9999999999
 
@@ -164,7 +167,8 @@ def train_fed_avg(train_clients,
 
         # Apply federated training round
         server_state, server_metrics = iterative_process.next(server_state, train_datasets)
-        ckpt_manager.save_checkpoint(server_state, round_num=round_num)
+        if checkpoint_round is not None:
+            ckpt_manager.save_checkpoint(server_state, round_num=round_num)
 
         round_examples = server_metrics['stat']['num_examples']
         pbar.update(round_examples)

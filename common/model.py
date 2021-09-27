@@ -64,11 +64,11 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
               LSTM(units)]
 
     if use_bn:
-        layers.append(BatchNormalization(momentum=0.0, scale=False))
+        layers.append(BatchNormalization(momentum=0.0, scale=False, center=False))
     layers.append(Dense(units))
 
     if use_bn:
-        layers.append(BatchNormalization(momentum=0.0, scale=False))
+        layers.append(BatchNormalization(momentum=0.0, scale=False, center=False))
     layers.append(Dense(vocab_size, activation='softmax'))
 
     model = Sequential(layers, "model_{}_{}".format(model_v, _MODEL_COUNT))
@@ -212,8 +212,3 @@ def average_trainable_variables(trainable_variable_list):
         avg_n_var = np.mean(n_var_list, axis=0)
         train_vars.append(avg_n_var)
     return train_vars
-
-
-if __name__ == '__main__':
-    m1 = create_keras_model()
-    m2 = create_keras_model()

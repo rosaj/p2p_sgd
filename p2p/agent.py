@@ -13,9 +13,6 @@ class Agent:
                  batch_size=5,
                  ensemble_metrics=[MaskedSparseCategoricalAccuracy()]):
 
-        # self.train_x, self.train_y = tf.convert_to_tensor(train[0]), tf.convert_to_tensor(train[1])
-        # self.val_x, self.val_y = tf.convert_to_tensor(val[0]), tf.convert_to_tensor(val[1])
-        # self.test_x, self.test_y = tf.convert_to_tensor(test[0]), tf.convert_to_tensor(test[1])
         self.batch_size = batch_size
         self.train = self._create_dataset(train[0], train[1])
         self.val = self._create_dataset(val[0], val[1])
@@ -28,8 +25,8 @@ class Agent:
         self.ensemble_metrics = ensemble_metrics or []
         self.kl_loss = KLDivergence()
 
-        self.val_metric = 0
-        self._train_rounds = 1
+        self.train_rounds = 1
+        self.can_msg = False
 
         self.hist_acc = {"train_base": [0],
                          "train_complex": [0],
@@ -43,7 +40,6 @@ class Agent:
 
         self.id = environ.next_agent_id()
         self.train_fn = None
-        self.temp = []
         self.device = None
 
     @property
@@ -85,15 +81,10 @@ class Agent:
     @property
     def has_complex(self):
         return self.complex_model is not None
-    """
-    @property
-    def train_len(self):
-        return len(self.train_y)
-    """
 
     @property
     def trainable(self):
-        return self._train_rounds > 0
+        return self.train_rounds > 0
 
     @property
     def memory_footprint(self):
@@ -122,8 +113,6 @@ class Agent:
     @staticmethod
     def _reset_compiled_metrics(model):
         model.compiled_metrics.reset_state()
-        # for metric in model.compiled_metrics.metrics:
-        # metric.reset_states()
 
     def deserialize(self):
         self.base_model = load('p2p_models/agent_{}_base'.format(self.id))
@@ -166,7 +155,7 @@ class Agent:
         wn1, wn2 = n1 / total_count, n2 / total_count
         weights = tf.nest.map_structure(lambda a, b: a * wn1 + b * wn2, w1, w2)
         self.set_base_weights(weights)
-        self._train_rounds = 1
+        self.train_rounds = 1
         return True
 
     def receive_model(self, other_agent, mode='average'):
@@ -174,46 +163,41 @@ class Agent:
         if only_improvement:
             mode = mode.replace('improve', '').replace('_', '')
 
-        if mode == 'auto':
-            mode = 'replace' if self.has_complex else 'average'
-            only_improvement = True
-
         new_weights = other_agent.get_share_weights()
         if only_improvement:
-            if Agent._model_acc(self.base_model, self.val) >= Agent._model_acc(other_agent.base_model, self.val):
+            if Agent._model_acc(self.base_model, self.val)[0] >= Agent._model_acc(other_agent.base_model, self.val)[0]:
                 return False
 
         if mode == 'replace':
             self.set_base_weights(new_weights)
-            self._train_rounds = max(self._train_rounds, 1)
+            self.train_rounds = max(self.train_rounds, 1)
             return True
         elif mode == 'average':
             weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_share_weights(), new_weights)
             self.set_base_weights(weights)
-            self._train_rounds = 1
+            self.train_rounds = 1
             return True
-        elif mode == 'layer-replace':
+        elif mode == 'layer-average-no-bn':
             for li, al1 in enumerate(self.base_model.layers):
-                if al1.name in ['batch_normalization']:
-                    continue
-                al2 = other_agent.base_model.layers[li]
-                al1.set_weights(al2.get_weights())
-            self._train_rounds = 1
-            return True
-        elif mode == 'layer-average':
-            for li, al1 in enumerate(self.base_model.layers):
-                if al1.name in ['batch_normalization']:
+                if 'batch_normalization' in al1.name:
                     continue
                 al2 = other_agent.base_model.layers[li]
                 aw = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, al1.get_weights(), al2.get_weights())
                 al1.set_weights(aw)
-            self._train_rounds = 1
+            self.train_rounds = 1
+            return True
+        elif mode == 'layer-average':
+            for li, al1 in enumerate(self.base_model.layers):
+                al2 = other_agent.base_model.layers[li]
+                aw = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, al1.get_weights(), al2.get_weights())
+                al1.set_weights(aw)
+            self.train_rounds = 1
             return True
         elif mode == 'weighted-average':
             return self.weighted_average(new_weights, other_agent.train_len)
         elif mode == 'peer-sgd':
             Agent._peer_sgd_update_weights(self.base_model, other_agent.base_model, self.train[0])
-            self._train_rounds = 1
+            self.train_rounds = 1
             return True
 
     @staticmethod
@@ -246,14 +230,6 @@ class Agent:
 
         train_step_fn = self.make_train_function()
         train_step_fn(self.base_model, self.complex_model, x, y, self.kl_loss)
-        # self.base_model.train_on_batch(x, y)
-        """
-        if not self.has_complex:
-            # self.base_model.train_on_batch(x, y)
-            self._train_batch(x, y)
-        else:
-            self._train_dml(x, y)
-        """
 
     def make_train_function(self):
         if self.train_fn is not None:
@@ -275,7 +251,7 @@ class Agent:
         return train_fn
 
     def train_epoch(self):
-        if self._train_rounds < 1:
+        if self.train_rounds < 1:
             return False
 
         Agent._reset_compiled_metrics(self.base_model)
@@ -285,21 +261,27 @@ class Agent:
         for (x, y) in self.train:
             self._train_on_batch(x, y)
 
-        # self.calc_new_accs()
-        self._train_rounds = max(self._train_rounds - 1, 0)
-        self.val_metric = self.train_base_acc
+        self.train_rounds = max(self.train_rounds - 1, 0)
 
         return True
 
     def fit(self):
-        if self._train_rounds == 1:
+        if self.train_rounds < 1:
+            return
+        if self.train_rounds == 1:
+            # val_acc = Agent._model_acc(self.base_model, self.val)[0]
+            # weights = self.base_model.get_weights()
             self.train_epoch()
+            # new_val_acc = Agent._model_acc(self.base_model, self.val)[0]
+            # if new_val_acc < val_acc:
+            #     self.base_model.set_weights(weights)
+            #     print("Acc ({}) Old: {:.3%} New: {:.3%} Examples: {}".format(self.id, val_acc, new_val_acc, self.train_len))
         else:
             early_stop = EarlyStopping(monitor='val_acc', patience=2, restore_best_weights=True)
             early_stop.set_model(self.base_model)
             early_stop.on_train_begin()
 
-            for epoch in range(self._train_rounds):
+            for epoch in range(self.train_rounds):
                 self.train_epoch()
 
                 logs = {'val_acc': self._val_acc(self.base_model)[0]}
@@ -309,7 +291,7 @@ class Agent:
                     # print("Stooopppping training")
                     self.base_model.stop_training = False
                     break
-            self._train_rounds = 0
+            self.train_rounds = 0
 
     @staticmethod
     def _model_train_batch(model, x, y):

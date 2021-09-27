@@ -2,6 +2,7 @@ import os
 import logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 logging.getLogger('tensorflow').setLevel(logging.FATAL)
+
 import psutil
 
 import random
@@ -42,15 +43,28 @@ def memory_info():
     return mem_dict
 
 
-"""
-def set_tf_log_level(level):
-    if level >= logging.FATAL:
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-    if level >= logging.ERROR:
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
-    if level >= logging.WARNING:
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
-    else:
-        os.environ['TF_CPP_MIN_LOG_LEVEL'] = '0'
-    logging.getLogger('tensorflow').setLevel(level)
-"""
+def choose(self_rank, high):
+    """
+    choose a dest_rank from range(size) to push to
+
+    """
+
+    dest_rank = self_rank
+
+    while dest_rank == self_rank:
+        dest_rank = np.random.randint(low=0, high=high)
+
+    return dest_rank
+
+
+def draw(p):
+    """
+    draw from Bernoulli distribution
+
+    """
+    # Bernoulli distribution is a special case of binomial distribution with n=1
+    a_draw = np.random.binomial(n=1, p=p, size=None)
+
+    success = (a_draw == 1)
+
+    return success

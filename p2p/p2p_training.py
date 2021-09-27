@@ -18,69 +18,13 @@ PRINT_MODE = 'SHORT'
 NUM_CACHED_AGENTS = 200
 
 
-def choose(self_rank, high):
-    """
-    choose a dest_rank from range(size) to push to
-
-    """
-
-    dest_rank = self_rank
-
-    while dest_rank == self_rank:
-        dest_rank = np.random.randint(low=0, high=high)
-
-    return dest_rank
-
-
-def draw(p):
-    """
-    draw from Bernoulli distribution
-
-    """
-    # Bernoulli distribution is a special case of binomial distribution with n=1
-    a_draw = np.random.binomial(n=1, p=p, size=None)
-
-    success = (a_draw == 1)
-
-    return success
-
-
-def avg_agents_acc(agents, test_data):
-    accs = []
-    t_accs = []
-    for i, a in enumerate(agents):
-        accs.append(a.model.evaluate(test_data[i][0], test_data[i][1], verbose=0)[1])
-        if a.teacher is not None:
-            t_accs.append(a.teacher.evaluate(test_data[i][0], test_data[i][1], verbose=0)[1])
-    return np.average(np.array(accs)), np.average(np.array(t_accs)) if len(t_accs) > 0 else 0
-
-
 def print_accs(accs, info):
-    # accs = [ac[0] if len(ac) > 0 else 0 for ac in accs]
     accs = accs or [0]
+    accs = np.array(accs)
     if PRINT_MODE == 'SHORT':
-        print("{}:\tMean: {:.3%}\tMedian: {:.3%}".format(info, np.average(np.array(accs)), np.median(np.array(accs))))
+        print("{}:\tMean: {:.3%}\tMedian: {:.3%}".format(info, np.average(accs), np.median(accs)))
     else:
-        print("{}:\tMean: {:.3%}\tMedian: {:.3%}\t{}".format(info, np.average(np.array(accs)), np.median(np.array(accs)),
-                                                             '\t'.join(["{:.3%}".format(i) for i in list(np.array(accs))])))
-
-
-def print_b_accs(e, agents):
-    # accs = [agent.model_val_acc() for agent in agents]
-    accs = [agent.val_base_acc for agent in agents]
-    print_accs(accs, e)
-
-
-def print_c_accs(e, agents):
-    # accs = [agent.teacher_val_acc() if agent.has_teacher else [0] for agent in agents]
-    accs = [agent.val_complex_acc for agent in agents if agent.has_complex]
-    print_accs(accs, e)
-
-
-def print_e_accs(e, agents):
-    # accs = [agent.ensemble_val_acc() if agent.has_teacher else [0] for agent in agents]
-    accs = [agent.val_ensemble_acc for agent in agents if agent.has_complex]
-    print_accs(accs, e)
+        print("{}:\tMean: {:.3%}\tMedian: {:.3%}\t{}".format(info, np.average(accs), np.median(accs), '\t'.join(["{:.3%}".format(i) for i in list(accs)])))
 
 
 def print_f_val_accs(e, agents):
@@ -100,9 +44,6 @@ def print_f_train_accs(e, agents):
 
 def print_all_accs(agents, e, breakdown=True):
     print("Epoch:", e)
-    # print_b_accs("\tB", agents)
-    # print_c_accs("\tC", agents)
-    # print_e_accs("\tE", agents)
     devices = environ.get_devices()
     pbar = tqdm(total=len(agents), position=0, leave=False, desc='Evaluating agents')
     for a in agents:
@@ -303,24 +244,18 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
     examples = sum([a.train_len for a in agents])
     print("Training {} agents, num neighbors: {}, examples: {}, share method: {}".format(len(agents), num_neighbors, examples, share_method), flush=True)
 
-
     devices = environ.get_devices()
     single_device = len(devices) < 2
 
-    # """
-    print("---PRETRAINING---")
+    pbar = tqdm(total=len(agents), position=0, leave=False, desc='Pretraining')
     for i, a in enumerate(agents):
-        a._train_rounds = 1
-        # if i == 0:
-        #     continue
+        a.train_rounds = 1
         a.fit()
-        a._train_rounds = 1
-    # agents[0]._train_rounds = 1
-    print_all_accs(agents, 0)
-    # """
-    # for a in agents:
-    #     a._train_rounds = 0
-    # agents[0]._train_rounds = 1
+        # a.train_rounds = 1
+        a.can_msg = True
+        pbar.update()
+    pbar.close()
+    # print_all_accs(agents, 0)
 
     max_examples = epochs * examples
     total_examples, round_num, num_cached = 0, 0, 0
@@ -328,21 +263,22 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
     msgs = {"total_useful": 0, "total_useless": 0, "useful": 0, "useless": 0}
 
     while total_examples < max_examples:
-        possible_a = [i for i in range(len(agents)) if agents[i].trainable]
-        # print("Possible:", possible_a)
+        possible_a = [i for i in range(len(agents)) if agents[i].can_msg]
+
         if len(possible_a) == 0:
+            print("No agents to train")
             break
+            # possible_a.append(sorted(agents, key=lambda a: a.updates, reverse=True)[0])
         a_i = possible_a[choose(-1, len(possible_a))]
         agent = agents[a_i]
-        # print("Choosen", a_i, end=' ')
-        if agent.trainable:
-            pbar.update()
-            postfix = memory_info()
-            for dev in devices:
-                postfix["N_{}".format(dev)] = sum([1 for a in agents if a.device == dev])
-            pbar.set_postfix(postfix)
 
-        total_examples += agent.train_len * agent._train_rounds
+        pbar.update()
+        postfix = memory_info()
+        for dev in devices:
+            postfix["N_{}".format(dev)] = sum([1 for a in agents if a.device == dev])
+        pbar.set_postfix(postfix)
+
+        total_examples += agent.train_len * agent.train_rounds
         if MODE != 'RAM' and agent.base_model is None and single_device:
             agent.deserialize()
             num_cached += 1
@@ -354,7 +290,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
         else:
             with tf.device(device):
                 neighbors = train_loop_fn(a_i, agent)
-        # print('Neighbors:', neighbors)
+
         for a_j in neighbors:
             agent_j = agents[a_j]
             if MODE != 'RAM' and agent_j.base_model is None and single_device:
@@ -364,16 +300,19 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
             device_j = resolve_agent_device(agents, agent_j, devices)
             if device_j is None:
                 msg = agent_j.receive_model(agent, share_method)
+                agent_j.can_msg = True
             else:
                 with tf.device(device_j):
                     msg = agent_j.receive_model(agent, share_method)
-            if not msg:
-                msgs["useless"] += 1
-            else:
-                msgs["useful"] += 1
+                agent_j.can_msg = True
+
+            msgs["useful" if msg else "useless"] += 1
             if MODE != 'RAM' and NUM_CACHED_AGENTS < num_cached and single_device:
                 agent_j.serialize()
                 num_cached -= 1
+
+        agent.can_msg = False
+
         if MODE != 'RAM' and single_device:
             agent.serialize()
             num_cached -= 1
@@ -397,9 +336,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
                         with tf.device(live_agent.device):
                             live_agent.serialize(True)
             pbar = tqdm(total=len(agents), position=0, leave=False, desc='Training')
-            # if num_train == 0:
-            # pbar.close()
-            # break
+
     print("Total useful:", msgs["total_useful"], "Total useles's:", msgs["total_useless"], flush=True)
     print("Train agents: {} minutes".format(round((time.time() - start_time)/60)), flush=True)
 
@@ -407,7 +344,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 def train_loop(agents, num_neighbors, epochs, share_method):
     def train_fn(a_i, agent):
         agent.fit()
-        possible_a = [i for i in range(len(agents)) if not agents[i].trainable]
+        possible_a = [i for i in range(len(agents)) if not agents[i].can_msg]
         if a_i in possible_a:
             possible_a.remove(a_i)
         if len(possible_a) >= num_neighbors:
@@ -430,8 +367,8 @@ def train_fixed_neighbors(agents, num_neighbors, epochs, share_method):
 
 def train_loopy(agents, num_neighbors, epochs, share_method):
     for a in agents:
-        a._train_rounds = 0
-    agents[0]._train_rounds = 1
+        a.train_rounds = 0
+    agents[0].train_rounds = 1
 
     def train_fn(a_i, agent):
         agent.fit()
