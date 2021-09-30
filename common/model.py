@@ -64,52 +64,15 @@ def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_
               LSTM(units)]
 
     if use_bn:
-        layers.append(BatchNormalization(momentum=0.0, scale=False, center=False))
+        layers.append(BatchNormalization(momentum=0.9, scale=False, center=False))
     layers.append(Dense(units))
 
     if use_bn:
-        layers.append(BatchNormalization(momentum=0.0, scale=False, center=False))
+        layers.append(BatchNormalization(momentum=0.9, scale=False, center=False))
     layers.append(Dense(vocab_size, activation='softmax'))
 
     model = Sequential(layers, "model_{}_{}".format(model_v, _MODEL_COUNT))
 
-    """
-    if model_v == 1:
-        model = Sequential(
-
-            [
-                Embedding(vocab_size, 25, input_length=embedding_size, trainable=True, mask_zero=True),
-                LSTM(25),
-                BatchNormalization(momentum=0.0, scale=False),
-                Dense(25),
-                BatchNormalization(momentum=0.0, scale=False),
-                Dense(vocab_size, activation='softmax')
-            ],
-            name="model_1_{}".format(_MODEL_COUNT)
-        )
-    elif model_v == 2:
-        model = Sequential(
-            [
-                Embedding(vocab_size, 100, input_length=embedding_size, trainable=True, mask_zero=True),
-                LSTM(100),
-                BatchNormalization(momentum=0.0, scale=False),
-                Dense(100),
-                BatchNormalization(momentum=0.0, scale=False),
-                Dense(vocab_size, activation='softmax')
-            ],
-            name="model_2_{}".format(_MODEL_COUNT)
-        )
-    else:
-        model = Sequential(
-            [
-                Embedding(vocab_size, 256, input_length=embedding_size, trainable=True, mask_zero=True),
-                LSTM(256),
-                Dense(256),
-                Dense(vocab_size, activation='softmax')
-            ],
-            name="model_3_{}".format(_MODEL_COUNT)
-        )
-    """
     if do_compile:
         compile_model(model, lr, decay)
     _MODEL_COUNT += 1
@@ -123,7 +86,6 @@ def calculate_memory_model_size(model):
 def load(model_path):
     if not model_path.endswith('.h5'):
         model_path += '.h5'
-    # print('loading', model_path)
     model = load_model('models/' + model_path,
                        custom_objects={"MaskedSparseCategoricalAccuracy": MaskedSparseCategoricalAccuracy()})
     return model
@@ -132,7 +94,6 @@ def load(model_path):
 def save(model, model_path, signatures=None):
     if not model_path.endswith('.h5'):
         model_path += '.h5'
-    # print('saving', model_path)
     save_model(model, 'models/' + model_path, save_format='h5', signatures=signatures)
     clear_session()
     # gc.collect()

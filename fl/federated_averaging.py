@@ -5,10 +5,6 @@ import environ
 if environ.is_collab():
     import nest_asyncio
     nest_asyncio.apply()
-    from tqdm.notebook import tqdm
-else:
-    from tqdm import tqdm
-
 
 import time
 import tensorflow_federated as tff

@@ -25,18 +25,25 @@ class Agent:
         self.ensemble_metrics = ensemble_metrics or []
         self.kl_loss = KLDivergence()
 
+        self.trained_examples = 0
+
         self.train_rounds = 1
         self.can_msg = False
 
-        self.hist_acc = {"train_base": [0],
-                         "train_complex": [0],
-                         "train_ensemble": [0],
-                         "val_base": [0],
-                         "val_complex": [0],
-                         "val_ensemble": [0],
-                         "test_base": [0],
-                         "test_complex": [0],
-                         "test_ensemble": [0]}
+        self.hist = {"train_base":     [0],
+                     "train_complex":  [0],
+                     "train_ensemble": [0],
+                     "val_base":       [0],
+                     "val_complex":    [0],
+                     "val_ensemble":   [0],
+                     "test_base":      [0],
+                     "test_complex":   [0],
+                     "test_ensemble":  [0],
+                     "examples":       [0],
+                     "train_len":      self.train_len,
+                     "useful_msg":     [0],
+                     "useless_msg":    [0],
+                     }
 
         self.id = environ.next_agent_id()
         self.train_fn = None
@@ -44,39 +51,39 @@ class Agent:
 
     @property
     def train_complex_acc(self):
-        return self.hist_acc["train_complex"][-1]
+        return self.hist["train_complex"][-1]
 
     @property
     def train_base_acc(self):
-        return self.hist_acc["train_base"][-1]
+        return self.hist["train_base"][-1]
 
     @property
     def train_ensemble_acc(self):
-        return self.hist_acc["train_ensemble"][-1]
+        return self.hist["train_ensemble"][-1]
 
     @property
     def val_complex_acc(self):
-        return self.hist_acc["val_complex"][-1]
+        return self.hist["val_complex"][-1]
 
     @property
     def val_base_acc(self):
-        return self.hist_acc["val_base"][-1]
+        return self.hist["val_base"][-1]
 
     @property
     def val_ensemble_acc(self):
-        return self.hist_acc["val_ensemble"][-1]
+        return self.hist["val_ensemble"][-1]
 
     @property
     def test_complex_acc(self):
-        return self.hist_acc["test_complex"][-1]
+        return self.hist["test_complex"][-1]
 
     @property
     def test_base_acc(self):
-        return self.hist_acc["test_base"][-1]
+        return self.hist["test_base"][-1]
 
     @property
     def test_ensemble_acc(self):
-        return self.hist_acc["test_ensemble"][-1]
+        return self.hist["test_ensemble"][-1]
 
     @property
     def has_complex(self):
@@ -166,17 +173,16 @@ class Agent:
         new_weights = other_agent.get_share_weights()
         if only_improvement:
             if Agent._model_acc(self.base_model, self.val)[0] >= Agent._model_acc(other_agent.base_model, self.val)[0]:
+                self.hist["useless_msg"][-1] += 1
                 return False
 
         if mode == 'replace':
             self.set_base_weights(new_weights)
             self.train_rounds = max(self.train_rounds, 1)
-            return True
         elif mode == 'average':
             weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_share_weights(), new_weights)
             self.set_base_weights(weights)
             self.train_rounds = 1
-            return True
         elif mode == 'layer-average-no-bn':
             for li, al1 in enumerate(self.base_model.layers):
                 if 'batch_normalization' in al1.name:
@@ -185,20 +191,23 @@ class Agent:
                 aw = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, al1.get_weights(), al2.get_weights())
                 al1.set_weights(aw)
             self.train_rounds = 1
-            return True
         elif mode == 'layer-average':
             for li, al1 in enumerate(self.base_model.layers):
                 al2 = other_agent.base_model.layers[li]
                 aw = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, al1.get_weights(), al2.get_weights())
                 al1.set_weights(aw)
             self.train_rounds = 1
-            return True
         elif mode == 'weighted-average':
             return self.weighted_average(new_weights, other_agent.train_len)
         elif mode == 'peer-sgd':
             Agent._peer_sgd_update_weights(self.base_model, other_agent.base_model, self.train[0])
             self.train_rounds = 1
-            return True
+        else:
+            raise NotImplementedError("No method {} found".format(mode))
+
+        self.hist["useful_msg"][-1] += 1
+        self.can_msg = True
+        return True
 
     @staticmethod
     def _peer_sgd_update_weights(mi, mj, data):
@@ -262,6 +271,8 @@ class Agent:
             self._train_on_batch(x, y)
 
         self.train_rounds = max(self.train_rounds - 1, 0)
+
+        self.trained_examples += self.train_len
 
         return True
 
@@ -343,20 +354,21 @@ class Agent:
     def set_base_weights(self, weights):
         Agent._assign_weights(self.base_model, weights)
 
-    def set_complex_weights(self, weights):
-        Agent._assign_weights(self.complex_model, weights)
+    def calc_new_acc(self):
+        self.hist["examples"].append(self.trained_examples)
+        self.hist["useful_msg"].append(0)
+        self.hist["useless_msg"].append(0)
 
-    def calc_new_accs(self):
-        self.hist_acc["train_base"].append(self.base_train_acc()[0])
-        self.hist_acc["val_base"].append(self.base_val_acc()[0])
-        self.hist_acc["test_base"].append(self.base_test_acc()[0])
+        self.hist["train_base"].append(self.base_train_acc()[0])
+        self.hist["val_base"].append(self.base_val_acc()[0])
+        self.hist["test_base"].append(self.base_test_acc()[0])
         if self.has_complex:
-            self.hist_acc["train_complex"].append(self.complex_train_acc()[0])
-            self.hist_acc["train_ensemble"].append(self.ensemble_train_acc()[0])
-            self.hist_acc["val_complex"].append(self.complex_val_acc()[0])
-            self.hist_acc["val_ensemble"].append(self.ensemble_val_acc()[0])
-            self.hist_acc["test_complex"].append(self.complex_test_acc()[0])
-            self.hist_acc["test_ensemble"].append(self.ensemble_test_acc()[0])
+            self.hist["train_complex"].append(self.complex_train_acc()[0])
+            self.hist["train_ensemble"].append(self.ensemble_train_acc()[0])
+            self.hist["val_complex"].append(self.complex_val_acc()[0])
+            self.hist["val_ensemble"].append(self.ensemble_val_acc()[0])
+            self.hist["test_complex"].append(self.complex_test_acc()[0])
+            self.hist["test_ensemble"].append(self.ensemble_test_acc()[0])
 
     @staticmethod
     def _model_acc_all(m, x, y):
