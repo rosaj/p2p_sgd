@@ -79,16 +79,7 @@ def resolve_agent_device(agents, agent, devices):
 
 
 def dump_acc_hist(filename, agents):
-
-    class NumpyFloatValuesEncoder(json.JSONEncoder):
-        def default(self, obj):
-            if isinstance(obj, np.float32):
-                return float(obj)
-            return json.JSONEncoder.default(self, obj)
-
-    a_acc = {a.id: a.hist for a in agents}
-    with open(filename, "w") as outfile:
-        json.dump(a_acc, outfile, indent=4, cls=NumpyFloatValuesEncoder)
+    save_json(filename,  {a.id: a.hist for a in agents})
 
 
 def single_model(train_data, val_data, test_data, model_pars=None, batch_size=50, epochs=20):

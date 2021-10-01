@@ -106,7 +106,7 @@ def load_agents(train_clients,
     return agents
 
 
-def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_fn):
+def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_fn, accuracy_step='epoch'):
 
     start_time = time.time()
     examples = sum([a.train_len for a in agents])
@@ -114,20 +114,23 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
     devices = environ.get_devices()
     single_device = len(devices) < 2
+    max_examples = epochs * examples
+    total_examples, round_num, num_cached = 0, 0, 0
+
+    if 'epoch' in accuracy_step:
+        accuracy_step = len(agents)
+    elif 'iter' in accuracy_step:
+        accuracy_step = int(accuracy_step.replace('iter', '').strip() or 1)
 
     pbar = tqdm(total=len(agents), position=0, leave=False, desc='Pretraining')
     for i, a in enumerate(agents):
-        a.train_rounds = 1
+        total_examples += a.train_len * a.train_rounds
         a.fit()
-        # a.train_rounds = 1
         a.can_msg = True
         pbar.update()
     pbar.close()
-    # print_all_accs(agents, 0)
 
-    max_examples = epochs * examples
-    total_examples, round_num, num_cached = 0, 0, 0
-    pbar = tqdm(total=len(agents), position=0, leave=False, desc='Training')
+    pbar = tqdm(total=accuracy_step, position=0, leave=False, desc='Training')
     while total_examples < max_examples:
         possible_a = [i for i in range(len(agents)) if agents[i].can_msg]
 
@@ -185,14 +188,14 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
             round_num += 1
             print("Round: {}\t".format(round_num), end='')
-            print_all_acc(agents, int(total_examples / examples))
+            print_all_acc(agents, round(total_examples / examples))
 
             if MODE != 'RAM' and round_num % 10 == 0:
                 for live_agent in agents:
                     if live_agent.device is not None:
                         with tf.device(live_agent.device):
                             live_agent.serialize(True)
-            pbar = tqdm(total=len(agents), position=0, leave=False, desc='Training')
+            pbar = tqdm(total=accuracy_step, position=0, leave=False, desc='Training')
 
     pbar.close()
     print("Train agents: {} minutes".format(round((time.time() - start_time)/60)), flush=True)
@@ -202,7 +205,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
     dump_acc_hist(FILE_NAME, agents)
 
 
-def train_loop(agents, num_neighbors, epochs, share_method):
+def train_loop(agents, num_neighbors, epochs, share_method, accuracy_step):
     def train_fn(a_i, agent):
         agent.fit()
         possible_a = [i for i in range(len(agents)) if not agents[i].can_msg]
@@ -213,20 +216,20 @@ def train_loop(agents, num_neighbors, epochs, share_method):
             return np.array(possible_a)[random_indices]
         return get_sample_neighbors(agents, num_neighbors, a_i)
 
-    abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn)
+    abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn, accuracy_step)
 
 
-def train_fixed_neighbors(agents, num_neighbors, epochs, share_method):
+def train_fixed_neighbors(agents, num_neighbors, epochs, share_method, accuracy_step):
     neighbors = [get_sample_neighbors(agents, num_neighbors, a_i) for a_i in range(len(agents))]
 
     def train_fn(a_i, agent):
         agent.fit()
         return neighbors[a_i]
 
-    abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn)
+    abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn, accuracy_step)
 
 
-def train_loopy(agents, num_neighbors, epochs, share_method):
+def train_loopy(agents, num_neighbors, epochs, share_method, accuracy_step):
     for a in agents:
         a.train_rounds = 0
     agents[0].train_rounds = 1
@@ -235,7 +238,7 @@ def train_loopy(agents, num_neighbors, epochs, share_method):
         agent.fit()
         return get_sample_neighbors(agents, 1, a_i)
 
-    abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn)
+    abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn, accuracy_step)
 
 
 def get_sample_neighbors(agents, num_clients, self_ind):

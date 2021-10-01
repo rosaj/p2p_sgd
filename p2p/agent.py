@@ -100,24 +100,6 @@ class Agent:
         return calculate_memory_model_size(self.base_model)
 
     @staticmethod
-    def _update_metrics(metrics, preds, y_true):
-        results = []
-        for metric in metrics:
-            if hasattr(metric, "reset_state"):
-                metric.reset_state()
-            else:
-                metric.reset_states()
-            metric.update_state(y_true, preds)
-            results.append(metric.result().numpy())
-        return results
-
-    @staticmethod
-    def _update_compiled_metrics(model, preds, y_true):
-        if len(model.compiled_metrics.metrics) == 0:
-            model.compiled_metrics.build(0, 0)
-        return Agent._update_metrics(model.compiled_metrics.metrics, preds, y_true)
-
-    @staticmethod
     def _reset_compiled_metrics(model):
         model.compiled_metrics.reset_state()
 
@@ -137,19 +119,6 @@ class Agent:
                 self.complex_model = True
 
     def _create_dataset(self, x, y):
-        """
-        data = []
-        prev_ind, cur_ind = 0, self.batch_size
-        while True:
-            dx = x[prev_ind:min(cur_ind, len(x))]
-            dy = y[prev_ind:min(cur_ind, len(y))]
-            data.append((dx, dy))
-            if len(x) <= cur_ind:
-                break
-            prev_ind = cur_ind
-            cur_ind += self.batch_size
-        return data
-        """
         return tf.data.Dataset.from_tensor_slices((x, y)) \
             .shuffle(self.batch_size) \
             .batch(self.batch_size) \
@@ -164,6 +133,28 @@ class Agent:
         self.set_base_weights(weights)
         self.train_rounds = 1
         return True
+
+    @staticmethod
+    def _peer_sgd_update_weights(mi, mj, data):
+        (x, y) = data
+        with tf.GradientTape() as tape:
+            logits_i = mi(x)
+            logits_j = mj(x)
+
+            loss_i = mi.loss(y, logits_i)
+            loss_j = mj.loss(y, logits_j)
+            kl_loss = kl_loss_compute(logits_i, logits_j)
+
+            i = 1 - loss_i / (loss_i + loss_j)
+            j = 1 - loss_j / (loss_i + loss_j)
+
+            mi.set_weights(add_weights((multiply_weights_with_num(mi.get_weights(), i.numpy()),
+                                        multiply_weights_with_num(mj.get_weights(), j.numpy()))))
+
+            loss = loss_i + kl_loss
+
+        grads = tape.gradient(loss, mi.trainable_variables)
+        mi.optimizer.apply_gradients(zip(grads, mi.trainable_variables))
 
     def receive_model(self, other_agent, mode='average'):
         only_improvement = 'improve' in mode
@@ -182,7 +173,6 @@ class Agent:
         elif mode == 'average':
             weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_share_weights(), new_weights)
             self.set_base_weights(weights)
-            self.train_rounds = 1
         elif mode == 'layer-average-no-bn':
             for li, al1 in enumerate(self.base_model.layers):
                 if 'batch_normalization' in al1.name:
@@ -190,53 +180,28 @@ class Agent:
                 al2 = other_agent.base_model.layers[li]
                 aw = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, al1.get_weights(), al2.get_weights())
                 al1.set_weights(aw)
-            self.train_rounds = 1
         elif mode == 'layer-average':
             for li, al1 in enumerate(self.base_model.layers):
                 al2 = other_agent.base_model.layers[li]
                 aw = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, al1.get_weights(), al2.get_weights())
                 al1.set_weights(aw)
-            self.train_rounds = 1
         elif mode == 'weighted-average':
             return self.weighted_average(new_weights, other_agent.train_len)
         elif mode == 'peer-sgd':
             Agent._peer_sgd_update_weights(self.base_model, other_agent.base_model, self.train[0])
-            self.train_rounds = 1
         else:
             raise NotImplementedError("No method {} found".format(mode))
 
         self.hist["useful_msg"][-1] += 1
         self.can_msg = True
+        self.train_rounds = 1
+
         return True
-
-    @staticmethod
-    def _peer_sgd_update_weights(mi, mj, data):
-        (x, y) = data
-        with tf.GradientTape() as tape:
-            logits_i = mi(x)
-            logits_j = mj(x)
-
-            loss_i = mi.loss(y, logits_i)
-            loss_j = mj.loss(y, logits_j)
-            # print(loss_i.numpy(), loss_j.numpy())
-            kl_loss = kl_loss_compute(logits_i, logits_j)
-
-            i = 1 - loss_i / (loss_i + loss_j)
-            j = 1 - loss_j / (loss_i + loss_j)
-
-            mi.set_weights(add_weights((multiply_weights_with_num(mi.get_weights(), i.numpy()),
-                                        multiply_weights_with_num(mj.get_weights(), j.numpy()))))
-
-            loss = loss_i + kl_loss
-
-        grads = tape.gradient(loss, mi.trainable_variables)
-        mi.optimizer.apply_gradients(zip(grads, mi.trainable_variables))
 
     def get_share_weights(self):
         return self.base_model.get_weights()
 
     def _train_on_batch(self, x, y):
-
         train_step_fn = self.make_train_function()
         train_step_fn(self.base_model, self.complex_model, x, y, self.kl_loss)
 
@@ -271,7 +236,6 @@ class Agent:
             self._train_on_batch(x, y)
 
         self.train_rounds = max(self.train_rounds - 1, 0)
-
         self.trained_examples += self.train_len
 
         return True
@@ -280,13 +244,7 @@ class Agent:
         if self.train_rounds < 1:
             return
         if self.train_rounds == 1:
-            # val_acc = Agent._model_acc(self.base_model, self.val)[0]
-            # weights = self.base_model.get_weights()
             self.train_epoch()
-            # new_val_acc = Agent._model_acc(self.base_model, self.val)[0]
-            # if new_val_acc < val_acc:
-            #     self.base_model.set_weights(weights)
-            #     print("Acc ({}) Old: {:.3%} New: {:.3%} Examples: {}".format(self.id, val_acc, new_val_acc, self.train_len))
         else:
             early_stop = EarlyStopping(monitor='val_acc', patience=2, restore_best_weights=True)
             early_stop.set_model(self.base_model)
@@ -299,7 +257,6 @@ class Agent:
                 # print("Epoch:", epoch, "Logs ", logs)
                 early_stop.on_epoch_end(epoch, logs)
                 if self.base_model.stop_training:
-                    # print("Stooopppping training")
                     self.base_model.stop_training = False
                     break
             self.train_rounds = 0
@@ -315,7 +272,6 @@ class Agent:
 
     @staticmethod
     def _model_train_dml(base_model, complex_model, x, y, kl_loss):
-        # alpha = 0.5
         with tf.GradientTape(persistent=True) as tape:
             b_logits = base_model(x, training=True)
             c_logits = complex_model(x, training=True)
@@ -325,13 +281,6 @@ class Agent:
             b_loss = base_model.loss(y, b_logits)
             c_loss = complex_model.loss(y, c_logits)
 
-            # c, b = c_loss, b_loss
-            # alpha = 1 - c / (c + b)
-            # tf.print(alpha, c, b)
-            # alpha = 0.5
-            # Bigger Alpha => complex model advantage
-            # base_loss = tf.add(tf.math.scalar_mul(1 - alpha, b_loss), tf.math.scalar_mul(alpha, d_loss))
-            # complex_loss = tf.add(tf.math.scalar_mul(alpha, c_loss), tf.math.scalar_mul(1 - alpha, d_loss))
             base_loss = tf.add(b_loss, bd_loss)
             complex_loss = tf.add(c_loss, cd_loss)
 
@@ -371,11 +320,6 @@ class Agent:
             self.hist["test_ensemble"].append(self.ensemble_test_acc()[0])
 
     @staticmethod
-    def _model_acc_all(m, x, y):
-        preds = m(x, training=False)
-        return Agent._update_compiled_metrics(m, preds, y)
-
-    @staticmethod
     def _model_acc(m, dataset):
         if len(m.compiled_metrics.metrics) == 0:
             m.compiled_metrics.build(0, 0)
@@ -394,12 +338,6 @@ class Agent:
     @staticmethod
     def _ensemble_acc(m1, m2, dataset, metrics):
         alpha = 0.5
-        """
-        m1_pred = m1(x, training=False)
-        m2_pred = m2(x, training=False)
-        results = Agent._update_metrics(metrics, (m1_pred * (1 - alpha) + m2_pred * alpha), y)
-        return results
-        """
         for metric in metrics:
             if hasattr(metric, "reset_state"):
                 metric.reset_state()

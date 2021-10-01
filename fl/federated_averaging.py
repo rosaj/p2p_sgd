@@ -13,6 +13,7 @@ from tensorflow_federated.python.learning import ClientWeighting
 
 DATA_SPEC = 1
 MODEL_VERSION = 1
+ACC_HIST = {}
 
 
 def create_keras_model_fed():
@@ -50,6 +51,7 @@ def avg_model_acc(model, dataset, cl_keys, desc, batch_size):
             continue
         metrics = model.evaluate(dataset[key][0], dataset[key][1], batch_size=batch_size, verbose=0)
         accs.append(metrics[1])
+    ACC_HIST[list(ACC_HIST.keys())[-1]][desc] = accs
     accs = np.array(accs)
     return np.average(accs), np.median(accs)
 
@@ -62,16 +64,12 @@ def print_avg_model_acc(model, dataset_dict, cl_keys, batch_size):
 def print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
                    round_num=1, epoch=1, round_examples=0, total_examples=0, batch_size=50):
     fed_model = state_to_model(server_state)
-    # '\tVal Acc: {:.3%}\n'.format(fed_model.evaluate(v_x, v_y, verbose=0)[1]) + \
-    # '\tTest Acc: {:.3%}\n'.format(fed_model.evaluate(t_x, t_y, verbose=0)[1]) + \
     msg = "Round: {}\tEpoch: {}\n".format(round_num, epoch) + \
           "\tExamples: ({}/{})\n".format(round_examples, total_examples) + \
           "\tAgents\tMean\tMedian"
     print(msg, flush=True)
+    ACC_HIST[round_num] = {"Epoch": epoch, "Examples": total_examples}
     print_avg_model_acc(fed_model, {"Train": train_clients, "Valid": val_clients, "Test": test_clients}, client_inds, batch_size)
-    # "\tTrain\t{:.3%}\t{:.3%}\n".format(*avg_model_acc(fed_model, train_clients, client_inds)) + \
-    # "\tValid\t{:.3%}\t{:.3%}\n".format(*avg_model_acc(fed_model, val_clients, client_inds)) + \
-    # "\tTest\t{:.3%}\t{:.3%}\n".format(*avg_model_acc(fed_model, test_clients, client_inds))
 
 
 def train_fed_avg(train_clients,
@@ -171,12 +169,18 @@ def train_fed_avg(train_clients,
         pbar.set_postfix(memory_info())
         total_examples += round_examples
 
-        if round_num % accuracy_step == 0:  # and round_num != checkpoint_round:
+        if round_num % accuracy_step == 0:
             epoch = int(total_examples / examples)
             print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
                            round_num, epoch, round_examples, total_examples, batch_size)
     pbar.close()
     print("Train clients: {} minutes".format(round((time.time() - start_time) / 60)), flush=True)
+
+    save_json('log/fl_{}C_{}TR_{}V({}S-{}C)_{}.json'.format(clients_num,
+                                                            num_train_clients, model_v,
+                                                            str(server_pars['lr']).replace('.', '_'),
+                                                            str(client_pars['lr']).replace('.', '_'),
+                                                            client_weighting), ACC_HIST)
 
 
 

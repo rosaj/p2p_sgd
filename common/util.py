@@ -2,6 +2,7 @@ import os
 import logging
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 logging.getLogger('tensorflow').setLevel(logging.FATAL)
+import json
 
 import psutil
 
@@ -68,3 +69,17 @@ def draw(p):
     success = (a_draw == 1)
 
     return success
+
+
+def save_json(filename, json_dict):
+
+    class NumpyValuesEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, np.floating):
+                return float(obj)
+            if isinstance(obj, np.integer):
+                return int(obj)
+            return json.JSONEncoder.default(self, obj)
+
+    with open(filename, "w") as outfile:
+        json.dump(json_dict, outfile, indent=4, cls=NumpyValuesEncoder)

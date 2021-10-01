@@ -12,6 +12,7 @@ if __name__ == '__main__':
              mode='RAM',
              share_method='layer-average',
              epochs=15,
+             accuracy_step='10 iter',
              resume_agent_id=-1
              )
 

@@ -5,7 +5,7 @@ from common import set_seed
 
 def do_train(client_num, num_neighbors, examples_range,
              batch_size, complex_ds_size, base_pars, complex_pars,
-             seed, mode, share_method, epochs, resume_agent_id=-1):
+             seed, mode, share_method, epochs, accuracy_step='epoch', resume_agent_id=-1):
 
     train_cli, val_cli, test_cli = clients_data.filtered_clients(client_num, examples_range)
 
@@ -19,4 +19,4 @@ def do_train(client_num, num_neighbors, examples_range,
             agents = init_agents(train_cli, val_cli, test_cli, batch_size, complex_ds_size, base_pars, complex_pars)
         else:
             agents = load_agents(train_cli, val_cli, test_cli, batch_size, complex_ds_size, resume_agent_id)
-        train_loop(agents, num_neighbors, epochs, share_method)
+        train_loop(agents, num_neighbors, epochs, share_method, accuracy_step)
