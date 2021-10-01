@@ -176,11 +176,12 @@ def train_fed_avg(train_clients,
     pbar.close()
     print("Train clients: {} minutes".format(round((time.time() - start_time) / 60)), flush=True)
 
-    save_json('log/fl_{}C_{}TR_{}V({}S-{}C)_{}.json'.format(clients_num,
-                                                            num_train_clients, model_v,
-                                                            str(server_pars['lr']).replace('.', '_'),
-                                                            str(client_pars['lr']).replace('.', '_'),
-                                                            client_weighting), ACC_HIST)
+    save_json('log/fl_{}C_{}TR_{}V({}S-{}C)_{}E_{}.json'.format(clients_num,
+                                                                num_train_clients, model_v,
+                                                                str(server_pars['lr']).replace('.', '_'),
+                                                                str(client_pars['lr']).replace('.', '_'),
+                                                                epochs,
+                                                                client_weighting), ACC_HIST)
 
 
 

@@ -201,7 +201,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
     print("Train agents: {} minutes".format(round((time.time() - start_time)/60)), flush=True)
 
     global FILE_NAME
-    FILE_NAME = FILE_NAME.format("{}A_{}N_{}".format(len(agents), num_neighbors, share_method)) + '.json'
+    FILE_NAME = FILE_NAME.format("{}A_{}N_{}E_{}".format(len(agents), num_neighbors, epochs, share_method)) + '.json'
     dump_acc_hist(FILE_NAME, agents)
 
 
