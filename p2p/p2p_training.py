@@ -4,7 +4,7 @@ import time
 
 MODE = 'RAM'
 NUM_CACHED_AGENTS = 200
-FILE_NAME = 'log/p2p_{}'
+FILE_NAME = ''
 
 
 def set_mode(mode):
@@ -31,7 +31,7 @@ def init_agents(train_clients,
           .format(num_agents, batch_size, private_ds_size, shared_pars, private_pars, MODE))
 
     global FILE_NAME
-    FILE_NAME = FILE_NAME + '_{}B_{}CDS_{}Vb_{}Vc'.format(batch_size, private_ds_size, shared_pars['v'], private_pars['v'])
+    FILE_NAME = 'log/p2p_{}' + '_{}B_{}CDS_{}Vb_{}Vc'.format(batch_size, private_ds_size, shared_pars['v'], private_pars['v'])
 
     if shared_pars["default_weights"]:
         shared_pars["default_weights"] = create_keras_model(model_v=shared_pars["v"], lr=shared_pars["lr"], decay=shared_pars["decay"]).get_weights()
