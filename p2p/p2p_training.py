@@ -214,7 +214,7 @@ def train_loop(agents, num_neighbors, epochs, share_method, accuracy_step):
         if len(possible_a) >= num_neighbors:
             random_indices = np.random.choice(len(possible_a), size=num_neighbors, replace=False)
             return np.array(possible_a)[random_indices]
-        return get_sample_neighbors(agents, num_neighbors, a_i)
+        return possible_a + list(get_sample_neighbors(agents, num_neighbors - len(possible_a), a_i))
 
     abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn, accuracy_step)
 

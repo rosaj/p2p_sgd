@@ -1,4 +1,4 @@
-from p2p import init_agents, load_agents, train_loop, train_fixed_neighbors, train_loopy, single_model, set_mode
+from p2p import init_agents, load_agents, train_loop, train_fixed_neighbors, single_model, set_mode
 from data import clients_data
 from common import set_seed
 

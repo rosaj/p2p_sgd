@@ -200,7 +200,7 @@ class Agent:
         if self.train_rounds < 1:
             return
 
-        if self.train_rounds == 1:
+        for _ in range(self.train_rounds):
             acc_before = self.shared_val_acc()[0]
             self.train_epoch()
             acc_after = self.shared_val_acc()[0]
