@@ -8,8 +8,8 @@ class Agent:
                  train,
                  val,
                  test,
-                 base_model,
-                 complex_model=None,
+                 shared_model,
+                 private_model=None,
                  batch_size=5,
                  ensemble_metrics=[MaskedSparseCategoricalAccuracy()]):
 
@@ -19,8 +19,8 @@ class Agent:
         self.test = self._create_dataset(test[0], test[1])
         self.train_len = len(train[1])
 
-        self.base_model = base_model
-        self.complex_model = complex_model
+        self.shared_model = shared_model
+        self.private_model = private_model
 
         self.ensemble_metrics = ensemble_metrics or []
         self.kl_loss = KLDivergence()
@@ -30,14 +30,14 @@ class Agent:
         self.train_rounds = 1
         self.can_msg = False
 
-        self.hist = {"train_base":     [0],
-                     "train_complex":  [0],
+        self.hist = {"train_shared":   [0],
+                     "train_private":  [0],
                      "train_ensemble": [0],
-                     "val_base":       [0],
-                     "val_complex":    [0],
+                     "val_shared":     [0],
+                     "val_private":    [0],
                      "val_ensemble":   [0],
-                     "test_base":      [0],
-                     "test_complex":   [0],
+                     "test_shared":    [0],
+                     "test_private":   [0],
                      "test_ensemble":  [0],
                      "examples":       [0],
                      "train_len":      self.train_len,
@@ -50,44 +50,44 @@ class Agent:
         self.device = None
 
     @property
-    def train_complex_acc(self):
-        return self.hist["train_complex"][-1]
+    def train_private_acc(self):
+        return self.hist["train_private"][-1]
 
     @property
-    def train_base_acc(self):
-        return self.hist["train_base"][-1]
+    def train_shared_acc(self):
+        return self.hist["train_shared"][-1]
 
     @property
     def train_ensemble_acc(self):
         return self.hist["train_ensemble"][-1]
 
     @property
-    def val_complex_acc(self):
-        return self.hist["val_complex"][-1]
+    def val_private_acc(self):
+        return self.hist["val_private"][-1]
 
     @property
-    def val_base_acc(self):
-        return self.hist["val_base"][-1]
+    def val_shared_acc(self):
+        return self.hist["val_shared"][-1]
 
     @property
     def val_ensemble_acc(self):
         return self.hist["val_ensemble"][-1]
 
     @property
-    def test_complex_acc(self):
-        return self.hist["test_complex"][-1]
+    def test_private_acc(self):
+        return self.hist["test_private"][-1]
 
     @property
-    def test_base_acc(self):
-        return self.hist["test_base"][-1]
+    def test_shared_acc(self):
+        return self.hist["test_shared"][-1]
 
     @property
     def test_ensemble_acc(self):
         return self.hist["test_ensemble"][-1]
 
     @property
-    def has_complex(self):
-        return self.complex_model is not None
+    def has_private(self):
+        return self.private_model is not None
 
     @property
     def trainable(self):
@@ -95,28 +95,28 @@ class Agent:
 
     @property
     def memory_footprint(self):
-        if self.has_complex:
-            return calculate_memory_model_size(self.base_model) + calculate_memory_model_size(self.base_model)
-        return calculate_memory_model_size(self.base_model)
+        if self.has_private:
+            return calculate_memory_model_size(self.shared_model) + calculate_memory_model_size(self.shared_model)
+        return calculate_memory_model_size(self.shared_model)
 
     @staticmethod
     def _reset_compiled_metrics(model):
         model.compiled_metrics.reset_state()
 
     def deserialize(self):
-        self.base_model = load('p2p_models/agent_{}_base'.format(self.id))
-        if self.has_complex:
-            self.complex_model = load('p2p_models/agent_{}_complex'.format(self.id))
+        self.shared_model = load('p2p_models/agent_{}_shared'.format(self.id))
+        if self.has_private:
+            self.private_model = load('p2p_models/agent_{}_private'.format(self.id))
 
     def serialize(self, save_only=False):
-        save(self.base_model, 'p2p_models/agent_{}_base'.format(self.id))
+        save(self.shared_model, 'p2p_models/agent_{}_shared'.format(self.id))
         if not save_only:
-            self.base_model = None
+            self.shared_model = None
             self.train_fn = None
-        if self.has_complex:
-            save(self.complex_model, 'p2p_models/agent_{}_complex'.format(self.id))
+        if self.has_private:
+            save(self.private_model, 'p2p_models/agent_{}_private'.format(self.id))
             if not save_only:
-                self.complex_model = True
+                self.private_model = True
 
     def _create_dataset(self, x, y):
         return tf.data.Dataset.from_tensor_slices((x, y)) \
@@ -124,71 +124,25 @@ class Agent:
             .batch(self.batch_size) \
             .prefetch(1)
 
-    def weighted_average(self, new_weights, num_examples):
-        w1, w2 = self.get_share_weights(), new_weights
-        n1, n2 = self.train_len, num_examples
-        total_count = n1 + n2
-        wn1, wn2 = n1 / total_count, n2 / total_count
-        weights = tf.nest.map_structure(lambda a, b: a * wn1 + b * wn2, w1, w2)
-        self.set_base_weights(weights)
-        self.train_rounds = 1
-        return True
-
-    @staticmethod
-    def _peer_sgd_update_weights(mi, mj, data):
-        (x, y) = data
-        with tf.GradientTape() as tape:
-            logits_i = mi(x)
-            logits_j = mj(x)
-
-            loss_i = mi.loss(y, logits_i)
-            loss_j = mj.loss(y, logits_j)
-            kl_loss = kl_loss_compute(logits_i, logits_j)
-
-            i = 1 - loss_i / (loss_i + loss_j)
-            j = 1 - loss_j / (loss_i + loss_j)
-
-            mi.set_weights(add_weights((multiply_weights_with_num(mi.get_weights(), i.numpy()),
-                                        multiply_weights_with_num(mj.get_weights(), j.numpy()))))
-
-            loss = loss_i + kl_loss
-
-        grads = tape.gradient(loss, mi.trainable_variables)
-        mi.optimizer.apply_gradients(zip(grads, mi.trainable_variables))
-
     def receive_model(self, other_agent, mode='average'):
         only_improvement = 'improve' in mode
         if only_improvement:
             mode = mode.replace('improve', '').replace('_', '')
 
-        new_weights = other_agent.get_share_weights()
+        new_weights = other_agent.get_shared_weights()
         if only_improvement:
-            if Agent._model_acc(self.base_model, self.val)[0] >= Agent._model_acc(other_agent.base_model, self.val)[0]:
+            if Agent._model_acc(self.shared_model, self.val)[0] >= Agent._model_acc(other_agent.shared_model, self.val)[0]:
                 self.hist["useless_msg"][-1] += 1
                 return False
 
-        if mode == 'replace':
-            self.set_base_weights(new_weights)
-            self.train_rounds = max(self.train_rounds, 1)
-        elif mode == 'average':
-            weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_share_weights(), new_weights)
-            self.set_base_weights(weights)
-        elif mode == 'layer-average-no-bn':
-            for li, al1 in enumerate(self.base_model.layers):
-                if 'batch_normalization' in al1.name:
-                    continue
-                al2 = other_agent.base_model.layers[li]
-                aw = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, al1.get_weights(), al2.get_weights())
-                al1.set_weights(aw)
+        if mode == 'average':
+            weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_shared_weights(), new_weights)
+            self.set_shared_weights(weights)
         elif mode == 'layer-average':
-            for li, al1 in enumerate(self.base_model.layers):
-                al2 = other_agent.base_model.layers[li]
+            for li, al1 in enumerate(self.shared_model.layers):
+                al2 = other_agent.shared_model.layers[li]
                 aw = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, al1.get_weights(), al2.get_weights())
                 al1.set_weights(aw)
-        elif mode == 'weighted-average':
-            return self.weighted_average(new_weights, other_agent.train_len)
-        elif mode == 'peer-sgd':
-            Agent._peer_sgd_update_weights(self.base_model, other_agent.base_model, self.train[0])
         else:
             raise NotImplementedError("No method {} found".format(mode))
 
@@ -198,27 +152,29 @@ class Agent:
 
         return True
 
-    def get_share_weights(self):
-        return self.base_model.get_weights()
+    def set_shared_weights(self, weights):
+        self.shared_model.set_weights(weights)
+
+    def get_shared_weights(self):
+        return self.shared_model.get_weights()
 
     def _train_on_batch(self, x, y):
         train_step_fn = self.make_train_function()
-        train_step_fn(self.base_model, self.complex_model, x, y, self.kl_loss)
+        train_step_fn(self.shared_model, self.private_model, x, y, self.kl_loss)
 
     def make_train_function(self):
         if self.train_fn is not None:
             return self.train_fn
 
-        def train_step(base_model, complex_model, x, y, kl_loss):
-            if complex_model is None:
-                Agent._model_train_batch(base_model, x, y)
+        def train_step(shared_model, private_model, x, y, kl_loss):
+            if private_model is None:
+                Agent._model_train_batch(shared_model, x, y)
             else:
-                Agent._model_train_dml(base_model, complex_model, x, y, kl_loss)
+                Agent._model_train_dml(shared_model, private_model, x, y, kl_loss)
 
         train_fn = train_step
         # tf.function consumes a lot of RAM but is gradually faster on CPU
         # Training on GPU is around twice the time slower than without it
-        # print("Using tf.function for training")
         # train_fn = tf.function(train_fn, experimental_relax_shapes=True)
 
         self.train_fn = train_fn
@@ -228,9 +184,9 @@ class Agent:
         if self.train_rounds < 1:
             return False
 
-        Agent._reset_compiled_metrics(self.base_model)
-        if self.has_complex:
-            Agent._reset_compiled_metrics(self.complex_model)
+        Agent._reset_compiled_metrics(self.shared_model)
+        if self.has_private:
+            Agent._reset_compiled_metrics(self.private_model)
 
         for (x, y) in self.train:
             self._train_on_batch(x, y)
@@ -243,23 +199,15 @@ class Agent:
     def fit(self):
         if self.train_rounds < 1:
             return
+
         if self.train_rounds == 1:
+            acc_before = self.shared_val_acc()[0]
             self.train_epoch()
-        else:
-            early_stop = EarlyStopping(monitor='val_acc', patience=2, restore_best_weights=True)
-            early_stop.set_model(self.base_model)
-            early_stop.on_train_begin()
-
-            for epoch in range(self.train_rounds):
-                self.train_epoch()
-
-                logs = {'val_acc': self._val_acc(self.base_model)[0]}
-                # print("Epoch:", epoch, "Logs ", logs)
-                early_stop.on_epoch_end(epoch, logs)
-                if self.base_model.stop_training:
-                    self.base_model.stop_training = False
-                    break
-            self.train_rounds = 0
+            acc_after = self.shared_val_acc()[0]
+            for al1 in self.shared_model.layers:
+                if 'batch_normalization' in al1.name:
+                    continue
+                al1.trainable = acc_before < acc_after
 
     @staticmethod
     def _model_train_batch(model, x, y):
@@ -271,52 +219,42 @@ class Agent:
         return loss
 
     @staticmethod
-    def _model_train_dml(base_model, complex_model, x, y, kl_loss):
+    def _model_train_dml(shared_model, private_model, x, y, kl_loss):
         with tf.GradientTape(persistent=True) as tape:
-            b_logits = base_model(x, training=True)
-            c_logits = complex_model(x, training=True)
+            b_logits = shared_model(x, training=True)
+            c_logits = private_model(x, training=True)
 
             bd_loss = kl_loss(b_logits, c_logits)
             cd_loss = kl_loss(c_logits, b_logits)
-            b_loss = base_model.loss(y, b_logits)
-            c_loss = complex_model.loss(y, c_logits)
+            b_loss = shared_model.loss(y, b_logits)
+            c_loss = private_model.loss(y, c_logits)
 
-            base_loss = tf.add(b_loss, bd_loss)
-            complex_loss = tf.add(c_loss, cd_loss)
+            shared_loss = tf.add(b_loss, bd_loss)
+            private_loss = tf.add(c_loss, cd_loss)
 
-            # base_loss = tf.add(b_loss, tf.math.scalar_mul(alpha, d_loss))
-            # complex_loss = tf.add(c_loss, tf.math.scalar_mul(1 - alpha, d_loss))
+        b_grads = tape.gradient(shared_loss, shared_model.trainable_variables)
+        shared_model.optimizer.apply_gradients(zip(b_grads, shared_model.trainable_variables))
+        shared_model.compiled_metrics.update_state(y, b_logits)
 
-        b_grads = tape.gradient(base_loss, base_model.trainable_variables)
-        base_model.optimizer.apply_gradients(zip(b_grads, base_model.trainable_variables))
-        base_model.compiled_metrics.update_state(y, b_logits)
-
-        c_grads = tape.gradient(complex_loss, complex_model.trainable_variables)
-        complex_model.optimizer.apply_gradients(zip(c_grads, complex_model.trainable_variables))
-        complex_model.compiled_metrics.update_state(y, c_logits)
+        c_grads = tape.gradient(private_loss, private_model.trainable_variables)
+        private_model.optimizer.apply_gradients(zip(c_grads, private_model.trainable_variables))
+        private_model.compiled_metrics.update_state(y, c_logits)
         return tf.divide(tf.add(bd_loss, cd_loss), 2)
-
-    @staticmethod
-    def _assign_weights(model, weights):
-        tf.nest.map_structure(lambda v, t: v.assign(t), model.trainable_variables, weights)
-
-    def set_base_weights(self, weights):
-        Agent._assign_weights(self.base_model, weights)
 
     def calc_new_acc(self):
         self.hist["examples"].append(self.trained_examples)
         self.hist["useful_msg"].append(0)
         self.hist["useless_msg"].append(0)
 
-        self.hist["train_base"].append(self.base_train_acc()[0])
-        self.hist["val_base"].append(self.base_val_acc()[0])
-        self.hist["test_base"].append(self.base_test_acc()[0])
-        if self.has_complex:
-            self.hist["train_complex"].append(self.complex_train_acc()[0])
+        self.hist["train_shared"].append(self.shared_train_acc()[0])
+        self.hist["val_shared"].append(self.shared_val_acc()[0])
+        self.hist["test_shared"].append(self.shared_test_acc()[0])
+        if self.has_private:
+            self.hist["train_private"].append(self.private_train_acc()[0])
             self.hist["train_ensemble"].append(self.ensemble_train_acc()[0])
-            self.hist["val_complex"].append(self.complex_val_acc()[0])
+            self.hist["val_private"].append(self.private_val_acc()[0])
             self.hist["val_ensemble"].append(self.ensemble_val_acc()[0])
-            self.hist["test_complex"].append(self.complex_test_acc()[0])
+            self.hist["test_private"].append(self.private_test_acc()[0])
             self.hist["test_ensemble"].append(self.ensemble_test_acc()[0])
 
     @staticmethod
@@ -360,29 +298,29 @@ class Agent:
     def _test_acc(self, m):
         return self._model_acc(m, self.test)
 
-    def base_train_acc(self):
-        return self._train_acc(self.base_model)
+    def shared_train_acc(self):
+        return self._train_acc(self.shared_model)
 
-    def complex_train_acc(self):
-        return self._train_acc(self.complex_model)
+    def private_train_acc(self):
+        return self._train_acc(self.private_model)
 
     def ensemble_train_acc(self):
-        return Agent._ensemble_acc(self.base_model, self.complex_model, self.train, self.ensemble_metrics)
+        return Agent._ensemble_acc(self.shared_model, self.private_model, self.train, self.ensemble_metrics)
 
-    def base_val_acc(self):
-        return self._val_acc(self.base_model)
+    def shared_val_acc(self):
+        return self._val_acc(self.shared_model)
 
-    def complex_val_acc(self):
-        return self._val_acc(self.complex_model)
+    def private_val_acc(self):
+        return self._val_acc(self.private_model)
 
     def ensemble_val_acc(self):
-        return Agent._ensemble_acc(self.base_model, self.complex_model, self.val, self.ensemble_metrics)
+        return Agent._ensemble_acc(self.shared_model, self.private_model, self.val, self.ensemble_metrics)
 
-    def base_test_acc(self):
-        return self._test_acc(self.base_model)
+    def shared_test_acc(self):
+        return self._test_acc(self.shared_model)
 
-    def complex_test_acc(self):
-        return self._test_acc(self.complex_model)
+    def private_test_acc(self):
+        return self._test_acc(self.private_model)
 
     def ensemble_test_acc(self):
-        return Agent._ensemble_acc(self.base_model, self.complex_model, self.test, self.ensemble_metrics)
+        return Agent._ensemble_acc(self.shared_model, self.private_model, self.test, self.ensemble_metrics)

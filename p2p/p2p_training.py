@@ -16,28 +16,28 @@ def init_agents(train_clients,
                 val_clients,
                 test_clients,
                 batch_size,
-                complex_ds_size=1000,
-                base_pars=None,
-                complex_pars=None):
+                private_ds_size=1000,
+                shared_pars=None,
+                private_pars=None):
 
     start_time = time.time()
-    base_default = {"v": 1, "lr": 0.01, "decay": 0, "default_weights": False}
-    complex_default = {"v": 2, "lr": 0.01, "decay": 0, "default_weights": False}
-    base_pars = base_default if base_pars is None else {**base_default, **base_pars}
-    complex_pars = complex_default if complex_pars is None else {**complex_default, **complex_pars}
+    shared_default = {"v": 1, "lr": 0.01, "decay": 0, "default_weights": False}
+    private_default = {"v": 2, "lr": 0.01, "decay": 0, "default_weights": False}
+    shared_pars = shared_default if shared_pars is None else {**shared_default, **shared_pars}
+    private_pars = private_default if private_pars is None else {**private_default, **private_pars}
 
     num_agents = len(train_clients)
-    print("{} agents, batch size: {}, complex_ds_size: {}, base_pars: {}, complex_pars: {}, mode: {}"
-          .format(num_agents, batch_size, complex_ds_size, base_pars, complex_pars, MODE))
+    print("{} agents, batch size: {}, private_ds_size: {}, shared_pars: {}, private_pars: {}, mode: {}"
+          .format(num_agents, batch_size, private_ds_size, shared_pars, private_pars, MODE))
 
     global FILE_NAME
-    FILE_NAME = FILE_NAME + '_{}B_{}CDS_{}Vb_{}Vc'.format(batch_size, complex_ds_size, base_pars['v'], complex_pars['v'])
+    FILE_NAME = FILE_NAME + '_{}B_{}CDS_{}Vb_{}Vc'.format(batch_size, private_ds_size, shared_pars['v'], private_pars['v'])
 
-    if base_pars["default_weights"]:
-        base_pars["default_weights"] = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"]).get_weights()
+    if shared_pars["default_weights"]:
+        shared_pars["default_weights"] = create_keras_model(model_v=shared_pars["v"], lr=shared_pars["lr"], decay=shared_pars["decay"]).get_weights()
 
-    if complex_pars["default_weights"]:
-        complex_pars["default_weights"] = create_keras_model(model_v=complex_pars["v"], lr=complex_pars["lr"], decay=complex_pars["decay"]).get_weights()
+    if private_pars["default_weights"]:
+        private_pars["default_weights"] = create_keras_model(model_v=private_pars["v"], lr=private_pars["lr"], decay=private_pars["decay"]).get_weights()
 
     pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init agents')
     devices = environ.get_devices()
@@ -45,24 +45,24 @@ def init_agents(train_clients,
 
     def create_agent():
         clear_session()
-        base_model = create_keras_model(model_v=base_pars["v"], lr=base_pars["lr"], decay=base_pars["decay"])
-        if base_pars["default_weights"]:
-            base_model.set_weights(base_pars["default_weights"])
+        shared_model = create_keras_model(model_v=shared_pars["v"], lr=shared_pars["lr"], decay=shared_pars["decay"])
+        if shared_pars["default_weights"]:
+            shared_model.set_weights(shared_pars["default_weights"])
             # print("Setting default weights")
 
-        complex_model = None
-        if 0 < complex_ds_size <= len(train[0]):
-            complex_model = create_keras_model(model_v=complex_pars["v"], lr=complex_pars["lr"],
-                                               decay=complex_pars["decay"])
-            if complex_pars["default_weights"]:
-                complex_model.set_weights(complex_pars["default_weights"])
+        private_model = None
+        if 0 < private_ds_size <= len(train[0]):
+            private_model = create_keras_model(model_v=private_pars["v"], lr=private_pars["lr"],
+                                               decay=private_pars["decay"])
+            if private_pars["default_weights"]:
+                private_model.set_weights(private_pars["default_weights"])
 
         a = Agent(train=train,
                   val=val,
                   test=test,
                   batch_size=batch_size,
-                  base_model=base_model,
-                  complex_model=complex_model
+                  shared_model=shared_model,
+                  private_model=private_model
                   )
         a.device = device
         agents.append(a)
@@ -88,19 +88,19 @@ def load_agents(train_clients,
                 val_clients,
                 test_clients,
                 batch_size,
-                complex_ds_size,
+                private_ds_size,
                 first_agent_id):
 
     environ.set_agent_id(first_agent_id)
     agents = []
     for train, val, test in zip(train_clients, val_clients, test_clients):
-        complex_model = True if 0 < complex_ds_size <= len(train[0]) else None
+        private_model = True if 0 < private_ds_size <= len(train[0]) else None
         a = Agent(train=train,
                   val=val,
                   test=test,
                   batch_size=batch_size,
-                  base_model=None,
-                  complex_model=complex_model
+                  shared_model=None,
+                  private_model=private_model
                   )
         agents.append(a)
     return agents
@@ -147,7 +147,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
         pbar.set_postfix(postfix)
 
         total_examples += agent.train_len * agent.train_rounds
-        if MODE != 'RAM' and agent.base_model is None and single_device:
+        if MODE != 'RAM' and agent.shared_model is None and single_device:
             agent.deserialize()
             num_cached += 1
         clear_session()
@@ -161,7 +161,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
         for a_j in neighbors:
             agent_j = agents[a_j]
-            if MODE != 'RAM' and agent_j.base_model is None and single_device:
+            if MODE != 'RAM' and agent_j.shared_model is None and single_device:
                 agent_j.deserialize()
                 num_cached += 1
 
@@ -225,18 +225,6 @@ def train_fixed_neighbors(agents, num_neighbors, epochs, share_method, accuracy_
     def train_fn(a_i, agent):
         agent.fit()
         return neighbors[a_i]
-
-    abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn, accuracy_step)
-
-
-def train_loopy(agents, num_neighbors, epochs, share_method, accuracy_step):
-    for a in agents:
-        a.train_rounds = 0
-    agents[0].train_rounds = 1
-
-    def train_fn(a_i, agent):
-        agent.fit()
-        return get_sample_neighbors(agents, 1, a_i)
 
     abstract_train_loop(agents, num_neighbors, epochs, share_method, train_fn, accuracy_step)
 

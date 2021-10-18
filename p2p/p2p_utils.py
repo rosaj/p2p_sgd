@@ -2,7 +2,6 @@ from common import *
 import numpy as np
 import tensorflow as tf
 import environ
-import json
 
 
 def print_acc(accs, info):
@@ -25,21 +24,21 @@ def print_all_acc(agents, e, breakdown=True):
         pbar.set_postfix(memory_info())
     pbar.close()
 
-    print_acc([agent.train_ensemble_acc if agent.has_complex else agent.train_base_acc for agent in agents], "\tTrain")
+    print_acc([agent.train_ensemble_acc if agent.has_private else agent.train_shared_acc for agent in agents], "\tTrain")
     if breakdown:
-        print_acc([agent.train_base_acc for agent in agents], "\t\tB")
-        print_acc([agent.train_complex_acc for agent in agents if agent.has_complex], "\t\tC")
-        print_acc([agent.train_ensemble_acc for agent in agents if agent.has_complex], "\t\tE")
-    print_acc([agent.val_ensemble_acc if agent.has_complex else agent.val_base_acc for agent in agents], "\tVal")
+        print_acc([agent.train_shared_acc for agent in agents], "\t\tS")
+        print_acc([agent.train_private_acc for agent in agents if agent.has_private], "\t\tP")
+        print_acc([agent.train_ensemble_acc for agent in agents if agent.has_private], "\t\tE")
+    print_acc([agent.val_ensemble_acc if agent.has_private else agent.val_shared_acc for agent in agents], "\tVal")
     if breakdown:
-        print_acc([agent.val_base_acc for agent in agents], "\t\tB")
-        print_acc([agent.val_complex_acc for agent in agents if agent.has_complex], "\t\tC")
-        print_acc([agent.val_ensemble_acc for agent in agents if agent.has_complex], "\t\tE")
-    print_acc([agent.test_ensemble_acc if agent.has_complex else agent.test_base_acc for agent in agents], "\tTest")
+        print_acc([agent.val_shared_acc for agent in agents], "\t\tS")
+        print_acc([agent.val_private_acc for agent in agents if agent.has_private], "\t\tP")
+        print_acc([agent.val_ensemble_acc for agent in agents if agent.has_private], "\t\tE")
+    print_acc([agent.test_ensemble_acc if agent.has_private else agent.test_shared_acc for agent in agents], "\tTest")
     if breakdown:
-        print_acc([agent.test_base_acc for agent in agents], "\t\tB")
-        print_acc([agent.test_complex_acc for agent in agents if agent.has_complex], "\t\tC")
-        print_acc([agent.test_ensemble_acc for agent in agents if agent.has_complex], "\t\tE")
+        print_acc([agent.test_shared_acc for agent in agents], "\t\tS")
+        print_acc([agent.test_private_acc for agent in agents if agent.has_private], "\t\tP")
+        print_acc([agent.test_ensemble_acc for agent in agents if agent.has_private], "\t\tE")
     print('', end='', flush=True)
 
 
