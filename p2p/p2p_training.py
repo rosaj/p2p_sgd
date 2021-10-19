@@ -2,14 +2,7 @@ from p2p.agent import *
 from p2p.p2p_utils import *
 import time
 
-MODE = 'RAM'
-NUM_CACHED_AGENTS = 200
 FILE_NAME = ''
-
-
-def set_mode(mode):
-    global MODE
-    MODE = mode
 
 
 def init_agents(train_clients,
@@ -27,8 +20,8 @@ def init_agents(train_clients,
     private_pars = private_default if private_pars is None else {**private_default, **private_pars}
 
     num_agents = len(train_clients)
-    print("{} agents, batch size: {}, private_ds_size: {}, shared_pars: {}, private_pars: {}, mode: {}"
-          .format(num_agents, batch_size, private_ds_size, shared_pars, private_pars, MODE))
+    print("{} agents, batch size: {}, private_ds_size: {}, shared_pars: {}, private_pars: {}"
+          .format(num_agents, batch_size, private_ds_size, shared_pars, private_pars))
 
     global FILE_NAME
     FILE_NAME = 'log/p2p_{}' + '_{}B_{}CDS_{}Vb_{}Vc'.format(batch_size, private_ds_size, shared_pars['v'], private_pars['v'])
@@ -66,8 +59,6 @@ def init_agents(train_clients,
                   )
         a.device = device
         agents.append(a)
-        if MODE != 'RAM':
-            a.serialize()
 
     for train, val, test in zip(train_clients, val_clients, test_clients):
         device = resolve_agent_device(agents, None, devices)
@@ -147,9 +138,6 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
         pbar.set_postfix(postfix)
 
         total_examples += agent.train_len * agent.train_rounds
-        if MODE != 'RAM' and agent.shared_model is None and single_device:
-            agent.deserialize()
-            num_cached += 1
         clear_session()
 
         device = resolve_agent_device(agents, agent, devices)
@@ -161,9 +149,6 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
         for a_j in neighbors:
             agent_j = agents[a_j]
-            if MODE != 'RAM' and agent_j.shared_model is None and single_device:
-                agent_j.deserialize()
-                num_cached += 1
 
             device_j = resolve_agent_device(agents, agent_j, devices)
             if device_j is None:
@@ -172,15 +157,7 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
                 with tf.device(device_j):
                     agent_j.receive_model(agent, share_method)
 
-            if MODE != 'RAM' and NUM_CACHED_AGENTS < num_cached and single_device:
-                agent_j.serialize()
-                num_cached -= 1
-
         agent.can_msg = False
-
-        if MODE != 'RAM' and single_device:
-            agent.serialize()
-            num_cached -= 1
 
         if pbar.total == pbar.n:
             pbar.close()
@@ -190,11 +167,6 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
             print("Round: {}\t".format(round_num), end='')
             print_all_acc(agents, round(total_examples / examples))
 
-            if MODE != 'RAM' and round_num % 10 == 0:
-                for live_agent in agents:
-                    if live_agent.device is not None:
-                        with tf.device(live_agent.device):
-                            live_agent.serialize(True)
             pbar = tqdm(total=accuracy_step, position=0, leave=False, desc='Training')
 
     pbar.close()
