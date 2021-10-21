@@ -113,12 +113,14 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
     elif 'iter' in accuracy_step:
         accuracy_step = int(accuracy_step.replace('iter', '').strip() or 1)
 
+    print_breakdown = False
     pbar = tqdm(total=len(agents), position=0, leave=False, desc='Pretraining')
     for i, a in enumerate(agents):
         total_examples += a.train_len * a.train_rounds
         a.fit()
         a.can_msg = True
         pbar.update()
+        print_breakdown = print_breakdown or a.has_private
     pbar.close()
 
     pbar = tqdm(total=accuracy_step, position=0, leave=False, desc='Training')
@@ -161,11 +163,11 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
         if pbar.total == pbar.n:
             pbar.close()
-            print("Training:", sum([1 for a in agents if a.trainable]))
+            # print("Training:", sum([1 for a in agents if a.trainable]))
 
             round_num += 1
-            print("Round: {}\t".format(round_num), end='')
-            print_all_acc(agents, round(total_examples / examples))
+            print("\nRound: {}\t".format(round_num), end='')
+            print_all_acc(agents, round(total_examples / examples), print_breakdown)
 
             pbar = tqdm(total=accuracy_step, position=0, leave=False, desc='Training')
 

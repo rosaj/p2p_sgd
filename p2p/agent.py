@@ -125,18 +125,8 @@ class Agent:
             .prefetch(1)
 
     def receive_model(self, other_agent, mode='average'):
-        only_improvement = 'improve' in mode
-        if only_improvement:
-            mode = mode.replace('improve', '').replace('_', '')
-
-        new_weights = other_agent.get_shared_weights()
-        if only_improvement:
-            if Agent._model_acc(self.shared_model, self.val)[0] >= Agent._model_acc(other_agent.shared_model, self.val)[0]:
-                self.hist["useless_msg"][-1] += 1
-                return False
-
         if mode == 'average':
-            weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_shared_weights(), new_weights)
+            weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_shared_weights(), other_agent.get_shared_weights())
             self.set_shared_weights(weights)
         elif mode == 'layer-average':
             for li, al1 in enumerate(self.shared_model.layers):

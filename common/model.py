@@ -49,19 +49,19 @@ class MaskedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
         super().update_state(y_true, y_pred, mask)
 
 
-def compile_model(model, lr=0.01, decay=0):
+def compile_model(model, lr=0.001, decay=0):
     model.compile(loss=SparseCategoricalCrossentropy(from_logits=False),
                   optimizer=Adam(learning_rate=lr, decay=decay),
                   metrics=[MaskedSparseCategoricalAccuracy()])
 
 
-def create_keras_model(model_v=1, lr=0.01, decay=0, vocab_size=10002, embedding_size=10, do_compile=True):
+def create_keras_model(model_v=1, lr=0.001, decay=0, vocab_size=10002, embedding_size=10, do_compile=True):
     global _MODEL_COUNT
     units = 25 if model_v % 2 == 1 else 100
     use_bn = model_v > 2
 
     layers = [Embedding(vocab_size, units, input_length=embedding_size, trainable=True, mask_zero=True),
-              LSTM(units)]
+              GRU(units)]
 
     if use_bn:
         layers.append(BatchNormalization(momentum=0.9, scale=False, center=False))
