@@ -1,6 +1,6 @@
-from p2p import init_agents, load_agents, train_loop, train_fixed_neighbors, single_model
-from data import clients_data
 from common import set_seed
+from data import clients_data
+from p2p.p2p_training import init_agents, load_agents, train_loop, train_fixed_neighbors, single_model
 
 
 def do_train(client_num, num_neighbors, examples_range,

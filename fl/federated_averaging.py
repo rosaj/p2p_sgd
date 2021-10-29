@@ -87,8 +87,9 @@ def train_fed_avg(train_clients,
 
     start_time = time.time()
 
-    global MODEL_VERSION
+    global MODEL_VERSION, ACC_HIST
     MODEL_VERSION = model_v
+    ACC_HIST = {}
 
     client_default = {"lr": 0.005, "decay": 0}
     client_pars = client_default if client_pars is None else {**client_default, **client_pars}

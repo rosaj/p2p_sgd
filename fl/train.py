@@ -1,6 +1,6 @@
-from fl import train_fed_avg
 from common import set_seed
 from data import clients_data
+from fl.federated_averaging import train_fed_avg
 
 
 def do_train(client_num, num_train_clients, examples_range, batch_size, epochs, client_pars, server_pars, model_v, client_weighting, round_num, seed, accuracy_step):

@@ -104,7 +104,6 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
     print("Training {} agents, num neighbors: {}, examples: {}, share method: {}".format(len(agents), num_neighbors, examples, share_method), flush=True)
 
     devices = environ.get_devices()
-    single_device = len(devices) < 2
     max_examples = epochs * examples
     total_examples, round_num, num_cached = 0, 0, 0
 
@@ -163,7 +162,6 @@ def abstract_train_loop(agents, num_neighbors, epochs, share_method, train_loop_
 
         if pbar.total == pbar.n:
             pbar.close()
-            # print("Training:", sum([1 for a in agents if a.trainable]))
 
             round_num += 1
             print("\nRound: {}\t".format(round_num), end='')

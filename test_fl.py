@@ -1,14 +1,14 @@
-from fl.train import do_train
+from fl import do_train
 
 if __name__ == '__main__':
-    do_train(client_num=500,
-             num_train_clients=20,
+    do_train(client_num=100,
+             num_train_clients=5,
              examples_range=(0, 900000),
              batch_size=50,
-             epochs=100,
+             epochs=80,
              client_pars={"lr": 0.005, "decay": 0},
              server_pars={"lr": 0.005, "decay": 0},
-             model_v=1,
+             model_v=2,
              client_weighting='num_examples',
              round_num=None,
              seed=123,

@@ -1,4 +1,4 @@
-from p2p.train import do_train
+from p2p import do_train
 
 if __name__ == '__main__':
     do_train(client_num=50,
@@ -9,7 +9,7 @@ if __name__ == '__main__':
              shared_pars={"v": 4, "lr": 0.005, "decay": 0, "default_weights": True},
              private_pars={"v": 1, "lr": 0.005, "decay": 0, "default_weights": True},
              seed=123,
-             share_method='layer-average',
+             share_method='average',
              epochs=60,
              accuracy_step='epoch',
              resume_agent_id=-1

@@ -1,1 +1,1 @@
-from fl.federated_averaging import train_fed_avg
+from fl.train import do_train
