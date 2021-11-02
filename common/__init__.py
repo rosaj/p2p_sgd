@@ -8,6 +8,6 @@ from common.util import *
 from common.model import *
 import environ
 if environ.is_collab():
-    pass
+    from tqdm.notebook import tqdm
 else:
-    pass
+    from tqdm import tqdm
