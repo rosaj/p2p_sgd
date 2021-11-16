@@ -167,7 +167,7 @@ def train_fed_avg(train_clients,
 
         round_examples = server_metrics['stat']['num_examples']
         pbar.update(round_examples)
-        pbar.set_postfix(memory_info())
+        pbar.set_postfix({**memory_info(), **{"TP": time_elapsed_info(start_time)}})
         total_examples += round_examples
 
         if round_num % accuracy_step == 0:
@@ -175,7 +175,7 @@ def train_fed_avg(train_clients,
             print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
                            round_num, epoch, round_examples, total_examples, batch_size)
     pbar.close()
-    print("Train clients: {} minutes".format(round((time.time() - start_time) / 60)), flush=True)
+    print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
 
     save_json('log/fl_{}C_{}TR_{}V({}S-{}C)_{}E_{}.json'.format(clients_num,
                                                                 num_train_clients, model_v,

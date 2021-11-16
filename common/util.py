@@ -6,6 +6,7 @@ import psutil
 import random
 import tensorflow as tf
 import numpy as np
+import time
 
 
 def set_seed(seed):
@@ -39,6 +40,13 @@ def memory_info():
     ram_mem = psutil.virtual_memory()
     mem_dict['RAM'] = "{}/{} GB".format(round((ram_mem[0]-ram_mem[1]) / 1024**3, 2), round(ram_mem[0] / 1024**3, 2))
     return mem_dict
+
+
+def time_elapsed_info(start_time):
+    minutes = round((time.time() - start_time)/60)
+    hours = int(minutes / 60)
+    minutes = minutes % 60
+    return "{:02d}:{:02d}h".format(hours, minutes)
 
 
 def choose(self_rank, high):
