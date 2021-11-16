@@ -36,7 +36,7 @@ def memory_info():
     mem_dict = {}
     for device in gpu_devices:
         dev_name = device.name.replace('/physical_device:', '')
-        mem_dict[dev_name] = str(gpu_memory(dev_name)['current (GB)']) + '/10.7 GB'
+        mem_dict[dev_name] = str(gpu_memory(dev_name)['current (GB)']) + ' GB'
     ram_mem = psutil.virtual_memory()
     mem_dict['RAM'] = "{}/{} GB".format(round((ram_mem[0]-ram_mem[1]) / 1024**3, 2), round(ram_mem[0] / 1024**3, 2))
     return mem_dict

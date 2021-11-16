@@ -69,6 +69,10 @@ class Agent:
         return self._get_hist_metric("test_model", metric_name)
 
     @property
+    def hist_total_messages(self):
+        return sum(self.hist['useful_msg'] + self.hist['useless_msg'])
+
+    @property
     def memory_footprint(self):
         return calculate_memory_model_size(self.model)
 
@@ -83,7 +87,6 @@ class Agent:
         save(self.model, 'p2p_models/{}/agent_{}_model'.format(self.__class__.__name__, self.id))
         if not save_only:
             self.model = None
-            self.train_fn = None
 
     def set_model_weights(self, weights):
         self.model.set_weights(weights)
@@ -94,6 +97,7 @@ class Agent:
     def _train_on_batch(self, x, y):
         Agent._model_train_batch(self.model, x, y)
         self.trained_examples += len(y)
+        return len(y)
 
     def train_epoch(self):
         Agent._reset_compiled_metrics(self.model)
@@ -101,7 +105,7 @@ class Agent:
         for (x, y) in self.train:
             self._train_on_batch(x, y)
 
-        return True
+        return self.train_len
 
     def fit(self, epochs=1):
         for _ in range(epochs):
@@ -119,7 +123,7 @@ class Agent:
             Method that trains the model. Override this to provide custom logic in subclass
         :return:
         """
-        self.train_epoch()
+        return self.train_epoch()
 
     @staticmethod
     def _model_train_batch(model, x, y):
@@ -135,7 +139,10 @@ class Agent:
 
     def receive_message(self, other_agent):
         self.hist["useful_msg"][-1] += 1
+        return True
 
+    def reject_message(self, other_agent):
+        self.hist['useless_msg'][-1] += 1
         return True
 
     @staticmethod

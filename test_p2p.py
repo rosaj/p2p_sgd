@@ -4,10 +4,12 @@ from p2p.agents import P2PAgent, GoSGDAgent, PushSumAgent
 
 if __name__ == '__main__':
     train, val, test = clients_data.filtered_clients(client_num=50, examples_range=(0, 900000))
-    train_loop(GoSGDAgent,
+    train_loop(P2PAgent,
                train, val, test, 50,
                {"v": 4, "lr": 0.005, "decay": 0, "default_weights": True},
-               num_neighbors=2, epochs=40, accuracy_step='epoch')
+               agent_pars=None,
+               graph_pars={'graph_type': 'sparse', 'num_neighbors': 2, 'directed': True, 'time_varying': -1},
+               epochs=40, accuracy_step='epoch')
 
 
 """

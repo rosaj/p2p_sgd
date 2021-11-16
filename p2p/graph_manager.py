@@ -9,39 +9,39 @@ def sample_neighbors(client_num, num_clients, self_ind):
     return np.array(c_list)[random_indices]
 
 
-def sparse_graph(n, neighbor_num, create_using):
+def sparse_graph(n, num_neighbors, create_using):
     if create_using.is_directed():
         m = np.zeros(shape=(n, n))
         for i in range(n):
-            nb = sample_neighbors(n, neighbor_num, i)
+            nb = sample_neighbors(n, num_neighbors, i)
             m[i][nb] = 1
         g = nx.from_numpy_matrix(np.asmatrix(m), create_using=nx.Graph())
     else:
         # undirected d-regular graph (sum row == sum column)
-        g = nx.random_regular_graph(neighbor_num, n)
+        g = nx.random_regular_graph(num_neighbors, n)
     return g
 
 
 _graph_type_dict = {
     'complete': lambda **kwargs: nx.complete_graph(kwargs['n'], create_using=kwargs['create_using']),
     'ring': lambda **kwargs: nx.cycle_graph(kwargs['n'], create_using=kwargs['create_using']),
-    'sparse': lambda **kwargs: sparse_graph(kwargs['n'], kwargs['neighbor_num'], create_using=kwargs['create_using']),
+    'sparse': lambda **kwargs: sparse_graph(kwargs['n'], kwargs['num_neighbors'], create_using=kwargs['create_using']),
     'erdos_renyi': lambda **kwargs: nx.erdos_renyi_graph(kwargs['n'], kwargs['p'], directed=kwargs['directed']),
     'binomial': lambda **kwargs: nx.binomial_graph(kwargs['n'], kwargs['p'], directed=kwargs['directed']),
-    'grid': lambda **kwargs: nx.grid_2d_graph(kwargs['neighbor_num'], kwargs['n'], kwargs['periodic'],
+    'grid': lambda **kwargs: nx.grid_2d_graph(kwargs['num_neighbors'], kwargs['n'], kwargs['periodic'],
                                               kwargs['create_using'])
 }
 
 
 class GraphManager:
 
-    def __init__(self, graph_type, nodes, directed=False, time_varying=-1, neighbor_num=None):
+    def __init__(self, graph_type, nodes, directed=False, time_varying=-1, num_neighbors=1):
         self.n = len(nodes)
         self.nodes = nodes
         self.directed = directed
         self.time_varying = time_varying
-        self.neighbor_num = neighbor_num
-        self._graph_type = graph_type
+        self.num_neighbors = num_neighbors
+        self.graph_type = graph_type
         self._nx_graph = self._resolve_graph_type()
         self._resolve_weights_mixing()
 
@@ -55,12 +55,12 @@ class GraphManager:
             self._resolve_weights_mixing()
 
     def _resolve_graph_type(self):
-        assert self._graph_type in _graph_type_dict
-        graph_fn = _graph_type_dict[self._graph_type]
+        assert self.graph_type in _graph_type_dict
+        graph_fn = _graph_type_dict[self.graph_type]
         kwargs = {'n': self.n,
                   'create_using': nx.DiGraph() if self.directed else nx.Graph(),
                   'directed': self.directed,
-                  'neighbor_num': self.neighbor_num
+                  'num_neighbors': self.num_neighbors
                   }
         """
         kwargs = {}
@@ -103,14 +103,13 @@ class GraphManager:
         nx.draw(self._nx_graph)
 
     def print_info(self):
-        print("Graph: {} ({}), n: {}, time-vary: {}, neighbors: {}".format(self._graph_type,
+        print("Graph: {} ({}), n: {}, neighbors: {}, time-vary: {}".format(self.graph_type,
                                                                            'directed' if self.directed else 'undirected',
-                                                                           self.n, self.time_varying,
-                                                                           self.neighbor_num))
+                                                                           self.n, self.num_neighbors, self.time_varying))
 
 
 if __name__ == "__main__":
-    gm = GraphManager('ring', list(range(10)), directed=True, neighbor_num=3)
+    gm = GraphManager('ring', list(range(10)), directed=True, num_neighbors=3)
     gm.draw()
 
 """

@@ -79,6 +79,10 @@ def resolve_agent_device(agents, agent, devices):
     return agent.device
 
 
+def new_progress_bar(total, desc=''):
+    return tqdm(total=total, position=0, leave=False, desc=desc)
+
+
 def update_pb(pbar, agents, start_time=None):
     pbar.update()
     devices = environ.get_devices()

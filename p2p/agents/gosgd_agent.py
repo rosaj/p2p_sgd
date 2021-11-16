@@ -17,10 +17,11 @@ class GoSGDAgent(Agent):
         self._train_on_batch(x, y)
         if draw(self.p):
             self.send_to_peers()
+        return len(y)
 
     def send_to_peers(self):
         self.w /= 2
-        a_j = choose(self.id, len(self.graph.nodes_num))
+        a_j = choose(self.id, self.graph.nodes_num)
         other_agent = self.graph.get_node(a_j)
         # for other_agent in self.graph.get_peers(self.id):
         other_agent.receive_message(self)

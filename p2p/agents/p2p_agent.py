@@ -68,6 +68,7 @@ class P2PAgent(Agent):
         self.fit()
         self.send_to_peers()
         self.can_msg = False
+        return self.train_len
 
     def start(self):
         super(P2PAgent, self).start()

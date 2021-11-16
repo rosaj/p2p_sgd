@@ -30,6 +30,7 @@ class PushSumAgent(Agent):
         self.trained_examples += len(y)
 
         self.send_to_peers()
+        return len(y)
 
     def send_to_peers(self):
         peers, weights = self.graph.get_weighted_peers(self.id)
