@@ -17,7 +17,7 @@ ACC_HIST = {}
 
 
 def create_keras_model_fed():
-    return create_keras_model(MODEL_VERSION, do_compile=False)
+    return create_model(MODEL_VERSION, do_compile=False)
 
 
 def create_model_fed():

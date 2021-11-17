@@ -23,6 +23,10 @@ import gc
 _MODEL_COUNT = 0
 
 
+_default_weights = {
+}
+
+
 class MaskedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
     """An accuracy metric that masks some tokens."""
 
@@ -55,7 +59,7 @@ def compile_model(model, lr=0.001, decay=0):
                   metrics=[MaskedSparseCategoricalAccuracy()])
 
 
-def create_keras_model(model_v=1, lr=0.001, decay=0, vocab_size=10002, embedding_size=10, do_compile=True):
+def create_model(model_v=1, lr=0.001, decay=0, vocab_size=10002, embedding_size=10, do_compile=True, default_weights=False):
     global _MODEL_COUNT
     units = 25 if model_v % 2 == 1 else 100
     use_bn = model_v > 2
@@ -75,6 +79,13 @@ def create_keras_model(model_v=1, lr=0.001, decay=0, vocab_size=10002, embedding
 
     if do_compile:
         compile_model(model, lr, decay)
+
+    if default_weights:
+        if model_v in _default_weights:
+            model.set_weights(_default_weights[model_v])
+        else:
+            _default_weights[model_v] = model.get_weights()
+
     _MODEL_COUNT += 1
     return model
 

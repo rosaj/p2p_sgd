@@ -6,10 +6,10 @@ import environ
 
 def print_acc(accs, info):
     accs = np.array(accs or [0])
-    print("{}:\tMean: {:.3%}\tMedian: {:.3%}".format(info, np.average(accs), np.median(accs)))
+    print("{}\t\t{:.3%}\t\t{:.3%}".format(info, np.average(accs), np.median(accs)))
 
 
-def print_all_acc(agents, e, breakdown=False):
+def calc_agents_metrics(agents, e=0):
     print("Epoch:", e)
     devices = environ.get_devices()
     pbar = tqdm(total=len(agents), position=0, leave=False, desc='Evaluating agents')
@@ -20,27 +20,20 @@ def print_all_acc(agents, e, breakdown=False):
         update_pb(pbar, agents)
     pbar.close()
 
-    print_acc([agent.hist_train_model_metric for agent in agents], "\tTrain")
-    print_acc([agent.hist_val_model_metric for agent in agents], "\tVal")
-    print_acc([agent.hist_test_model_metric for agent in agents], "\tTest")
+    h = {}
+    for a in agents:
+        for hk, hv in a.hist.items():
+            if '-' in hk:
+                if hk not in h:
+                    h[hk] = []
+                h[hk].append(hv[-1])
 
-    """
-    print_acc([agent.hist_train_ensemble_metric if agent.has_private else agent.hist_train_model_metric for agent in agents], "\tTrain")
-    if breakdown:
-        print_acc([agent.hist_train_model_metric for agent in agents], "\t\tS")
-        print_acc([agent.hist_train_private_metric for agent in agents if agent.has_private], "\t\tP")
-        print_acc([agent.hist_train_ensemble_metric for agent in agents if agent.has_private], "\t\tE")
-    print_acc([agent.hist_val_ensemble_metric if agent.has_private else agent.hist_val_model_metric for agent in agents], "\tVal")
-    if breakdown:
-        print_acc([agent.hist_val_model_metric for agent in agents], "\t\tS")
-        print_acc([agent.hist_val_private_metric for agent in agents if agent.has_private], "\t\tP")
-        print_acc([agent.hist_val_ensemble_metric for agent in agents if agent.has_private], "\t\tE")
-    print_acc([agent.hist_test_ensemble_metric if agent.has_private else agent.hist_test_model_metric for agent in agents], "\tTest")
-    if breakdown:
-        print_acc([agent.hist_test_model_metric for agent in agents], "\t\tS")
-        print_acc([agent.hist_test_private_metric for agent in agents if agent.has_private], "\t\tP")
-        print_acc([agent.hist_test_ensemble_metric for agent in agents if agent.has_private], "\t\tE")
-    """
+    max_len = max([len(k) for k in h.keys()]) + 1
+    print(("\t{: <" + str(max_len) + "}\t\tMean\t\tMedian").format('Metric'))
+    print('\t' + '-' * (max_len + 24))
+    for hk, hv in h.items():
+        print_acc(hv, ("\t{: <" + str(max_len) + "}").format(hk + ':'))
+
     print('', end='', flush=True)
 
 
@@ -95,7 +88,4 @@ def update_pb(pbar, agents, start_time=None):
 
 
 def dump_acc_hist(filename, agents):
-    save_json(filename,  {a.id: a.hist for a in agents})
-
-
-
+    save_json(filename, {a.id: a.hist for a in agents})

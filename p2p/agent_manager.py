@@ -4,16 +4,12 @@ import time
 
 def init_agents(agent_class, train_clients, val_clients, test_clients, batch_size, model_pars=None, agent_pars=None):
     start_time = time.time()
-    model_default = {"v": 1, "lr": 0.001, "decay": 0, "default_weights": False}
+    model_default = {"model_v": 1, "lr": 0.001, "decay": 0, "default_weights": False}
     model_pars = model_default if model_pars is None else {**model_default, **model_pars}
     agent_pars = agent_pars or {}
 
     num_agents = len(train_clients)
     print("{} agents, batch size: {}, model_pars: {}".format(num_agents, batch_size, model_pars))
-
-    if model_pars["default_weights"]:
-        model_pars["default_weights"] = create_keras_model(model_v=model_pars["v"], lr=model_pars["lr"],
-                                                           decay=model_pars["decay"]).get_weights()
 
     pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init agents')
     devices = environ.get_devices()
@@ -23,14 +19,11 @@ def init_agents(agent_class, train_clients, val_clients, test_clients, batch_siz
         device = resolve_agent_device(agents, None, devices)
         with tf.device(device or 'CPU'):
             clear_session()
-            a_model = create_keras_model(model_v=model_pars["v"], lr=model_pars["lr"], decay=model_pars["decay"])
-            if model_pars["default_weights"]:
-                a_model.set_weights(model_pars["default_weights"])
             agent_pars['train'] = train
             agent_pars['val'] = val
             agent_pars['test'] = test
             agent_pars['batch_size'] = batch_size
-            agent_pars['model'] = a_model
+            agent_pars['model'] = create_model(**model_pars)
             a = agent_class(**agent_pars)
             a.device = device
             agents.append(a)

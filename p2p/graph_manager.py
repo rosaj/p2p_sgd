@@ -62,11 +62,6 @@ class GraphManager:
                   'directed': self.directed,
                   'num_neighbors': self.num_neighbors
                   }
-        """
-        kwargs = {}
-        for arg_name in graph_fn.__code__.co_varnames[:graph_fn.__code__.co_argcount]:
-            kwargs[arg_name] = args[arg_name]
-        """
         graph = graph_fn(**kwargs)
         return graph
 
@@ -111,97 +106,3 @@ class GraphManager:
 if __name__ == "__main__":
     gm = GraphManager('ring', list(range(10)), directed=True, num_neighbors=3)
     gm.draw()
-
-"""
-
-def test():
-    g = nx.cycle_graph(10).to_directed()
-    g[0][1]['weight'] = 0.1
-    g[1][0]['weight'] = 0.2
-    g[0][0]['weight'] = 0.05
-
-    nx.to_numpy_matrix(nx.complete_graph(10, create_using=nx.Graph())) == \
-    nx.to_numpy_matrix(nx.complete_graph(10, create_using=nx.DiGraph()))
-
-    g = nx.complete_graph(10).to_directed()
-    # nx.draw(nx.cycle_graph(10, create_using=nx.DiGraph()))
-
-    for node in g.nodes:
-        g.add_edge(node, node)
-        nbs = list(g.neighbors(node))
-        weight = 1 / len(nbs)
-        for nb in nbs:
-            g[node][nb]['weight'] = weight
-    list(g.neighbors(0))
-
-    nx.to_numpy_matrix(g)
-
-    nx.to_numpy_matrix(nx.gnm_random_graph(10, 10, directed=True))
-    nx.gnp_random_graph(10, 0.1)
-    nx.gnm_random_graph()
-    # binomial_graph = gnp_random_graph
-    # erdos_renyi_graph = gnp_random_graph
-
-    nx.to_numpy_matrix(nx.gnm_random_graph(10, 2, seed=1, directed=False))
-    nx.to_numpy_matrix(nx.gnm_random_graph(10, 10, seed=1, directed=True))
-
-    print(nx.to_numpy_matrix(nx.gnm_random_graph(10, 2, seed=1, directed=False)) == \
-          nx.to_numpy_matrix(nx.gnm_random_graph(10, 2, seed=1, directed=True)))
-    nx.draw(nx.gnm_random_graph(10, 40, seed=1, directed=True))
-    nx.draw(nx.random_regular_graph(2, 10))
-    nx.draw(nx.fast_gnp_random_graph(10, 0.2))
-
-    m = np.zeros(shape=(10, 10))
-    for i in range(10):
-        n = sample_neighbors(10, 2, i)
-        m[i][n] = 1
-
-    nx.draw(nx.from_numpy_matrix(np.asmatrix(m), create_using=nx.Graph()))
-    nx.draw(nx.gnp_random_graph(10, 0.2))
-    # i = 2
-    for i in range(9):
-        num_nb = sum(m[i])
-        print(i, num_nb)
-        if num_nb < 2:
-            n = sample_neighbors(10, 2 - int(num_nb), i)
-            m[i, n] = 1
-            m[n, i] = 1
-        else:
-            while num_nb > 2:
-                for ni, nv in enumerate(m[i]):
-                    if nv > 0:
-                        if sum(m[ni]) > 2:
-                            m[ni, i] = 0
-                            m[i, ni] = 0
-                            break
-                new_num_nb = sum(m[i])
-                if new_num_nb == num_nb:
-                    break
-                num_nb = new_num_nb
-
-    g = nx.from_numpy_matrix(np.asmatrix(m), create_using=nx.Graph())
-    nx.draw(g)
-    sum([sum(m[i]) for i in range(10)]) / 10
-    sum([len(list(g.neighbors(i))) for i in range(10)]) / 10
-
-    g = nx.watts_strogatz_graph(10, 2, 0.2)
-    nx.draw(g)
-    nx.k_nearest_neighbors()
-    nx.draw(nx.random_k_out_graph(10, 2, 1, False))
-
-
-
-m = np.zeros(shape=(10, 10))
-m[[1, 2], 0] = 1
-m[[0, 3], 1] = 1
-m[[0, 4], 2] = 1
-m[[1, 5], 3] = 1
-m[[2, 6], 4] = 1
-m[[3, 7], 5] = 1
-m[[4, 8], 6] = 1
-m[[5, 9], 7] = 1
-m[[6, 9], 8] = 1
-m[[7, 8], 9] = 1
-m
-nx.draw(nx.from_numpy_matrix(np.asmatrix(m), create_using=nx.Graph()))
-"""

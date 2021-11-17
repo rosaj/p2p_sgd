@@ -3,12 +3,13 @@ from p2p.agents.abstract_agent import *
 
 class P2PAgent(Agent):
     # noinspection PyDefaultArgument
-    def __init__(self, private_model=None, ensemble_metrics=[MaskedSparseCategoricalAccuracy()], **kwargs):
+    def __init__(self, private_model_pars=None, ensemble_metrics=[MaskedSparseCategoricalAccuracy()], **kwargs):
         super(P2PAgent, self).__init__(**kwargs)
 
-        self.private_model = private_model
+        self.private_model = create_model(**private_model_pars) if private_model_pars is not None else None
         self.ensemble_metrics = ensemble_metrics or []
         self.kl_loss = KLDivergence()
+        self.mm_decay = tf.keras.optimizers.schedules.ExponentialDecay(0.85, 15, 1.05)
 
         self.train_rounds = 1
         self.can_msg = False
@@ -54,13 +55,13 @@ class P2PAgent(Agent):
             return
 
         for _ in range(self.train_rounds):
-            mm = tf.keras.optimizers.schedules.ExponentialDecay(0.85, 15, 1.05)
+
             acc_before = self.shared_val_acc()
             self.train_epoch()
             acc_after = self.shared_val_acc()
             for al1 in self.model.layers:
                 if 'batch_normalization' in al1.name:
-                    al1.momentum = min(mm(len(self.hist["examples"]) + 1), .99)
+                    al1.momentum = min(self.mm_decay(len(self.hist["examples"]) + 1), .99)
                     continue
                 al1.trainable = acc_before < acc_after
 

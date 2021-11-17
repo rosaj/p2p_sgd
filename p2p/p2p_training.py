@@ -91,7 +91,7 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
             round_num += 1
             msg_count = sum([a.hist_total_messages for a in agents])
             print("\nMsgs: {}\tRound: {}\t".format(msg_count, round_num), end='')
-            print_all_acc(agents, round(total_examples / examples), False)
+            calc_agents_metrics(agents, round(total_examples / examples))
 
             pbar = new_progress_bar(examples, 'Training')
 
