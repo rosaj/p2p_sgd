@@ -1,4 +1,4 @@
-from p2p.agents.abstract_agent import *
+from p2p.agents.sync_agent import *
 from common.util import choose, draw
 
 # Distributed optimization for deep learning with gossip exchange
@@ -12,7 +12,8 @@ from common.util import choose, draw
 # Code: https://github.com/uoguelph-mlrg/Theano-MPI/blob/master/theanompi/gosgd_worker.py
 
 
-class GoSGDAgent(Agent):
+class GoSGDAgent(SyncAgent):
+
     def __init__(self, p=0.02, **kwargs):
         super(GoSGDAgent, self).__init__(**kwargs)
         self.w = 1.
@@ -42,3 +43,6 @@ class GoSGDAgent(Agent):
                                         self.get_model_weights(), other_agent.get_model_weights())
         self.set_model_weights(weights)
         self.w += other_agent.w
+
+    def update_local_parameters(self):
+        pass

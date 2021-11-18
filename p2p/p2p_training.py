@@ -46,7 +46,7 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
             for agent in agents:
                 agent.update_local_parameters()
         else:
-            possible_a = [i for i in range(len(agents)) if agents[i].can_be_awaken()]
+            possible_a = [a for a in agents if a.can_be_awaken()]
             if len(possible_a) == 0:
                 print("No agents to train")
                 break
