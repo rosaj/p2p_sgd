@@ -1,7 +1,7 @@
-from p2p.agents.abstract_agent import *
+from p2p.agents.async_agent import *
 
 
-class P2PAgent(Agent):
+class P2PAgent(AsyncAgent):
     # noinspection PyDefaultArgument
     def __init__(self, private_model_pars=None, ensemble_metrics=[MaskedSparseCategoricalAccuracy()], **kwargs):
         super(P2PAgent, self).__init__(**kwargs)
@@ -12,7 +12,7 @@ class P2PAgent(Agent):
         self.mm_decay = tf.keras.optimizers.schedules.ExponentialDecay(0.85, 15, 1.05)
 
         self.train_rounds = 1
-        self.can_msg = False
+        self.received_msg = False
 
     def send_to_peers(self):
         for other_agent in self.graph.get_peers(self.id):
@@ -23,10 +23,13 @@ class P2PAgent(Agent):
         weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_model_weights(), other_agent.get_model_weights())
         self.set_model_weights(weights)
 
-        self.can_msg = True
+        self.received_msg = True
         self.train_rounds = 1
 
         return True
+
+    def can_be_awaken(self):
+        return self.received_msg
 
     def _train_on_batch(self, x, y):
         if self.has_private:
@@ -55,12 +58,12 @@ class P2PAgent(Agent):
             return
 
         for _ in range(self.train_rounds):
-
             acc_before = self.shared_val_acc()
             self.train_epoch()
             acc_after = self.shared_val_acc()
             for al1 in self.model.layers:
                 if 'batch_normalization' in al1.name:
+                    # Increasing momentum to .99 for smoother learning curve
                     al1.momentum = min(self.mm_decay(len(self.hist["examples"]) + 1), .99)
                     continue
                 al1.trainable = acc_before < acc_after
@@ -68,13 +71,14 @@ class P2PAgent(Agent):
     def train_fn(self):
         self.fit()
         self.send_to_peers()
-        self.can_msg = False
+        self.received_msg = False
         return self.train_len
 
     def start(self):
         super(P2PAgent, self).start()
         self.fit()
-        self.can_msg = True
+        self.received_msg = True
+        return self.train_len
 
     def shared_val_acc(self):
         for k, v in self._eval_model_metrics(self.model, self.val).items():

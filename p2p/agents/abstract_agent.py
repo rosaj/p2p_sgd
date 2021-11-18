@@ -135,7 +135,9 @@ class Agent:
         return loss
 
     def send_to_peers(self):
-        pass
+        peers = self.graph.get_peers(self.id)
+        for peer in peers:
+            peer.receive_message(self)
 
     def receive_message(self, other_agent):
         self.hist["useful_msg"][-1] += 1

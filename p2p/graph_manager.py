@@ -2,6 +2,16 @@ import networkx as nx
 import numpy as np
 
 
+ID = 0
+
+
+class DummyNode:
+    def __init__(self):
+        global ID
+        self.id = ID
+        ID += 1
+
+
 def sample_neighbors(client_num, num_clients, self_ind):
     c_list = list(range(client_num))
     c_list.remove(self_ind)
@@ -15,7 +25,7 @@ def sparse_graph(n, num_neighbors, create_using):
         for i in range(n):
             nb = sample_neighbors(n, num_neighbors, i)
             m[i][nb] = 1
-        g = nx.from_numpy_matrix(np.asmatrix(m), create_using=nx.Graph())
+        g = nx.from_numpy_matrix(np.asmatrix(m), create_using=create_using)
     else:
         # undirected d-regular graph (sum row == sum column)
         g = nx.random_regular_graph(num_neighbors, n)
@@ -67,14 +77,19 @@ class GraphManager:
 
     def _resolve_weights_mixing(self):
         for node in self._nx_graph.nodes:
+            # For now, all algorithms require Wii > 0, so we add self as an edge
             self._nx_graph.add_edge(node, node)
             nbs = self._graph_neighbors(node)
-            weight = 1 / len(nbs)  # uniform weights
+            # For now, uniform weights
+            weight = 1 / len(nbs)
             for nb in nbs:
                 self._nx_graph[node][nb]['weight'] = weight
 
     def get_edge_weight(self, i, j):
-        return self._nx_graph.get_edge_data(i, j)['weight']
+        edge_data = self._nx_graph.get_edge_data(i, j)
+        if edge_data is None:
+            return 0
+        return edge_data['weight']
 
     def get_self_node_weight(self, node_id):
         return self.get_edge_weight(node_id, node_id)
@@ -100,9 +115,10 @@ class GraphManager:
     def print_info(self):
         print("Graph: {} ({}), n: {}, neighbors: {}, time-vary: {}".format(self.graph_type,
                                                                            'directed' if self.directed else 'undirected',
-                                                                           self.n, self.num_neighbors, self.time_varying))
+                                                                           self.n, self.num_neighbors,
+                                                                           self.time_varying))
 
 
 if __name__ == "__main__":
-    gm = GraphManager('ring', list(range(10)), directed=True, num_neighbors=3)
+    gm = GraphManager('sparse', [DummyNode() for _ in range(10)], directed=True, num_neighbors=2)
     gm.draw()
