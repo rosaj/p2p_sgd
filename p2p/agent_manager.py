@@ -15,7 +15,7 @@ def init_agents(agent_class, train_clients, val_clients, test_clients, batch_siz
     devices = environ.get_devices()
     agents = []
 
-    for train, val, test in zip(train_clients, val_clients, test_clients):
+    for agent_id, (train, val, test) in enumerate(zip(train_clients, val_clients, test_clients)):
         device = resolve_agent_device(agents, None, devices)
         with tf.device(device or 'CPU'):
             clear_session()
@@ -26,6 +26,7 @@ def init_agents(agent_class, train_clients, val_clients, test_clients, batch_siz
             agent_pars['model'] = create_model(**model_pars)
             a = agent_class(**agent_pars)
             a.device = device
+            a.id = agent_id
             agents.append(a)
         update_pb(pbar, agents, start_time)
     pbar.close()

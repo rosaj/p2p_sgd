@@ -19,7 +19,7 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
     graph_manager = GraphManager(nodes=agents, **graph_pars)
     for a in agents:
         a.graph = graph_manager
-    graph_manager.print_info()
+    print(graph_manager.graph_info())
 
     start_time = time.time()
     examples = sum([a.train_len for a in agents])
@@ -71,7 +71,7 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
     pbar.close()
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
 
-    filename = "{}_{}A_{}E_{}B_{}V_{}({})_{}N_{}TV".format(
-        agent_class.__name__, len(agents), epochs, batch_size, model_pars['model_v'], graph_manager.graph_type,
-        'directed' if graph_manager.directed else 'undirected', graph_manager.num_neighbors, graph_manager.time_varying)
+    filename = "{}_{}A_{}E_{}B_{}V_{}".format(
+        agent_class.__name__, len(agents), epochs, batch_size, model_pars['model_v'],
+        graph_manager.graph_info().replace(': ', '').replace(' ', '').replace(',', '_'))
     dump_acc_hist('log/' + filename + '.json', agents)

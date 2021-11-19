@@ -1,8 +1,6 @@
 from common.model import *
 # import environ
 
-ID = 0
-
 
 class Agent:
     # noinspection PyDefaultArgument
@@ -25,13 +23,10 @@ class Agent:
                      "useless_msg":   [0],
                      }
 
-        # self.id = environ.next_agent_id()
         self.device = None
         self.iter = None
 
-        global ID
-        self.id = ID
-        ID += 1
+        self.id = 0
 
     @staticmethod
     def _create_dataset(x, y, batch_size):

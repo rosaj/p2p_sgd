@@ -1,5 +1,5 @@
 from p2p.agents.sync_agent import *
-from common.util import choose, draw
+
 
 # Distributed optimization for deep learning with gossip exchange
 # Authors: Blot, Michael
@@ -10,6 +10,33 @@ from common.util import choose, draw
 # Graph topology: No graph topologies, agent communicates directly with one random agent based ond the probability p
 
 # Code: https://github.com/uoguelph-mlrg/Theano-MPI/blob/master/theanompi/gosgd_worker.py
+
+
+def choose(self_rank, high):
+    """
+    choose a dest_rank from range(size) to push to
+
+    """
+
+    dest_rank = self_rank
+
+    while dest_rank == self_rank:
+        dest_rank = np.random.randint(low=0, high=high)
+
+    return dest_rank
+
+
+def draw(p):
+    """
+    draw from Bernoulli distribution
+
+    """
+    # Bernoulli distribution is a special case of binomial distribution with n=1
+    a_draw = np.random.binomial(n=1, p=p, size=None)
+
+    success = (a_draw == 1)
+
+    return success
 
 
 class GoSGDAgent(SyncAgent):

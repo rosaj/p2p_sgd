@@ -49,33 +49,6 @@ def time_elapsed_info(start_time):
     return "{:02d}:{:02d}h".format(hours, minutes)
 
 
-def choose(self_rank, high):
-    """
-    choose a dest_rank from range(size) to push to
-
-    """
-
-    dest_rank = self_rank
-
-    while dest_rank == self_rank:
-        dest_rank = np.random.randint(low=0, high=high)
-
-    return dest_rank
-
-
-def draw(p):
-    """
-    draw from Bernoulli distribution
-
-    """
-    # Bernoulli distribution is a special case of binomial distribution with n=1
-    a_draw = np.random.binomial(n=1, p=p, size=None)
-
-    success = (a_draw == 1)
-
-    return success
-
-
 def save_json(filename, json_dict):
 
     class NumpyValuesEncoder(json.JSONEncoder):
@@ -88,4 +61,4 @@ def save_json(filename, json_dict):
 
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w") as outfile:
-        json.dump(json_dict, outfile, indent=4, cls=NumpyValuesEncoder)
+        json.dump(json_dict, outfile, indent=None, cls=NumpyValuesEncoder)

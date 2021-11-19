@@ -30,7 +30,7 @@ def calc_agents_metrics(agents, e=0):
 
     max_len = max([len(k) for k in h.keys()]) + 1
     print(("\t{: <" + str(max_len) + "}\t\tMean\t\tMedian").format('Metric'))
-    print('\t' + '-' * (max_len + 24))
+    print('\t' + '-' * (max_len + 36))
     for hk, hv in h.items():
         print_acc(hv, ("\t{: <" + str(max_len) + "}").format(hk + ':'))
 

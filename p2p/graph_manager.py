@@ -2,14 +2,9 @@ import networkx as nx
 import numpy as np
 
 
-ID = 0
-
-
 class DummyNode:
-    def __init__(self):
-        global ID
-        self.id = ID
-        ID += 1
+    def __init__(self, node_id):
+        self.id = node_id
 
 
 def sample_neighbors(client_num, num_clients, self_ind):
@@ -60,7 +55,7 @@ class GraphManager:
         return self.n
 
     def check_time_varying(self, time_iter):
-        if self.time_varying > 0 and time_iter % self.time_varying:
+        if self.time_varying > 0 and time_iter % self.time_varying == 0:
             self._nx_graph = self._resolve_graph_type()
             self._resolve_weights_mixing()
 
@@ -112,13 +107,17 @@ class GraphManager:
     def draw(self):
         nx.draw(self._nx_graph)
 
-    def print_info(self):
-        print("Graph: {} ({}), n: {}, neighbors: {}, time-vary: {}".format(self.graph_type,
-                                                                           'directed' if self.directed else 'undirected',
-                                                                           self.n, self.num_neighbors,
-                                                                           self.time_varying))
+    def graph_info(self):
+        nb_num = self.num_neighbors
+        if self.graph_type == 'ring':
+            nb_num = 1 if self.directed else 2
+        info = "{} ({}), N: {}, NB: {}, TV: {}".format(self.graph_type,
+                                                       'directed' if self.directed else 'undirected',
+                                                       self.n, nb_num,
+                                                       self.time_varying)
+        return info
 
 
 if __name__ == "__main__":
-    gm = GraphManager('sparse', [DummyNode() for _ in range(10)], directed=True, num_neighbors=2)
-    gm.draw()
+    gm = GraphManager('sparse', [DummyNode(_) for _ in range(50)], directed=True, num_neighbors=2)
+    gm.graph_info()
