@@ -53,7 +53,7 @@ class SGPPushSumAgent(SyncAgent):
         self.msg_q.append(
             Msg(x=tf.nest.map_structure(lambda o: o * wji, other_agent.get_model_weights()), w=self.w * wji))
 
-    def update_local_parameters(self):
+    def sync_parameters(self):
         # Agent must have "connection with itself"
         wii = self.graph.get_edge_weight(self.id, self.id)
         x = tf.nest.map_structure(lambda w: w * wii, self.get_model_weights())

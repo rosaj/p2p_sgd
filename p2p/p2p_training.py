@@ -44,7 +44,7 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
                 with tf.device(device or 'CPU'):
                     pbar.update(agent.train_fn())
             for agent in agents:
-                agent.update_local_parameters()
+                agent.sync_parameters()
         else:
             possible_a = [a for a in agents if a.can_be_awaken()]
             if len(possible_a) == 0:

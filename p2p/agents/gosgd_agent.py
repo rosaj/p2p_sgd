@@ -44,5 +44,5 @@ class GoSGDAgent(SyncAgent):
         self.set_model_weights(weights)
         self.w += other_agent.w
 
-    def update_local_parameters(self):
+    def sync_parameters(self):
         pass

@@ -51,7 +51,7 @@ class D2Agent(SyncAgent):
         w_xj_t2 = tf.nest.map_structure(lambda xj_t2: xj_t2 * wji, other_agent.get_model_weights())
         self.msg_q.append(w_xj_t2)
 
-    def update_local_parameters(self):
+    def sync_parameters(self):
         # Multiply self model with self weight
         wii = self.graph.get_edge_weight(self.id, self.id)
         xi_tw = tf.nest.map_structure(lambda xi: xi * wii, self.get_model_weights())
