@@ -64,6 +64,7 @@ class SGPPushSumAgent(SyncAgent):
         self.w = self.w * wii + sum([msg.w for msg in self.msg_q])
         self.msg_q.clear()
 
+    """
     def calc_new_metrics(self, metrics_names=tuple(['acc'])):
         super(SGPPushSumAgent, self).calc_new_metrics(metrics_names)
 
@@ -74,3 +75,4 @@ class SGPPushSumAgent(SyncAgent):
         self._add_hist_metric(self._eval_test_metrics(self.model), "test_z", metrics_names)
         # Convert back to biased estimate
         self.set_model_weights(tf.nest.map_structure(lambda xi: xi * self.w, self.get_model_weights()))
+    """
