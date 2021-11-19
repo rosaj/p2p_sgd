@@ -58,10 +58,9 @@ class D2Agent(SyncAgent):
 
         # Sum weighted models
         self.msg_q.append(xi_tw)
+        self.set_model_weights(np.sum(np.array(self.msg_q, dtype=object), axis=0))
         # Remember new weights as the weights from time step t-1
-        self.t_1_weights = np.sum(np.array(self.msg_q, dtype=object), axis=0)
-        self.set_model_weights(self.t_1_weights)
-
+        self.t_1_weights = self.get_model_weights()
         # Delete messages
         self.msg_q.clear()
 
