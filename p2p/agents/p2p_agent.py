@@ -14,10 +14,6 @@ class P2PAgent(AsyncAgent):
         self.train_rounds = 1
         self.received_msg = False
 
-    def send_to_peers(self):
-        for other_agent in self.graph.get_peers(self.id):
-            other_agent.receive_message(self)
-
     def receive_message(self, other_agent):
         super(P2PAgent, self).receive_message(other_agent)
         weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_model_weights(), other_agent.get_model_weights())

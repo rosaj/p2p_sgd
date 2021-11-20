@@ -2,6 +2,8 @@ from p2p.graph_manager import GraphManager
 from p2p.p2p_utils import *
 from p2p.agent_manager import init_agents
 from p2p.agents import SyncAgent
+
+from datetime import datetime
 import time
 
 
@@ -13,8 +15,9 @@ def parse_acc_step(accuracy_step, examples):
     return accuracy_step
 
 
-def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars, agent_pars=None, epochs=1,
+def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars, agent_pars=None, epochs=1, seed=None,
                accuracy_step='epoch'):
+    set_seed(seed)
     agents = init_agents(agent_class, train, val, test, batch_size, model_pars, agent_pars)
     graph_manager = GraphManager(nodes=agents, **graph_pars)
     for a in agents:
@@ -71,7 +74,8 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
     pbar.close()
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
 
-    filename = "{}_{}A_{}E_{}B_{}V_{}".format(
+    filename = "{}_{}A_{}E_{}B_{}V_{}_{}".format(
         agent_class.__name__, len(agents), epochs, batch_size, model_pars['model_v'],
-        graph_manager.graph_info().replace(': ', '').replace(' ', '').replace(',', '_'))
+        graph_manager.graph_info().replace(': ', '').replace(' ', '').replace(',', '_'),
+        datetime.now().strftime("%d-%m-%Y_%H_%M"))
     dump_acc_hist('log/' + filename + '.json', agents)

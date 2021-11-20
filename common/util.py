@@ -14,7 +14,7 @@ def set_seed(seed):
         random.seed(seed)
         tf.random.set_seed(seed)
         np.random.seed(seed)
-        print("SEED:", seed)
+        print("Seed:", seed)
 
 
 def available_device_memory(device_name):
