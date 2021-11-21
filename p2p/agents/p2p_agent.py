@@ -73,6 +73,7 @@ class P2PAgent(AsyncAgent):
     def start(self):
         super(P2PAgent, self).start()
         self.fit()
+        self.calc_new_metrics()
         self.received_msg = True
         return self.train_len
 

@@ -26,3 +26,7 @@ def set_agent_id(agent_id):
 def get_devices():
     devices = os.environ.get('DEVICES', '').split(',')
     return [d.strip() for d in devices if len(d.strip()) > 0]
+
+
+def set_devices(devices):
+    os.environ['DEVICES'] = devices

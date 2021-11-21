@@ -9,7 +9,8 @@ def init_agents(agent_class, train_clients, val_clients, test_clients, batch_siz
     agent_pars = agent_pars or {}
 
     num_agents = len(train_clients)
-    print("{}: {} agents, batch size: {}, model_pars: {}".format(agent_class.__name__, num_agents, batch_size, model_pars))
+    print("{}: {} agents, batch size: {}, model_pars: {}, agent_pars: {}".format(
+        agent_class.__name__, num_agents, batch_size, model_pars, agent_pars))
 
     pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init agents')
     devices = environ.get_devices()

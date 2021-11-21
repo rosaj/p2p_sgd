@@ -9,6 +9,8 @@ from p2p.agents.sync_agent import *
 # Communication/weight matrix is column stochastic (all columns sum to 1) where Wii > 0
 
 # See "Stochastic gradient push for distributed deep learning" for details on implementation
+# In this paper, authors used directed directed exponential graph where in each iteration node only communicates with one node
+# This is achieved using variable k which increases with each iteration, so choosing sending peer is peers[k%len(peers)]
 
 
 class Msg:
