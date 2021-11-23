@@ -117,7 +117,14 @@ class GraphManager:
                                                        self.time_varying)
         return info
 
+    def as_numpy_array(self):
+        return nx.to_numpy_array(self._nx_graph)
+
+
+def nx_graph_from_saved_lists(np_array):
+    return nx.from_numpy_array(np.asarray(np_array))
+
 
 if __name__ == "__main__":
-    gm = GraphManager('sparse', [DummyNode(_) for _ in range(50)], directed=True, num_neighbors=2)
-    gm.graph_info()
+    gm = GraphManager('sparse', [DummyNode(_) for _ in range(100)], directed=True, num_neighbors=3)
+    gm.draw()

@@ -6,9 +6,11 @@ def load_client_datasets(num_clients=1_000):
     return load_clients('train', num_clients), load_clients('val', num_clients), load_clients('test', num_clients)
 
 
-def load_clients_data(num_clients=100):
-    tr, val, test = load_client_datasets(num_clients)
-    return tr[:num_clients], val[:num_clients], test[:num_clients]
+def load_clients_data(num_clients=100, starting_client=0):
+    tr, val, test = load_client_datasets(num_clients + starting_client)
+    return tr[starting_client:num_clients + starting_client], \
+           val[starting_client:num_clients + starting_client], \
+           test[starting_client:num_clients + starting_client]
 
 
 def filter_clients(train_clients, val_clients, test_clients, cli_num, examples_range, ret_val='clients'):
@@ -25,8 +27,8 @@ def filter_clients(train_clients, val_clients, test_clients, cli_num, examples_r
         cl_ds.append(k)
         cls.pop(0)
     if ret_val == 'clients':
-        return [train_clients[d] for d in cl_ds],\
-               [val_clients[d] for d in cl_ds],\
+        return [train_clients[d] for d in cl_ds], \
+               [val_clients[d] for d in cl_ds], \
                [test_clients[d] for d in cl_ds]
 
     elif ret_val == 'total':

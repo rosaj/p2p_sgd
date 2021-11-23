@@ -22,9 +22,12 @@ import gc
 
 _MODEL_COUNT = 0
 
-
 _default_weights = {
 }
+
+
+def clear_def_weights_cache():
+    _default_weights.clear()
 
 
 class MaskedSparseCategoricalAccuracy(SparseCategoricalAccuracy):

@@ -15,7 +15,7 @@ LABELS = {
 def read_json(filename):
     with open('log/' + filename + '.json', "r") as infile:
         f_json = json.loads(infile.read())
-    return f_json
+    return f_json['agents']
 
 
 def human_format(num, pos):
@@ -124,45 +124,12 @@ def side_by_side(viz_dict, agg_fn=np.average):
     max_y = round(max([ax.get_ylim()[1] for ax in axs]))
     for ax in axs:
         ax.set_ylim([0, max_y])
+    plt.tight_layout(pad=0, w_pad=0)
+    # plt.savefig('/Users/robert/Desktop/test.svg', format='svg', dpi=300)
     plt.show()
 
 
 if __name__ == '__main__':
-
-    side_by_side(
-        {
-            '$D^2$': {
-                'x_axis': 'epoch',
-                'viz': {
-                    'Ring (directed)': 'D2Agent_50A_20E_50B_4V_ring(directed)_N50_NB1_TV-1',
-                    'Ring (undirected)': 'D2Agent_50A_20E_50B_4V_ring(undirected)_N50_NB2_TV-1',
-                    'Sparse (directed)': 'D2Agent_50A_20E_50B_4V_sparse(directed)_N50_NB2_TV-1',
-                    'Sparse (undirected)': 'D2Agent_50A_20E_50B_4V_sparse(undirected)_N50_NB2_TV-1',
-                },
-
-            },
-            'P2P': {
-                'x_axis': 'epoch',
-                'viz': {
-                    'Ring (directed)': 'P2PAgent_50A_20E_50B_4V_ring(directed)_N50_NB1_TV-1',
-                    'Ring (undirected)': 'P2PAgent_50A_20E_50B_4V_ring(undirected)_N50_NB2_TV-1',
-                    'Sparse (directed)': 'P2PAgent_50A_20E_50B_4V_sparse(directed)_N50_NB2_TV-1',
-                    'Sparse (undirected)': 'P2PAgent_50A_20E_50B_4V_sparse(undirected)_N50_NB2_TV-1',
-                },
-
-            },
-            'SGP': {
-                'x_axis': 'epoch',
-                'viz': {
-                    'Ring (directed)': 'SGPPushSumAgent_50A_20E_50B_4V_ring(directed)_N50_NB1_TV-1',
-                    'Ring (undirected)': 'SGPPushSumAgent_50A_20E_50B_4V_ring(undirected)_N50_NB2_TV-1',
-                    'Sparse (undirected)': 'SGPPushSumAgent_50A_20E_50B_4V_sparse(undirected)_N50_NB2_TV-1',
-                },
-
-            },
-        }
-    )
-    """
     show({
         'D2-R_D': 'D2Agent_50A_20E_50B_4V_ring(directed)_N50_NB1_TV-1',
         'D2-R_U': 'D2Agent_50A_20E_50B_4V_ring(undirected)_N50_NB2_TV-1',
@@ -191,5 +158,4 @@ if __name__ == '__main__':
          x_axises=['epoch', 'comms'],
          # 'round', 'examples', 'epoch', 'comms', 'acomms'
     )
-    """
 

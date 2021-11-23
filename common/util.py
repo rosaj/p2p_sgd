@@ -57,6 +57,8 @@ def save_json(filename, json_dict):
                 return float(obj)
             if isinstance(obj, np.integer):
                 return int(obj)
+            elif isinstance(obj, np.ndarray):
+                return obj.tolist()
             return json.JSONEncoder.default(self, obj)
 
     os.makedirs(os.path.dirname(filename), exist_ok=True)

@@ -87,5 +87,5 @@ def update_pb(pbar, agents, start_time=None):
     pbar.set_postfix(postfix)
 
 
-def dump_acc_hist(filename, agents):
-    save_json(filename, {a.id: a.hist for a in agents})
+def dump_acc_hist(filename, agents, graph):
+    save_json(filename, {'agents': {a.id: a.hist for a in agents}, 'graph': graph})
