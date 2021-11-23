@@ -76,8 +76,8 @@ def new_progress_bar(total, desc=''):
     return tqdm(total=total, position=0, leave=False, desc=desc)
 
 
-def update_pb(pbar, agents, start_time=None):
-    pbar.update()
+def update_pb(pbar, agents, n=1, start_time=None):
+    pbar.update(n)
     devices = environ.get_devices()
     postfix = memory_info()
     for dev in devices:

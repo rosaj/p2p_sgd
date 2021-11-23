@@ -111,7 +111,7 @@ class Agent:
         placeholder for starting simulation/training
         :return:
         """
-        pass
+        return 0
 
     def train_fn(self):
         """

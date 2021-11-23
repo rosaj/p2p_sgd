@@ -62,13 +62,13 @@ def print_avg_model_acc(model, dataset_dict, cl_keys, batch_size):
 
 
 def print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
-                   round_num=1, epoch=1, round_examples=0, total_examples=0, batch_size=50):
+                   round_num=1, epoch=1, round_examples=0, total_examples=0, total_client_samples=0, batch_size=50):
     fed_model = state_to_model(server_state)
     msg = "Round: {}\tEpoch: {}\n".format(round_num, epoch) + \
           "\tExamples: ({}/{})\n".format(round_examples, total_examples) + \
           "\tAgents\tMean\tMedian"
     print(msg, flush=True)
-    ACC_HIST[round_num] = {"Epoch": epoch, "Examples": total_examples}
+    ACC_HIST[round_num] = {"Epoch": epoch, "Examples": total_examples, "Sampled_Clients": total_client_samples}
     print_avg_model_acc(fed_model, {"Train": train_clients, "Valid": val_clients, "Test": test_clients}, client_inds, batch_size)
 
 
@@ -100,7 +100,7 @@ def train_fed_avg(train_clients,
     clients_num = len(client_inds)
     examples = sum([len(train_clients[ind][1]) for ind in range(clients_num)])
     max_examples = examples * epochs
-    total_examples = 0
+    total_examples, total_client_samples = 0, 0
     client_weighting = client_weighting or "num_examples"
 
     msg = "FL training (V={} {}), Num clients per round: {}, batch size: {}, epochs: {}, examples: {}, server_pars: {}, client_pars: {}" \
@@ -158,6 +158,7 @@ def train_fed_avg(train_clients,
             train_clients_ds = get_sample_clients(client_inds, num_train_clients)
         # print('\nSampling {} new clients.'.format(len(train_clients_ds)), flush=True)
 
+        total_client_samples += len(train_clients_ds)
         train_datasets = [create_tf_dataset_for_client(train_clients[c], batch_size) for c in train_clients_ds]
 
         # Apply federated training round
@@ -171,9 +172,9 @@ def train_fed_avg(train_clients,
         total_examples += round_examples
 
         if round_num % accuracy_step == 0:
-            epoch = int(total_examples / examples)
+            epoch = round(total_examples / examples)
             print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
-                           round_num, epoch, round_examples, total_examples, batch_size)
+                           round_num, epoch, round_examples, total_examples, total_client_samples, batch_size)
     pbar.close()
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
 

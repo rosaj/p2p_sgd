@@ -32,13 +32,12 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
     max_examples = epochs * examples
     total_examples, round_num = 0, 0
 
-    pbar = tqdm(total=len(agents), position=0, leave=False, desc='Starting agents')
-    for a in agents:
-        a.start()
-        update_pb(pbar, agents, start_time)
-    pbar.close()
-
     pbar = new_progress_bar(examples, 'Training')
+    for a in agents:
+        n = a.start()
+        update_pb(pbar, agents, n, start_time)
+    _, pbar, round_num = checkpoint(pbar, agents, round_num, examples)
+
     while total_examples < max_examples:
         if issubclass(agent_class, SyncAgent):
             for agent in agents:
@@ -59,17 +58,9 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
             with tf.device(device or 'CPU'):
                 pbar.update(agent.train_fn())
 
-        if pbar.n >= pbar.total:
-            pbar.close()
-            graph_manager.check_time_varying(round_num)
-            total_examples = sum([a.trained_examples for a in agents])
-
-            round_num += 1
-            msg_count = sum([a.hist_total_messages for a in agents])
-            print("\nMsgs: {}\tRound: {}\t".format(msg_count, round_num), end='')
-            calc_agents_metrics(agents, round(total_examples / examples))
-
-            pbar = new_progress_bar(examples, 'Training')
+        is_check, pbar, round_num = checkpoint(pbar, agents, round_num, examples)
+        if is_check:
+            graph_manager.check_time_varying(round_num-1)
 
     pbar.close()
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
@@ -79,3 +70,20 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
         graph_manager.graph_info().replace(': ', '').replace(' ', '').replace(',', '_'),
         datetime.now().strftime("%d-%m-%Y_%H_%M"))
     dump_acc_hist('log/' + filename + '.json', agents, graph_manager.as_numpy_array())
+
+
+def checkpoint(pbar, agents, round_num, examples):
+    if pbar.n >= pbar.total:
+        diff = pbar.n - pbar.total
+        pbar.close()
+        total_examples = sum([a.trained_examples for a in agents])
+
+        round_num += 1
+        msg_count = sum([a.hist_total_messages for a in agents])
+        print("\nMsgs: {}\tRound: {}\t".format(msg_count, round_num), end='')
+        calc_agents_metrics(agents, round(total_examples / examples))
+
+        pbar = new_progress_bar(examples, 'Training')
+        pbar.update(diff)
+        return True, pbar, round_num
+    return False, pbar, round_num

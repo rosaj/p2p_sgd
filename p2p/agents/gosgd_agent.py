@@ -56,6 +56,7 @@ class GoSGDAgent(SyncAgent):
     def start(self):
         # Calculate ai_w = 1 / len(nodes)
         self.w = 1. / self.graph.nodes_num
+        return 0
 
     def train_fn(self):
         x, y = self.next_train_batch()
