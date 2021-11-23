@@ -41,7 +41,7 @@ def draw(p):
 
 class GoSGDAgent(SyncAgent):
 
-    def __init__(self, p=0.02, use_graph=False, **kwargs):
+    def __init__(self, p=0.1, use_graph=False, **kwargs):
         super(GoSGDAgent, self).__init__(**kwargs)
 
         self.w = 1.

@@ -15,7 +15,15 @@ LABELS = {
 def read_json(filename):
     with open('log/' + filename + '.json', "r") as infile:
         f_json = json.loads(infile.read())
-    return f_json['agents']
+    return f_json
+
+
+def read_graph(filename):
+    return read_json(filename)['graph']
+
+
+def read_agents(filename):
+    return read_json(filename)['agents']
 
 
 def human_format(num, pos):
@@ -28,7 +36,7 @@ def human_format(num, pos):
 
 
 def parse_timeline(name, filename, x_axis='Examples', agg_fn=np.average):
-    data = read_json(filename)
+    data = read_agents(filename)
     acc, v_acc, t_acc = [], [], []
     if filename.__contains__('Agent'):
         # mk = 'shared' if 'gru' in name else 'shared'

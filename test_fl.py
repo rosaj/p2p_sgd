@@ -1,11 +1,10 @@
 from fl import do_train
 
 if __name__ == '__main__':
-    do_train(client_num=100,
+    do_train(num_clients=100,
              num_train_clients=5,
-             examples_range=(0, 900000),
              batch_size=50,
-             epochs=80,
+             epochs=100,
              client_pars={"lr": 0.005, "decay": 0},
              server_pars={"lr": 0.005, "decay": 0},
              model_v=2,
