@@ -36,7 +36,7 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
     for a in agents:
         n = a.start()
         update_pb(pbar, agents, n, start_time)
-    _, pbar, round_num = checkpoint(pbar, agents, round_num, examples)
+    _, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples)
 
     while total_examples < max_examples:
         if issubclass(agent_class, SyncAgent):
@@ -58,7 +58,7 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
             with tf.device(device or 'CPU'):
                 pbar.update(agent.train_fn())
 
-        is_check, pbar, round_num = checkpoint(pbar, agents, round_num, examples)
+        is_check, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples)
         if is_check:
             graph_manager.check_time_varying(round_num-1)
 
@@ -85,5 +85,5 @@ def checkpoint(pbar, agents, round_num, examples):
 
         pbar = new_progress_bar(examples, 'Training')
         pbar.update(diff)
-        return True, pbar, round_num
-    return False, pbar, round_num
+        return True, pbar, round_num, total_examples
+    return False, pbar, round_num, total_examples
