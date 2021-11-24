@@ -35,49 +35,72 @@ def human_format(num, pos):
     return '%i%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
 
-def parse_timeline(name, filename, x_axis='Examples', agg_fn=np.average):
-    data = read_agents(filename)
+def calc_agent_timeline(data, x_axis, agg_fn):
     acc, v_acc, t_acc = [], [], []
-    if filename.__contains__('Agent'):
-        # mk = 'shared' if 'gru' in name else 'shared'
-        mk = 'model-accuracy_no_oov'
-        rounds = list(range(len(data[list(data.keys())[0]]['train_' + mk])))
-        total_examples = sum([data[a_key]['train_len'] for a_key in list(data.keys())])
-        x_time = [] if x_axis != 'Round' else rounds
-        for rind in rounds:
-            val = [data[a_id]['val_' + mk][rind] for a_id in data.keys()]
-            test = [data[a_id]['test_' + mk][rind] for a_id in data.keys()]
-            # v_acc.append(agg_fn(val) * 100)
-            t_acc.append(agg_fn(test) * 100)
-            acc.append(agg_fn(np.average([val, test], axis=0)) * 100)
+    mk = 'model-accuracy_no_oov'
+    rounds = list(range(len(data[list(data.keys())[0]]['train_' + mk])))
+    total_examples = sum([data[a_key]['train_len'] for a_key in list(data.keys())])
+    x_time = [] if x_axis != 'Round' else rounds
+    for rind in rounds:
+        val = [data[a_id]['val_' + mk][rind] for a_id in data.keys()]
+        test = [data[a_id]['test_' + mk][rind] for a_id in data.keys()]
+        # v_acc.append(agg_fn(val) * 100)
+        t_acc.append(agg_fn(test) * 100)
+        acc.append(agg_fn(np.average([val, test], axis=0)) * 100)
 
-            examples = sum([data[a_key]['examples'][rind] for a_key in list(data.keys())])
-            if x_axis == 'epoch':
-                x_time.append(round(examples / total_examples))
-            elif x_axis == 'examples':
-                x_time.append(examples)
-            elif x_axis == 'comms':
-                comms = sum([sum(data[a_key]['useful_msg'][:rind] + data[a_key]['useless_msg'][:rind]) for a_key in
-                             list(data.keys())])
-                x_time.append(comms)
-            elif x_axis == 'acomms':
-                v = filename.split('_')
-                x_time.append(int(v[2].replace('N', '')) * rind)
-    else:
-        x_time = [] if x_axis != 'Round' else [int(k) for k in data.keys()]
-        for dk, dv in data.items():
-            # v_acc.append(agg_fn(dv['Valid']) * 100)
-            t_acc.append(agg_fn(dv['Test']) * 100)
-
-            acc.append(agg_fn(np.average([dv['Valid'], dv['Test']], axis=0)) * 100)
-            if x_axis == 'epoch':
-                x_time.append(dv['Epoch'])
-            elif x_axis == 'examples':
-                x_time.append(dv['Examples'])
-            elif x_axis == 'comms':
-                x_time.append(int(filename.split('_')[2].replace('TR', '')) * 2 * int(dk))
-
+        examples = sum([data[a_key]['examples'][rind] for a_key in list(data.keys())])
+        if x_axis == 'epoch':
+            x_time.append(round(examples / total_examples))
+        elif x_axis == 'examples':
+            x_time.append(examples)
+        elif x_axis == 'comms':
+            comms = sum([sum(data[a_key]['useful_msg'][:rind] + data[a_key]['useless_msg'][:rind]) for a_key in
+                         list(data.keys())])
+            x_time.append(comms)
+        elif x_axis == 'acomms':
+            acomms = np.average([sum(data[a_key]['useful_msg'][:rind] + data[a_key]['useless_msg'][:rind]) for a_key in
+                                 list(data.keys())])
+            x_time.append(acomms)
     return x_time, t_acc
+
+
+def calc_fl_timeline(data, x_axis, agg_fn):
+    t_acc = []
+    x_time = [] if x_axis != 'Round' else [int(k) for k in data.keys()]
+    for dk, dv in data.items():
+        # v_acc.append(agg_fn(dv['Valid']) * 100)
+        t_acc.append(agg_fn(dv['Test']) * 100)
+
+        # acc.append(agg_fn(np.average([dv['Valid'], dv['Test']], axis=0)) * 100)
+        if x_axis == 'epoch':
+            x_time.append(dv['Epoch'])
+        elif x_axis == 'examples':
+            x_time.append(dv['Examples'])
+        # elif x_axis == 'comms':
+            # x_time.append(int(filename.split('_')[2].replace('TR', '')) * 2 * int(dk))
+    return x_time, t_acc
+
+
+def resolve_timeline(filename, x_axis, agg_fn):
+    data = read_json(filename)
+    if 'agents' in data:
+        return calc_agent_timeline(data['agents'], x_axis, agg_fn)
+    else:
+        return calc_fl_timeline(data, x_axis, agg_fn)
+
+
+def parse_timeline(name, filename, x_axis='Examples', agg_fn=np.average):
+    if isinstance(filename, str):
+        return resolve_timeline(filename, x_axis, agg_fn)
+    if isinstance(filename, list):
+        time, acc_t = None, None
+        for fl in filename:
+            time, acc = resolve_timeline(fl, x_axis, agg_fn)
+            if acc_t is None:
+                acc_t = acc
+            else:
+                acc_t = np.add(acc_t, acc)
+        return time, np.array(acc_t) / float(len(filename))
 
 
 def plot_items(ax, x_axis, viz_dict, title=None, agg_fn=np.average):
@@ -162,8 +185,7 @@ if __name__ == '__main__':
         # 'FL   (A=1000, S=10)': 'fl_1000C_10TR_2V(0_005S-0_005C)_100E_num_examples',
         # 'P2P (A=1000, N=2)': 'p2p_1000A_2N_101E_average_50B_-1CDS_4Vb_1Vc',
 
-         },
-         x_axises=['epoch', 'comms'],
-         # 'round', 'examples', 'epoch', 'comms', 'acomms'
+    },
+        x_axises=['epoch', 'comms'],
+        # 'round', 'examples', 'epoch', 'comms', 'acomms'
     )
-
