@@ -167,7 +167,6 @@ def train_fed_avg(train_clients,
             ckpt_manager.save_checkpoint(server_state, round_num=round_num)
 
         round_examples = server_metrics['stat']['num_examples']
-        pbar.update(round_examples)
         pbar.set_postfix({**memory_info(), **{"TP": time_elapsed_info(start_time)}})
         total_examples += round_examples
 
