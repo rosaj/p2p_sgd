@@ -127,8 +127,6 @@ def train_fed_avg(train_clients,
         keep_first=True
     )
 
-    pbar = tqdm(total=max_examples, position=0, leave=False)
-
     round_num = 0
     if type(checkpoint_round) == str:
         server_state = ckpt_manager.load_checkpoint(server_state, checkpoint_round)
@@ -137,10 +135,10 @@ def train_fed_avg(train_clients,
     if type(checkpoint_round) == int and checkpoint_round > 0:
         round_num = checkpoint_round
         total_examples += int(((examples / clients_num) * num_train_clients) * round_num)
-        pbar.update(total_examples)
         print("Loading checkpoint:", checkpoint_round)
         server_state = ckpt_manager.load_checkpoint(server_state, checkpoint_round)
 
+    """
     if 'epoch' in accuracy_step:
         epochs_num = accuracy_step.replace('epoch', '').strip() or 1
         accuracy_step = int(examples / ((examples / clients_num) * num_train_clients)) * epochs_num
@@ -148,7 +146,9 @@ def train_fed_avg(train_clients,
         accuracy_step = int(accuracy_step.replace('round', '').strip() or 1)
     elif accuracy_step == 'never':
         accuracy_step = 9999999999
+    """
 
+    pbar = tqdm(total=examples, position=0, leave=False)
     while total_examples < max_examples:
         round_num += 1
         # Sample train clients to create a train dataset
@@ -171,10 +171,16 @@ def train_fed_avg(train_clients,
         pbar.set_postfix({**memory_info(), **{"TP": time_elapsed_info(start_time)}})
         total_examples += round_examples
 
-        if round_num % accuracy_step == 0:
+        pbar.update(round_examples)
+        if pbar.n >= pbar.total:
+            diff = pbar.n - pbar.total
+            pbar.close()
             epoch = round(total_examples / examples)
             print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,
                            round_num, epoch, round_examples, total_examples, total_client_samples, batch_size)
+
+            pbar = tqdm(total=examples, position=0, leave=False)
+            pbar.update(diff)
     pbar.close()
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
 

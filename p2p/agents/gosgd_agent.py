@@ -68,9 +68,9 @@ class GoSGDAgent(SyncAgent):
     def send_to_peers(self):
         if self.use_graph:
             # Our modified behaviour where an agent can communicate with multiple neighbours
-            self.w /= 2
             peers = self.graph.get_peers(self.id)
             for peer in peers:
+                self.w /= 2
                 peer.receive_message(self)
         else:
             # Default behaviour, only send to one random node in the network

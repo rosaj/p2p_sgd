@@ -148,15 +148,17 @@ def show(viz_dict, x_axises=tuple(['comms']), agg_fn=np.average):
     plt.show()
 
 
-def side_by_side(viz_dict, agg_fn=np.average):
+def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5)):
     fig, axs = plt.subplots(1, len(viz_dict))
     for ax, (plot_k, plot_v) in zip(axs, viz_dict.items()):
         plot_items(ax, plot_v['x_axis'], plot_v['viz'], plot_k, agg_fn)
     max_y = round(max([ax.get_ylim()[1] for ax in axs]))
     for ax in axs:
         ax.set_ylim([0, max_y])
-    plt.tight_layout(pad=0, w_pad=0)
     # plt.savefig('/Users/robert/Desktop/test.svg', format='svg', dpi=300)
+    fig.set_figwidth(fig_size[0])
+    fig.set_figheight(fig_size[1])
+    plt.tight_layout(pad=0, h_pad=1, w_pad=1)
     plt.show()
 
 

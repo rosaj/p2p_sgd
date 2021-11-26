@@ -29,4 +29,7 @@ def get_devices():
 
 
 def set_devices(devices):
+    if devices == 'CPU':
+        # If executing only on CPU, hide other gpu devices, so as to not cause problems
+        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     os.environ['DEVICES'] = devices
