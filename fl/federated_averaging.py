@@ -1,6 +1,6 @@
 from common import *
 import environ
-
+from datetime import datetime
 
 if environ.is_collab():
     import nest_asyncio
@@ -183,12 +183,12 @@ def train_fed_avg(train_clients,
     pbar.close()
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
 
-    save_json('log/fl_{}C_{}TR_{}V({}S-{}C)_{}E_{}.json'.format(clients_num,
-                                                                num_train_clients, model_v,
-                                                                str(server_pars['lr']).replace('.', '_'),
-                                                                str(client_pars['lr']).replace('.', '_'),
-                                                                epochs,
-                                                                client_weighting), ACC_HIST)
+    save_json('log/fl_{}C_{}TR_{}V({}S-{}C)_{}E_{}_{}.json'.format(clients_num,
+                                                                   num_train_clients, model_v,
+                                                                   str(server_pars['lr']).replace('.', '_'),
+                                                                   str(client_pars['lr']).replace('.', '_'),
+                                                                   epochs, client_weighting,
+                                                                   datetime.now().strftime("%d-%m-%Y_%H_%M")), ACC_HIST)
 
 
 
