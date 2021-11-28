@@ -162,6 +162,29 @@ def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5)):
     plt.show()
 
 
+def plot_graph(viz_dict, fig_size=(10, 5)):
+    import networkx as nx
+    from p2p.graph_manager import nx_graph_from_saved_lists
+    fig, axs = plt.subplots(1, len(viz_dict))
+    if len(viz_dict) < 2:
+        axs = [axs]
+    for ax, (k, v) in zip(axs, viz_dict.items()):
+        nx_graph = nx_graph_from_saved_lists(read_graph(v), directed='(directed)' in v)
+        for i in range(nx_graph.number_of_nodes()):
+            if nx_graph.has_edge(i, i):
+                nx_graph.remove_edge(i, i)
+        ax.set_title(k)
+        # pos = nx.spring_layout(nx_graph)
+        pos = None
+        nx.draw(nx_graph, pos=pos, ax=ax, node_color='b')
+
+    fig.set_figwidth(fig_size[0])
+    fig.set_figheight(fig_size[1])
+    plt.tight_layout(pad=0, h_pad=1, w_pad=1)
+    plt.show()
+
+
+
 if __name__ == '__main__':
     show({
         'D2-R_D': 'D2Agent_50A_20E_50B_4V_ring(directed)_N50_NB1_TV-1',

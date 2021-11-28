@@ -82,7 +82,7 @@ class GoSGDAgent(SyncAgent):
 
     def receive_message(self, other_agent):
         super(GoSGDAgent, self).receive_message(other_agent)
-        # Formula: (ai_w * ai_m + aj_w * aj_w) / (ai_w + aj_w)
+        # Formula: (ai_w * ai_m + aj_w * aj_m) / (ai_w + aj_w)
         weights = tf.nest.map_structure(lambda a, b: (a * self.w + b * other_agent.w) / (self.w + other_agent.w),
                                         self.get_model_weights(), other_agent.get_model_weights())
         self.set_model_weights(weights)

@@ -60,7 +60,7 @@ class P2PAgent(AsyncAgent):
             for al1 in self.model.layers:
                 if 'batch_normalization' in al1.name:
                     # Increasing momentum to .99 for smoother learning curve
-                    al1.momentum = min(self.mm_decay(len(self.hist["examples"]) + 1), .99)
+                    # al1.momentum = min(self.mm_decay(len(self.hist["examples"]) + 1), .99)
                     continue
                 al1.trainable = acc_before < acc_after
 

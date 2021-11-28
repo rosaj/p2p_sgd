@@ -1,4 +1,4 @@
-from plot.visualize import side_by_side, show
+from plot.visualize import side_by_side, show, plot_graph
 
 
 def plot_experiment_1():
@@ -7,19 +7,36 @@ def plot_experiment_1():
             'non-BN model': {
                 'x_axis': 'epoch',
                 'viz': {
-                    'D$^2$': 'experiment_1/D2Agent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_22-11-2021_01_30',
-                    'GoSGD': 'experiment_1/GoSGDAgent_100A_100E_50B_2V_ring(undirected)_N100_NB1_TV-1_21-11-2021_02_46',
-                    'SGP': 'experiment_1/SGPPushSumAgent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_22-11-2021_22_46',
+                    'D$^2$': [
+                        'experiment_1/nonbn/D2Agent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_27-11-2021_18_22',
+                        'experiment_1/nonbn/D2Agent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_27-11-2021_22_18',
+                    ],
+                    'GoSGD': [
+                        'experiment_1/nonbn/GoSGDAgent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_27-11-2021_17_07',
+                        'experiment_1/nonbn/GoSGDAgent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_27-11-2021_20_05',
+                    ],
+                    'SGP': [
+                        'experiment_1/nonbn/SGPPushSumAgent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_27-11-2021_18_32',
+                        'experiment_1/nonbn/SGPPushSumAgent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_27-11-2021_22_55',
+                    ],
                 },
             },
             'BN model': {
                 'x_axis': 'epoch',
                 'viz': {
-                    'D$^2$': 'experiment_1/D2Agent_100A_100E_50B_4V_ring(undirected)_N100_NB2_TV-1_22-11-2021_11_57',
-                    'GoSGD': 'experiment_1/GoSGDAgent_100A_100E_50B_4V_ring(undirected)_N100_NB1_TV-1_21-11-2021_11_19',
-                    'SGP': 'experiment_1/SGPPushSumAgent_100A_100E_50B_4V_ring(undirected)_N100_NB2_TV-1_23-11-2021_11_11',
+                    'D$^2$': 'experiment_1/bn/D2Agent_100A_100E_50B_4V_ring(undirected)_N100_NB2_TV-1_22-11-2021_11_57',
+                    'GoSGD': 'experiment_1/bn/GoSGDAgent_100A_100E_50B_4V_ring(undirected)_N100_NB1_TV-1_21-11-2021_11_19',
+                    'SGP': 'experiment_1/bn/SGPPushSumAgent_100A_100E_50B_4V_ring(undirected)_N100_NB2_TV-1_23-11-2021_11_11',
                 },
             },
+        }
+    )
+
+
+def plot_experiment_1_graph():
+    plot_graph(
+        {
+            'Undirected ring': 'experiment_1/nonbn/D2Agent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_22-11-2021_01_30',
         }
     )
 
@@ -33,35 +50,58 @@ def plot_experiment_2():
                     'experiment_2/fixed/undirected/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_24-11-2021_10_08',
                     'experiment_2/fixed/undirected/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_24-11-2021_12_46',
                     'experiment_2/fixed/undirected/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_24-11-2021_15_53',
-                    ],
+                ],
                 'D$^2$': [
                     'experiment_2/fixed/undirected/D2Agent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_12_37',
                     'experiment_2/fixed/undirected/D2Agent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_13_02',
-                    ],
+                    'experiment_2/fixed/undirected/D2Agent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_15_59',
+                ],
                 'GoSGD': [
                     'experiment_2/fixed/undirected/GoSGDAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_09_10',
                     'experiment_2/fixed/undirected/GoSGDAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_10_03',
                     'experiment_2/fixed/undirected/GoSGDAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_13_17',
-                    ],
+                ],
                 'SGP': [
                     'experiment_2/fixed/undirected/SGPPushSumAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_12_19',
                     'experiment_2/fixed/undirected/SGPPushSumAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_13_55',
-                    ]
+                    'experiment_2/fixed/undirected/SGPPushSumAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_17_00',
+                ],
+                'FL': ['experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_00_56',
+                       'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_02_09',
+                       'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_03_34',
+                       ]
             }
         },
-        'Individual': {
+        'Fixed sparse (directed)': {
             'x_axis': 'epoch',
             'viz': {
-                'P2P1': 'experiment_2/fixed/undirected/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_24-11-2021_10_08',
-                'P2P2': 'experiment_2/fixed/undirected/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_24-11-2021_12_46',
-                'P2P3': 'experiment_2/fixed/undirected/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_24-11-2021_15_53',
-                'GoSGD1': 'experiment_2/fixed/undirected/GoSGDAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_09_10',
-                'GoSGD2': 'experiment_2/fixed/undirected/GoSGDAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_10_03',
-                'SGP': 'experiment_2/fixed/undirected/SGPPushSumAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_13_55',
+                'P2P': [
+                    'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_27-11-2021_04_06',
+                    'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_27-11-2021_08_17',
+                    'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_27-11-2021_13_10',
+                ],
+                'GoSGD': [
+                    'experiment_2/fixed/directed/GoSGDAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_28-11-2021_12_59',
+                    'experiment_2/fixed/directed/GoSGDAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_28-11-2021_13_51',
+                    'experiment_2/fixed/directed/GoSGDAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_28-11-2021_15_56',
+                ],
+                'FL': ['experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_00_56',
+                       'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_02_09',
+                       'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_03_34',
+                       ]
             }
         },
     })
 
 
+def plot_experiment_2_graph():
+    plot_graph(
+        {
+            'Undirected sparse': 'experiment_2/fixed/undirected/D2Agent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_26-11-2021_12_37',
+            'Directed sparse': 'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_27-11-2021_04_06',
+        }
+    )
+
+
 if __name__ == '__main__':
-    plot_experiment_2()
+    plot_experiment_2_graph()

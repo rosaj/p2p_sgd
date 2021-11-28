@@ -16,11 +16,16 @@ def sample_neighbors(client_num, num_clients, self_ind):
 
 def sparse_graph(n, num_neighbors, create_using):
     if create_using.is_directed():
+        in_n = [num_neighbors] * n
+        out_n = [num_neighbors] * n
+        g = nx.directed_havel_hakimi_graph(in_n, out_n, create_using)
+        """
         m = np.zeros(shape=(n, n))
         for i in range(n):
             nb = sample_neighbors(n, num_neighbors, i)
             m[i][nb] = 1
         g = nx.from_numpy_matrix(np.asmatrix(m), create_using=create_using)
+        """
     else:
         # undirected d-regular graph (sum row == sum column)
         g = nx.random_regular_graph(num_neighbors, n)
@@ -121,10 +126,10 @@ class GraphManager:
         return nx.to_numpy_array(self._nx_graph)
 
 
-def nx_graph_from_saved_lists(np_array):
-    return nx.from_numpy_array(np.asarray(np_array))
+def nx_graph_from_saved_lists(np_array, directed=False):
+    return nx.from_numpy_array(np.asarray(np_array), create_using=nx.DiGraph() if directed else nx.Graph())
 
 
 if __name__ == "__main__":
-    gm = GraphManager('sparse', [DummyNode(_) for _ in range(100)], directed=True, num_neighbors=3)
+    gm = GraphManager('sparse', [DummyNode(_) for _ in range(10)], directed=True, num_neighbors=3)
     gm.draw()
