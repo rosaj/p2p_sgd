@@ -34,7 +34,9 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
 
     pbar = new_progress_bar(examples, 'Training')
     for a in agents:
-        n = a.start()
+        device = resolve_agent_device(agents, a, devices)
+        with tf.device(device or 'CPU'):
+            n = a.start()
         update_pb(pbar, agents, n, start_time)
     _, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples)
 
