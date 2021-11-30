@@ -62,7 +62,7 @@ def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars
 
         is_check, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples)
         if is_check:
-            graph_manager.check_time_varying(round_num-1)
+            graph_manager.check_time_varying(round_num)
 
     pbar.close()
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
