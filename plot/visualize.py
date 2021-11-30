@@ -184,7 +184,6 @@ def plot_graph(viz_dict, fig_size=(10, 5)):
     plt.show()
 
 
-
 if __name__ == '__main__':
     show({
         'D2-R_D': 'D2Agent_50A_20E_50B_4V_ring(directed)_N50_NB1_TV-1',
