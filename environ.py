@@ -63,4 +63,4 @@ def set_visible_devices(devices):
 
 
 def check_devices():
-    set_visible_devices(get_devices())
+    set_visible_devices(os.environ.get('DEVICES', ''))
