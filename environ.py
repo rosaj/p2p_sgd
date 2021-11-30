@@ -28,8 +28,39 @@ def get_devices():
     return [d.strip() for d in devices if len(d.strip()) > 0]
 
 
-def set_devices(devices):
-    if devices == 'CPU':
-        # If executing only on CPU, hide other gpu devices, so as to not cause problems
-        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-    os.environ['DEVICES'] = devices
+def set_visible_devices(devices):
+    if "CUDA_VISIBLE_DEVICES" in os.environ:
+        # Visible devices already set
+        return
+    devices = devices or 'CPU'
+    devices = str.upper(devices)
+
+    vis_dev = []
+    for dev in devices.split(','):
+        if 'CPU' in dev:
+            viz_ind = '-1'
+        elif 'GPU' in dev:
+            viz_ind = dev.replace('GPU', '').replace(':', '').strip()
+        else:
+            raise Exception('Unsupported device')
+
+        if viz_ind in vis_dev:
+            raise Exception('Device already added')
+        vis_dev.append(viz_ind)
+
+    viz_dev = sorted(vis_dev)
+
+    os.environ["CUDA_VISIBLE_DEVICES"] = ', '.join(viz_dev).replace('-1, ', '')
+    devices = []
+    if '-1' in viz_dev:
+        devices.append('CPU')
+        viz_dev.remove('-1')
+
+    for dev_i in range(len(viz_dev)):
+        devices.append('GPU:{}'.format(dev_i))
+
+    os.environ['DEVICES'] = ', '.join(devices)
+
+
+def check_devices():
+    set_visible_devices(get_devices())
