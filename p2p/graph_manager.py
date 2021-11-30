@@ -61,6 +61,7 @@ class GraphManager:
 
     def check_time_varying(self, time_iter):
         if self.time_varying > 0 and time_iter % self.time_varying == 0:
+            print('Changing graph communication matrix')
             self._nx_graph = self._resolve_graph_type()
             self._resolve_weights_mixing()
 
