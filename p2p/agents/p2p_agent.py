@@ -3,10 +3,12 @@ from p2p.agents.async_agent import *
 
 class P2PAgent(AsyncAgent):
     # noinspection PyDefaultArgument
-    def __init__(self, private_model_pars=None, ensemble_metrics=[MaskedSparseCategoricalAccuracy()], **kwargs):
+    def __init__(self, private_ds_size=-1, private_model_pars=None, ensemble_metrics=[MaskedSparseCategoricalAccuracy()], **kwargs):
         super(P2PAgent, self).__init__(**kwargs)
 
-        self.private_model = create_model(**private_model_pars) if private_model_pars is not None else None
+        self.private_model = None
+        if private_model_pars is not None and private_ds_size <= self.train_len:
+            self.private_model = create_model(**private_model_pars)
         self.ensemble_metrics = ensemble_metrics or []
         self.kl_loss = KLDivergence()
         self.mm_decay = tf.keras.optimizers.schedules.ExponentialDecay(0.85, 15, 1.05)
