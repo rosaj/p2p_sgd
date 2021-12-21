@@ -11,7 +11,7 @@ class P2PAgent(AsyncAgent):
             self.private_model = create_model(**private_model_pars)
         self.ensemble_metrics = ensemble_metrics or []
         self.kl_loss = KLDivergence()
-        self.mm_decay = tf.keras.optimizers.schedules.ExponentialDecay(0.85, 15, 1.05)
+        self.mm_decay = tf.keras.optimizers.schedules.ExponentialDecay(0.9, 5, 1.01)
 
         self.train_rounds = 1
         self.received_msg = False
@@ -62,7 +62,7 @@ class P2PAgent(AsyncAgent):
             for al1 in self.model.layers:
                 if 'batch_normalization' in al1.name:
                     # Increasing momentum to .99 for smoother learning curve
-                    # al1.momentum = min(self.mm_decay(len(self.hist["examples"]) + 1), .99)
+                    al1.momentum = min(self.mm_decay(int(self.trained_examples / self.train_len)), .99)
                     continue
                 al1.trainable = acc_before < acc_after
 
