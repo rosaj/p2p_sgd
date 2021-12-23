@@ -42,11 +42,8 @@ def calc_agent_timeline(data, x_axis, agg_fn):
     total_examples = sum([data[a_key]['train_len'] for a_key in list(data.keys())])
     x_time = [] if x_axis != 'Round' else rounds
     for rind in rounds:
-        val = [data[a_id]['val_' + mk][rind] for a_id in data.keys()]
         test = [data[a_id]['test_' + mk][rind] for a_id in data.keys()]
-        # v_acc.append(agg_fn(val) * 100)
         t_acc.append(agg_fn(test) * 100)
-        acc.append(agg_fn(np.average([val, test], axis=0)) * 100)
 
         examples = sum([data[a_key]['examples'][rind] for a_key in list(data.keys())])
         if x_axis == 'epoch':
@@ -76,12 +73,13 @@ def calc_fl_timeline(data, x_axis, agg_fn):
             x_time.append(dv['Epoch'])
         elif x_axis == 'examples':
             x_time.append(dv['Examples'])
-        # elif x_axis == 'comms':
-            # x_time.append(int(filename.split('_')[2].replace('TR', '')) * 2 * int(dk))
+        elif x_axis == 'comms':
+            # Double the communications because server needs to send and receive message
+            x_time.append(dv['Sampled_Clients'] * 2)
     return x_time, t_acc
 
 
-def resolve_timeline(filename, x_axis, agg_fn):
+def resolve_timeline(filename, x_axis, agg_fn=np.average):
     data = read_json(filename)
     if 'agents' in data:
         return calc_agent_timeline(data['agents'], x_axis, agg_fn)
@@ -93,14 +91,17 @@ def parse_timeline(name, filename, x_axis='Examples', agg_fn=np.average):
     if isinstance(filename, str):
         return resolve_timeline(filename, x_axis, agg_fn)
     if isinstance(filename, list):
-        time, acc_t = None, None
+        time_t, acc_t = None, None
         for fl in filename:
             time, acc = resolve_timeline(fl, x_axis, agg_fn)
             if acc_t is None:
                 acc_t = acc
+                time_t = time
             else:
                 acc_t = np.add(acc_t, acc)
-        return time, np.array(acc_t) / float(len(filename))
+                time_t = np.add(time_t, time)
+
+        return np.array(time_t) / float(len(filename)), np.array(acc_t) / float(len(filename))
 
 
 def plot_items(ax, x_axis, viz_dict, title=None, agg_fn=np.average):
@@ -148,8 +149,9 @@ def show(viz_dict, x_axises=tuple(['comms']), agg_fn=np.average):
     plt.show()
 
 
-def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5)):
-    fig, axs = plt.subplots(1, len(viz_dict))
+def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5), n_rows=1):
+    fig, axs = plt.subplots(n_rows, int(len(viz_dict) / n_rows))
+    axs = axs.flatten()
     for ax, (plot_k, plot_v) in zip(axs, viz_dict.items()):
         plot_items(ax, plot_v['x_axis'], plot_v['viz'], plot_k, agg_fn)
     max_y = round(max([ax.get_ylim()[1] for ax in axs]))
@@ -186,30 +188,22 @@ def plot_graph(viz_dict, fig_size=(10, 5)):
 
 if __name__ == '__main__':
     show({
-        'D2-R_D': 'D2Agent_50A_20E_50B_4V_ring(directed)_N50_NB1_TV-1',
-        'D2-R_U': 'D2Agent_50A_20E_50B_4V_ring(undirected)_N50_NB2_TV-1',
-        'D2-S_D': 'D2Agent_50A_20E_50B_4V_sparse(directed)_N50_NB2_TV-1',
-        'D2-S_U': 'D2Agent_50A_20E_50B_4V_sparse(undirected)_N50_NB2_TV-1',
+        'decay(0.0045) - 100': 'experiment_3/decaying_45_P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_22-12-2021_12_41',
+        'decay(0.009) - 100': 'experiment_3/decaying_9_P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_22-12-2021_16_06',
+        'decay - 100': 'experiment_3/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_14-12-2021_00_22',
 
-        # 'P2P-R_D': 'P2PAgent_50A_20E_50B_4V_ring(directed)_N50_NB1_TV-1',
-        # 'P2P-R_U': 'P2PAgent_50A_20E_50B_4V_ring(undirected)_N50_NB2_TV-1',
-        # 'P2P-S_U': 'P2PAgent_50A_20E_50B_4V_sparse(undirected)_N50_NB2_TV-1',
-        # 'P2P-S_D': 'P2PAgent_50A_20E_50B_4V_sparse(directed)_N50_NB2_TV-1',
-
-        # 'SGP-R_D': 'SGPPushSumAgent_50A_20E_50B_4V_ring(directed)_N50_NB1_TV-1',
-        # 'SGP-R_U': 'SGPPushSumAgent_50A_20E_50B_4V_ring(undirected)_N50_NB2_TV-1',
-        # 'SGP-S_U': 'SGPPushSumAgent_50A_20E_50B_4V_sparse(undirected)_N50_NB2_TV-1',
-
-        # 'P2P (A=100, N=2)': 'p2p_100A_2N_101E_average_50B_-1CDS_4Vb_1Vc copy',
-        # 'FL   (A=100, S=10)': 'fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples',
-
-        # 'P2P (A=500, N=2)': 'p2p_500A_2N_101E_average_50B_-1CDS_4Vb_1Vc',
-        # 'FL   (A=500, S=10)': 'fl_500C_10TR_2V(0_005S-0_005C)_100E_num_examples',
-
-        # 'FL   (A=1000, S=10)': 'fl_1000C_10TR_2V(0_005S-0_005C)_100E_num_examples',
-        # 'P2P (A=1000, N=2)': 'p2p_1000A_2N_101E_average_50B_-1CDS_4Vb_1Vc',
+        # 'fixed - 500': 'experiment_3/old_P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_04-12-2021_16_20',
+        # 'decaying': 'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_14-12-2021_15_37',
+        # 'fixed-1000': 'experiment_3/old_P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_09-12-2021_04_28',
+        # 'decay-1000': 'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_19-12-2021_16_30',
+        # 'Fixed-100': 'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_29-11-2021_20_59',
+        # 'Decaying-100': 'P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_10-12-2021_21_37',
+        # 'Fix(0.99)-100': 'P2PAgent_100A_99E_50B_4V_sparse(directed)_N100_NB3_TV-1_12-12-2021_22_24',
+        # 'Fixed-500': 'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_04-12-2021_16_20',
+        # 'FL-500': 'experiment_3/fl_500C_10TR_2V(0_005S-0_005C)_100E_num_examples_06-12-2021_12_24',
+        # 'Decaying-500': 'P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_11-12-2021_16_03',
 
     },
-        x_axises=['epoch', 'comms'],
+        x_axises=['epoch'],
         # 'round', 'examples', 'epoch', 'comms', 'acomms'
     )
