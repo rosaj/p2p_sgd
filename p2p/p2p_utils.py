@@ -46,7 +46,7 @@ def resolve_agent_device(agents, agent, devices):
                    for dev in devices}
         gpu_mem = {gpu: mem for gpu, mem in dev_mem.items() if 'GPU' in gpu}
         gpu = max(gpu_mem, key=gpu_mem.get)
-        if gpu > 0:
+        if gpu_mem[gpu] > 0:
             return gpu
         return max(dev_mem, key=dev_mem.get)
 
