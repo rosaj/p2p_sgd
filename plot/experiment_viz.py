@@ -110,7 +110,8 @@ def plot_experiment_1():
 def plot_experiment_1_graph():
     plot_graph(
         {
-            'Undirected ring': 'experiment_1/nonbn/D2Agent_100A_100E_50B_2V_ring(undirected)_N100_NB2_TV-1_22-11-2021_01_30',
+            'Undirected ring': 'experiment_1/undirected/bn/P2PAgent_100A_100E_50B_4V_ring(undirected)_N100_NB2_TV-1_16-12-2021_11_36',
+            'Directed ring': 'experiment_1/directed/bn/P2PAgent_100A_100E_50B_4V_ring(directed)_N100_NB1_TV-1_16-12-2021_21_48',
         }
     )
 
@@ -344,40 +345,60 @@ def plot_experiment_2_graph():
 
 
 def plot_experiment_3():
-    show({
-        'P2P (100)': [
-            'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_29-11-2021_20_59',
-            'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_30-11-2021_01_19',
-            'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_30-11-2021_06_33',
-        ],
-        'P2P (500)': [
-            'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_04-12-2021_16_20',
-            'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_05-12-2021_10_31',
-            'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_06-12-2021_04_00',
-        ],
-        'P2P (1000)': [
-            'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_09-12-2021_04_28',
-            'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_11-12-2021_21_32',
-        ],
-        'FL (100)': [
-            'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_00_56',
-            'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_02_09',
-            'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_03_34',
-        ],
-        'FL (500)': [
-            'experiment_3/fl_500C_10TR_2V(0_005S-0_005C)_100E_num_examples_06-12-2021_12_24',
-            'experiment_3/fl_500C_10TR_2V(0_005S-0_005C)_100E_num_examples_06-12-2021_17_21',
-            'experiment_3/fl_500C_10TR_2V(0_005S-0_005C)_100E_num_examples_06-12-2021_22_20',
-        ],
-        'FL (1000)': [
-            'experiment_3/fl_1000C_10TR_2V(0_005S-0_005C)_100E_num_examples_09-12-2021_18_57',
-            'experiment_3/fl_1000C_10TR_2V(0_005S-0_005C)_100E_num_examples_10-12-2021_05_17',
-            'experiment_3/fl_1000C_10TR_2V(0_005S-0_005C)_100E_num_examples_10-12-2021_16_09',
-        ]
-    }, x_axises=['epoch'],
-
-    )
+    side_by_side({
+        'Results': {
+            'x_axis': 'epoch',
+            'viz': {
+                'P2P (100)': [
+                    'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_29-11-2021_20_59',
+                    'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_30-11-2021_01_19',
+                    'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_30-11-2021_06_33',
+                ],
+                'P2P (500)': [
+                    'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_14-12-2021_15_37',
+                    'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_14-12-2021_16_01',
+                    'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_16-12-2021_11_21',
+                ],
+                'P2P (1000)': [
+                    'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_19-12-2021_16_30',
+                ],
+                'FL (100)': [
+                    'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_00_56',
+                    'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_02_09',
+                    'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_03_34',
+                ],
+                'FL (500)': [
+                    'experiment_3/fl_500C_10TR_2V(0_005S-0_005C)_100E_num_examples_06-12-2021_12_24',
+                    'experiment_3/fl_500C_10TR_2V(0_005S-0_005C)_100E_num_examples_06-12-2021_17_21',
+                    'experiment_3/fl_500C_10TR_2V(0_005S-0_005C)_100E_num_examples_06-12-2021_22_20',
+                ],
+                'FL (1000)': [
+                    'experiment_3/fl_1000C_10TR_2V(0_005S-0_005C)_100E_num_examples_09-12-2021_18_57',
+                    'experiment_3/fl_1000C_10TR_2V(0_005S-0_005C)_100E_num_examples_10-12-2021_05_17',
+                    'experiment_3/fl_1000C_10TR_2V(0_005S-0_005C)_100E_num_examples_10-12-2021_16_09',
+                ]
+            }
+        },
+        'Per-agent messages': {
+            'x_axis': 'acomms',
+            'viz': {
+                'P2P (100)': [
+                    'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_29-11-2021_20_59',
+                    'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_30-11-2021_01_19',
+                    'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_30-11-2021_06_33',
+                ],
+                'P2P (500)': [
+                    'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_14-12-2021_15_37',
+                    'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_14-12-2021_16_01',
+                    'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_16-12-2021_11_21',
+                ],
+                'P2P (1000)': [
+                    'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_19-12-2021_16_30',
+                ]
+            }
+        }
+    })
 
 
 if __name__ == '__main__':
-    plot_experiment_1()
+    plot_experiment_3()

@@ -16,6 +16,13 @@ class P2PAgent(AsyncAgent):
         self.train_rounds = 1
         self.received_msg = False
 
+    @property
+    def _has_bn_layers(self):
+        for layer in self.model.layers:
+            if 'batch_normalization' in layer.name:
+                return True
+        return False
+
     def receive_message(self, other_agent):
         super(P2PAgent, self).receive_message(other_agent)
         weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, self.get_model_weights(), other_agent.get_model_weights())
@@ -56,15 +63,18 @@ class P2PAgent(AsyncAgent):
             return
 
         for _ in range(self.train_rounds):
-            acc_before = self.shared_val_acc()
-            self.train_epoch()
-            acc_after = self.shared_val_acc()
-            for al1 in self.model.layers:
-                if 'batch_normalization' in al1.name:
-                    # Increasing momentum to .99 for smoother learning curve
-                    al1.momentum = min(self.mm_decay(int(self.trained_examples / self.train_len)), .99)
-                    continue
-                al1.trainable = acc_before < acc_after
+            if self._has_bn_layers:
+                acc_before = self.shared_val_acc()
+                self.train_epoch()
+                acc_after = self.shared_val_acc()
+                for al1 in self.model.layers:
+                    if 'batch_normalization' in al1.name:
+                        # Increasing momentum to .99 for smoother learning curve
+                        al1.momentum = min(self.mm_decay(int(self.trained_examples / self.train_len)), .99)
+                        continue
+                    al1.trainable = acc_before < acc_after
+            else:
+                self.train_epoch()
 
     def train_fn(self):
         self.fit()
