@@ -182,7 +182,7 @@ class P2PAgent(AsyncAgent):
     def memory_footprint(self):
         if self.has_private:
             return calculate_memory_model_size(self.model) + calculate_memory_model_size(self.private_model)
-        return super(P2PAgent, self).memory_footprint()
+        return super(P2PAgent, self).memory_footprint
 
     def deserialize(self):
         super(P2PAgent, self).deserialize()
