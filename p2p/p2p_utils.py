@@ -49,7 +49,7 @@ def resolve_agent_device(agents, agent, devices):
         if gpu_mem[gpu] > 0:
             return gpu
         return max(dev_mem, key=dev_mem.get)
-
+    """
     if agent.device is None:
         free_mem, mem_dev = 0, ''
         for device in devices:
@@ -70,6 +70,7 @@ def resolve_agent_device(agents, agent, devices):
                     a.serialize()
                     a.device = None
                 break
+    """
     return agent.device
 
 
