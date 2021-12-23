@@ -26,6 +26,14 @@ def available_device_memory(device_name):
         return psutil.virtual_memory()[1] / 1024**2
 
 
+def total_device_memory(device_name):
+    if 'GPU' in device_name.upper():
+        gpu_cur, gpu_total = gpu_memory(device_name, 'MB')
+        return gpu_total
+    elif 'CPU' in device_name.upper():
+        return psutil.virtual_memory()[0] / 1024**2
+
+
 def gpu_memory(gpu_name, units='MB'):
     power_f = ['B', 'MB', 'GB'].index(units) + 1
     viz_devs = os.environ["CUDA_VISIBLE_DEVICES"].split(', ')

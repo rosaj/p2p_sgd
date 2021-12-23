@@ -40,13 +40,15 @@ def resolve_agent_device(agents, agent, devices):
     if len(devices) == 0:
         return None
     if agent is None:
-        free_mem, mem_dev = 0, ''
-        for device in devices:
-            available_mem = available_device_memory(device)
-            if available_mem > free_mem:
-                free_mem = available_mem
-                mem_dev = device
-        return mem_dev
+        if len(devices) == 1:
+            return devices[0]
+        dev_mem = {dev: total_device_memory(dev) * 0.9 - sum([a.memory_footprint for a in agents if a.device == dev])
+                   for dev in devices}
+        gpu_mem = {gpu: mem for gpu, mem in dev_mem.items() if 'GPU' in gpu}
+        gpu = max(gpu_mem, key=gpu_mem.get)
+        if gpu > 0:
+            return gpu
+        return max(dev_mem, key=dev_mem.get)
 
     if agent.device is None:
         free_mem, mem_dev = 0, ''
