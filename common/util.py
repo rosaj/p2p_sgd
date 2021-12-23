@@ -33,7 +33,7 @@ def gpu_memory(gpu_name, units='MB'):
 
     usage = tf.config.experimental.get_memory_info(gpu_name)
     current = round(usage['current'] / (1024 ** power_f), 2)
-    total = round((GPUtil.getGPUs()[int(viz_devs[int(gpu_ind)])]) * 1024 / (1024 ** power_f))
+    total = round(GPUtil.getGPUs()[int(viz_devs[int(gpu_ind)])].memoryTotal * 1024 / (1024 ** power_f))
     return current, total
 
 
