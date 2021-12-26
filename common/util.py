@@ -79,3 +79,4 @@ def save_json(filename, json_dict):
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     with open(filename, "w") as outfile:
         json.dump(json_dict, outfile, indent=None, cls=NumpyValuesEncoder)
+    print("Saved to", filename)

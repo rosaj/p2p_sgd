@@ -12,6 +12,8 @@ tensorflow-federated = "0.19.0"
 matplotlib = "*"
 tensorflow-privacy = "0.5.2"
 nltk = "3.5"
+GPUtil = "*"
+psutil = "*"
 
 [dev-packages]
 

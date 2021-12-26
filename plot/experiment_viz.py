@@ -361,6 +361,7 @@ def plot_experiment_3():
                 ],
                 'P2P (1000)': [
                     'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_19-12-2021_16_30',
+                    'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_26-12-2021_05_47',
                 ],
                 'FL (100)': [
                     'experiment_2/fl_100C_10TR_2V(0_005S-0_005C)_100E_num_examples_27-11-2021_00_56',
@@ -394,6 +395,7 @@ def plot_experiment_3():
                 ],
                 'P2P (1000)': [
                     'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_19-12-2021_16_30',
+                    'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_26-12-2021_05_47',
                 ]
             }
         }

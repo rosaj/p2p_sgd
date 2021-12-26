@@ -94,7 +94,7 @@ def create_model(model_v=1, lr=0.001, decay=0, vocab_size=10002, embedding_size=
 
 
 def calculate_memory_model_size(model):
-    return model.count_params() * 4 / (1024 ** 2) * 3
+    return model.count_params() * 4 / (1024 ** 2) * 2
 
 
 def load(model_path):
