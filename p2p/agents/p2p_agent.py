@@ -117,7 +117,7 @@ class P2PAgent(AsyncAgent):
         private_model.compiled_metrics.update_state(y, c_logits)
         return tf.divide(tf.add(bd_loss, cd_loss), 2)
 
-    def calc_new_metrics(self, metrics_names=tuple(['acc'])):
+    def calc_new_metrics(self, metrics_names=None):
         super(P2PAgent, self).calc_new_metrics(metrics_names)
         if self.has_private:
             self._add_hist_metric(self._eval_train_metrics(self.private_model), "train_private", metrics_names)
