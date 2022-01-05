@@ -14,6 +14,8 @@ from tensorflow.keras.models import clone_model
 from tensorflow.keras.callbacks import ModelCheckpoint
 from tensorflow.keras.callbacks import EarlyStopping
 
+from .metrics import MaskedSparseCategoricalAccuracy, MaskedSparseF1Score, MaskedSparsePrecision, MaskedSparseRecall
+from tensorflow.keras.metrics import Recall
 # from tensorflow.python.framework.ops import disable_eager_execution
 # disable_eager_execution()
 
@@ -30,36 +32,16 @@ def clear_def_weights_cache():
     _default_weights.clear()
 
 
-class MaskedSparseCategoricalAccuracy(SparseCategoricalAccuracy):
-    """An accuracy metric that masks some tokens."""
-
-    # noinspection PyDefaultArgument
-    def __init__(self, masked_tokens=[1], name='accuracy_no_oov', dtype=None):
-        self._masked_tokens = masked_tokens or []
-        super().__init__(name, dtype=dtype)
-
-    @staticmethod
-    def _get_mask(y_true, sample_weight, masked_tokens):
-        if sample_weight is None:
-            sample_weight = tf.ones_like(y_true, tf.float32)
-        for token in masked_tokens:
-            mask = tf.cast(tf.not_equal(y_true, token), tf.float32)
-            sample_weight = sample_weight * mask
-        return sample_weight
-
-    def update_state(self, y_true, y_pred, sample_weight=None):
-        mask = MaskedSparseCategoricalAccuracy._get_mask(y_true, sample_weight, self._masked_tokens)
-        num_classes = tf.shape(y_pred)[-1]
-        y_true = tf.reshape(y_true, [-1])
-        y_pred = tf.reshape(y_pred, [-1, num_classes])
-        mask = tf.reshape(mask, [-1])
-        super().update_state(y_true, y_pred, mask)
-
-
 def compile_model(model, lr=0.001, decay=0):
     model.compile(loss=SparseCategoricalCrossentropy(from_logits=False),
                   optimizer=Adam(learning_rate=lr, decay=decay),
-                  metrics=[MaskedSparseCategoricalAccuracy()])
+                  metrics=[MaskedSparseCategoricalAccuracy(),
+                           MaskedSparseF1Score(num_classes=10002),
+                           MaskedSparseF1Score(num_classes=10002, name='sparse_micro_f1_score_no_oov', average='micro'),
+                           MaskedSparseF1Score(num_classes=10002, name='sparse_macro_f1_score_no_oov', average='macro'),
+                           MaskedSparsePrecision(),
+                           MaskedSparseRecall(),
+                           ])
 
 
 def create_model(model_v=1, lr=0.001, decay=0, vocab_size=10002, embedding_size=10, do_compile=True, default_weights=False):

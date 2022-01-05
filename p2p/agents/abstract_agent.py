@@ -167,7 +167,7 @@ class Agent:
     def _eval_test_metrics(self, m):
         return self._eval_model_metrics(m, self.test)
 
-    def calc_new_metrics(self, metrics_names=tuple(['acc'])):
+    def calc_new_metrics(self, metrics_names=None):
         self.hist["examples"].append(self.trained_examples)
         self.hist["useful_msg"].append(0)
         self.hist["useless_msg"].append(0)
@@ -178,9 +178,15 @@ class Agent:
 
     def _add_hist_metric(self, metrics, key, metrics_names):
         for k, v in metrics.items():
-            for name in metrics_names:
-                if name in k:
-                    key_name = key + '-' + k
-                    if key_name not in self.hist:
-                        self.hist[key_name] = [0]
-                    self.hist[key_name].append(v)
+            if metrics_names is None or len(metrics_names) == 0:
+                key_name = key + '-' + k
+                if key_name not in self.hist:
+                    self.hist[key_name] = [0]
+                self.hist[key_name].append(v)
+            else:
+                for m_name in metrics_names:
+                    if m_name in k:
+                        key_name = key + '-' + k
+                        if key_name not in self.hist:
+                            self.hist[key_name] = [0]
+                        self.hist[key_name].append(v)

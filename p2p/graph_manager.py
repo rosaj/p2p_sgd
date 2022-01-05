@@ -117,6 +117,8 @@ class GraphManager:
         nb_num = self.num_neighbors
         if self.graph_type == 'ring':
             nb_num = 1 if self.directed else 2
+        elif self.graph_type == 'complete':
+            nb_num = self.n - 1
         info = "{} ({}), N: {}, NB: {}, TV: {}".format(self.graph_type,
                                                        'directed' if self.directed else 'undirected',
                                                        self.n, nb_num,
@@ -132,5 +134,5 @@ def nx_graph_from_saved_lists(np_array, directed=False):
 
 
 if __name__ == "__main__":
-    gm = GraphManager('sparse', [DummyNode(_) for _ in range(10)], directed=True, num_neighbors=3)
+    gm = GraphManager('sparse', [DummyNode(_) for _ in range(10)], directed=False, num_neighbors=3)
     gm.draw()
