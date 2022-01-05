@@ -1,6 +1,20 @@
 from plot.visualize import side_by_side, show, plot_graph, resolve_timeline
 
 
+def plot_graphs():
+    plot_graph(
+        {
+            'Ring (undirected)': 'graphs/P2PAgent_10A_0E_50B_1V_ring(undirected)_N10_NB2_TV-1_04-01-2022_16_11',
+            'Fully connected (undirected)': 'graphs/P2PAgent_10A_0E_50B_1V_complete(undirected)_N10_NB9_TV-1_04-01-2022_16_13',
+            'Sparse (undirected)': 'graphs/P2PAgent_10A_0E_50B_1V_sparse(undirected)_N10_NB3_TV-1_04-01-2022_17_06',
+
+            'Ring (directed)': 'graphs/P2PAgent_10A_0E_50B_1V_ring(directed)_N10_NB1_TV-1_04-01-2022_17_17',
+            'Fully connected (directed)': 'graphs/P2PAgent_10A_0E_50B_1V_complete(directed)_N10_NB9_TV-1_04-01-2022_17_18',
+            'Sparse (directed)': 'graphs/P2PAgent_10A_0E_50B_1V_sparse(directed)_N10_NB3_TV-1_04-01-2022_17_19',
+        }, n_rows=2
+    )
+
+
 def plot_experiment_1():
     side_by_side(
         {
@@ -405,4 +419,4 @@ def plot_experiment_3():
 
 
 if __name__ == '__main__':
-    plot_experiment_3()
+    plot_graphs()

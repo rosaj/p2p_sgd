@@ -164,10 +164,11 @@ def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5), n_rows=1):
     plt.show()
 
 
-def plot_graph(viz_dict, fig_size=(10, 5)):
+def plot_graph(viz_dict, fig_size=(10, 5), n_rows=1):
     import networkx as nx
     from p2p.graph_manager import nx_graph_from_saved_lists
-    fig, axs = plt.subplots(1, len(viz_dict))
+    fig, axs = plt.subplots(n_rows, int(len(viz_dict) / n_rows))
+    axs = axs.flatten()
     if len(viz_dict) < 2:
         axs = [axs]
     for ax, (k, v) in zip(axs, viz_dict.items()):
