@@ -35,13 +35,7 @@ def clear_def_weights_cache():
 def compile_model(model, lr=0.001, decay=0):
     model.compile(loss=SparseCategoricalCrossentropy(from_logits=False),
                   optimizer=Adam(learning_rate=lr, decay=decay),
-                  metrics=[MaskedSparseCategoricalAccuracy(),
-                           MaskedSparseF1Score(num_classes=10002),
-                           MaskedSparseF1Score(num_classes=10002, name='sparse_micro_f1_score_no_oov', average='micro'),
-                           MaskedSparseF1Score(num_classes=10002, name='sparse_macro_f1_score_no_oov', average='macro'),
-                           MaskedSparsePrecision(),
-                           MaskedSparseRecall(),
-                           ])
+                  metrics=[MaskedSparseCategoricalAccuracy()])
 
 
 def create_model(model_v=1, lr=0.001, decay=0, vocab_size=10002, embedding_size=10, do_compile=True, default_weights=False):
