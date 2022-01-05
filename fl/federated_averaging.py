@@ -45,12 +45,23 @@ def state_to_model(s_state):
 
 
 def avg_model_acc(model, dataset, cl_keys, desc, batch_size):
+    reset_compiled_metrics(model)
     accs = []
+    all_metrics = {}
     for key in tqdm(cl_keys, desc="Evaluating {}".format(desc), position=0, leave=False):
         if len(dataset[key][1]) < 1:
             continue
-        metrics = model.evaluate(dataset[key][0], dataset[key][1], batch_size=batch_size, verbose=0)
-        accs.append(metrics[1])
+        # metrics = model.evaluate(dataset[key][0], dataset[key][1], batch_size=batch_size, verbose=0)
+        metrics = eval_model_metrics(model, create_tf_dataset_for_client(dataset[key], batch_size))
+        for mk, mv in metrics.items():
+            if mk not in all_metrics:
+                all_metrics[mk] = []
+            all_metrics[mk].append(mv)
+        accs.append(metrics['accuracy_no_oov'])
+
+    for m_name, m_val in all_metrics.items():
+        print("\t{}\t{:.3%}\t{:.3%}".format(m_name, np.average(np.array(m_val)), np.median(np.array(m_val))))
+
     ACC_HIST[list(ACC_HIST.keys())[-1]][desc] = accs
     accs = np.array(accs)
     return np.average(accs), np.median(accs)
@@ -58,7 +69,8 @@ def avg_model_acc(model, dataset, cl_keys, desc, batch_size):
 
 def print_avg_model_acc(model, dataset_dict, cl_keys, batch_size):
     for key in dataset_dict.keys():
-        print("\t{}\t{:.3%}\t{:.3%}\n".format(key, *avg_model_acc(model, dataset_dict[key], cl_keys, key, batch_size)), flush=True, end='')
+        avg_model_acc(model, dataset_dict[key], cl_keys, key, batch_size)
+        # print("\t{}\t{:.3%}\t{:.3%}\n".format(key, *avg_model_acc(model, dataset_dict[key], cl_keys, key, batch_size)), flush=True, end='')
 
 
 def print_accuracy(server_state, train_clients, val_clients, test_clients, client_inds,

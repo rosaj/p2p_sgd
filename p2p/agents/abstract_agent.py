@@ -71,10 +71,6 @@ class Agent:
     def memory_footprint(self):
         return calculate_memory_model_size(self.model)
 
-    @staticmethod
-    def _reset_compiled_metrics(model):
-        model.compiled_metrics.reset_state()
-
     def deserialize(self):
         self.model = load('p2p_models/{}/agent_{}_model'.format(self.__class__.__name__, self.id))
 
@@ -95,7 +91,7 @@ class Agent:
         return len(y)
 
     def train_epoch(self):
-        Agent._reset_compiled_metrics(self.model)
+        reset_compiled_metrics(self.model)
 
         for (x, y) in self.train:
             self._train_on_batch(x, y)
@@ -142,30 +138,14 @@ class Agent:
         self.hist['useless_msg'][-1] += 1
         return True
 
-    @staticmethod
-    def _eval_model_metrics(m, dataset):
-        if len(m.compiled_metrics.metrics) == 0:
-            m.compiled_metrics.build(0, 0)
-        metrics = m.compiled_metrics.metrics
-        for metric in metrics:
-            if hasattr(metric, "reset_state"):
-                metric.reset_state()
-            else:
-                metric.reset_states()
-        for (dx, dy) in dataset:
-            preds = m(dx, training=False)
-            for metric in metrics:
-                metric.update_state(dy, preds)
-        return {metric.name: metric.result().numpy() for metric in metrics}
-
     def _eval_train_metrics(self, m):
-        return self._eval_model_metrics(m, self.train)
+        return eval_model_metrics(m, self.train)
 
     def _eval_val_metrics(self, m):
-        return self._eval_model_metrics(m, self.val)
+        return eval_model_metrics(m, self.val)
 
     def _eval_test_metrics(self, m):
-        return self._eval_model_metrics(m, self.test)
+        return eval_model_metrics(m, self.test)
 
     def calc_new_metrics(self, metrics_names=None):
         self.hist["examples"].append(self.trained_examples)

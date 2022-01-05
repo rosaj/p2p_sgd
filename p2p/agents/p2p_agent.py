@@ -46,9 +46,9 @@ class P2PAgent(AsyncAgent):
         if self.train_rounds < 1:
             return False
 
-        Agent._reset_compiled_metrics(self.model)
+        reset_compiled_metrics(self.model)
         if self.has_private:
-            Agent._reset_compiled_metrics(self.private_model)
+            reset_compiled_metrics(self.private_model)
 
         for (x, y) in self.train:
             self._train_on_batch(x, y)
@@ -89,7 +89,7 @@ class P2PAgent(AsyncAgent):
         return self.train_len
 
     def shared_val_acc(self):
-        for k, v in self._eval_model_metrics(self.model, self.val).items():
+        for k, v in eval_model_metrics(self.model, self.val).items():
             if 'acc' in k:
                 return v
         return None

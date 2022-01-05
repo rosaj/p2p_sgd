@@ -75,6 +75,26 @@ def create_model(model_v=1, lr=0.001, decay=0, vocab_size=10002, embedding_size=
     return model
 
 
+def reset_compiled_metrics(model):
+    model.compiled_metrics.reset_state()
+
+
+def eval_model_metrics(m, dataset):
+    if len(m.compiled_metrics.metrics) == 0:
+        m.compiled_metrics.build(0, 0)
+    metrics = m.compiled_metrics.metrics
+    for metric in metrics:
+        if hasattr(metric, "reset_state"):
+            metric.reset_state()
+        else:
+            metric.reset_states()
+    for (dx, dy) in dataset:
+        preds = m(dx, training=False)
+        for metric in metrics:
+            metric.update_state(dy, preds)
+    return {metric.name: metric.result().numpy() for metric in metrics}
+
+
 def calculate_memory_model_size(model):
     return model.count_params() * 4 / (1024 ** 2) * 2
 
