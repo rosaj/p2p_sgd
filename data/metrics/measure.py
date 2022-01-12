@@ -26,33 +26,35 @@ def get_avg_distance(ds):
     return avg_js_div, ret
 
 
+def calc_js_div(i, ds, shape, lock, ret_dict):
+    for j in range(i, shape[1]):
+        if i == j:
+            continue
+        js_res = js_div(ds[i], ds[j])
+        lock.acquire()
+        try:
+            # print(i, j, js_res)
+            ret_dict["{}-{}".format(i, j)] = js_res
+        except Exception as e:
+            print(e)
+        finally:
+            lock.release()
+
+
 def multiprocess_get_avg_distance(ds):
     from multiprocessing.pool import Pool
-    from multiprocessing import Lock
+    from multiprocessing import freeze_support
     import multiprocessing
+    freeze_support()
 
     manager = multiprocessing.Manager()
     ret_dict = manager.dict()
-    lock = Lock()
+    lock = manager.Lock()
 
     shape = (len(ds), len(ds))
 
-    def calc_js_div(i):
-        for j in range(i, shape[1]):
-            if i == j:
-                continue
-            js_res = js_div(ds[i], ds[j])
-            lock.acquire()
-            try:
-                print(i, j, js_res)
-                ret_dict["{}-{}".format(i, j)] = js_res
-            except Exception as e:
-                print(e)
-            finally:
-                lock.release()
-
     p = Pool(processes=len(ds))
-    p.map(calc_js_div, range(shape[0]))
+    p.starmap(calc_js_div, [(i, ds, shape, lock, ret_dict) for i in range(shape[0])])
     p.close()
     p.join()
 
