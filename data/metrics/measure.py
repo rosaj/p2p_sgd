@@ -7,7 +7,7 @@ def convert_to_global_vector(data_ds, global_space):
     for c_cls in data_ds:
         f_cls = np.zeros(global_space)
         value, counts = np.unique(c_cls, return_counts=True)
-        f_cls[value - 2] = counts
+        f_cls[value] = counts
         ds.append(list(f_cls))
     return ds
 
