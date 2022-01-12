@@ -34,7 +34,7 @@ def init_agents(agent_class, train_clients, val_clients, test_clients, batch_siz
         update_pb(pbar, agents, 1, start_time)
     pbar.close()
     print("Init agents: {} minutes".format(round((time.time() - start_time) / 60)))
-    environ.save_env_vars()
+    # environ.save_env_vars()
     return agents
 
 

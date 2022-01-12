@@ -15,6 +15,9 @@ tensorflow-privacy = "0.5.2"
 nltk = "3.5"
 GPUtil = "*"
 psutil = "*"
+networkx = "*"
+python-dotenv = "*"
+tqdm = "*"
 
 [dev-packages]
 

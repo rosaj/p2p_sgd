@@ -5,8 +5,8 @@ dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv_file)
 
 
-def save_env_vars():
-    dotenv.set_key(dotenv_file, "AGENT_COUNTER", os.environ["AGENT_COUNTER"])
+# def save_env_vars():
+#     dotenv.set_key(dotenv_file, "AGENT_COUNTER", os.environ["AGENT_COUNTER"])
 
 
 def is_collab():
