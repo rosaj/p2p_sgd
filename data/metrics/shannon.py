@@ -27,27 +27,3 @@ def js_div(p, q):
 
     m = 0.5 * (np.array(pn) + np.array(qn))
     return 0.5 * rel_ent(pn, m) + 0.5 * rel_ent(qn, m)
-
-
-def get_avg_distance(ds):
-    shape = (len(ds), len(ds))
-    ret = np.zeros(shape)
-
-    for i in range(shape[0]):
-        for j in range(i, shape[1]):
-            if i == j:
-                continue
-            ret[i, j] = js_div(ds[i], ds[j])
-
-    avg_js_div = np.mean(list(ret[i] for i in zip(*np.triu_indices_from(ret, k=1))))
-    return avg_js_div
-
-
-def convert_to_global_vector(data_ds, global_space):
-    ds = []
-    for c_cls in data_ds:
-        f_cls = np.zeros(global_space)
-        value, counts = np.unique(c_cls, return_counts=True)
-        f_cls[value - 2] = counts
-        ds.append(list(f_cls))
-    return ds
