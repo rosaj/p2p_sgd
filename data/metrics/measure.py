@@ -41,7 +41,7 @@ def calc_js_div(i, ds, shape, lock, ret_dict):
             lock.release()
 
 
-def multiprocess_get_avg_distance(ds):
+def multiprocess_get_avg_distance(ds, num_processes=None):
     from multiprocessing.pool import Pool
     from multiprocessing import freeze_support
     import multiprocessing
@@ -52,8 +52,9 @@ def multiprocess_get_avg_distance(ds):
     lock = manager.Lock()
 
     shape = (len(ds), len(ds))
-
-    p = Pool(processes=len(ds))
+    if num_processes is None:
+        num_processes = multiprocessing.cpu_count()
+    p = Pool(processes=num_processes)
     p.starmap(calc_js_div, [(i, ds, shape, lock, ret_dict) for i in range(shape[0])])
     p.close()
     p.join()
