@@ -18,6 +18,7 @@ psutil = "*"
 networkx = "*"
 python-dotenv = "*"
 tqdm = "*"
+fastcluster = "*"
 
 [dev-packages]
 
