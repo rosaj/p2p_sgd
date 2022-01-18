@@ -5,12 +5,14 @@ class P2PAgent(AsyncAgent):
     # noinspection PyDefaultArgument
     def __init__(self,
                  early_stopping=True,
+                 increase_momentum=False,
                  private_ds_size=-1,
                  private_model_pars=None,
                  ensemble_metrics=[MaskedSparseCategoricalAccuracy()], **kwargs):
         super(P2PAgent, self).__init__(**kwargs)
 
         self.early_stopping = early_stopping
+        self.increase_momentum = increase_momentum
         self.private_model = None
         if private_model_pars is not None and private_ds_size <= self.train_len:
             self.private_model = create_model(**private_model_pars)
@@ -74,8 +76,9 @@ class P2PAgent(AsyncAgent):
                 acc_after = self.shared_val_acc()
                 for al1 in self.model.layers:
                     if 'batch_normalization' in al1.name:
-                        # Increasing momentum to .99 for smoother learning curve
-                        al1.momentum = min(self.mm_decay(int(self.trained_examples / self.train_len)), .99)
+                        if self.increase_momentum:
+                            # Increasing momentum to .99 for smoother learning curve
+                            al1.momentum = min(self.mm_decay(int(self.trained_examples / self.train_len)), .99)
                         continue
                     al1.trainable = acc_before < acc_after
             else:
