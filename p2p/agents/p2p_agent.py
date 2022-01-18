@@ -3,9 +3,14 @@ from p2p.agents.async_agent import *
 
 class P2PAgent(AsyncAgent):
     # noinspection PyDefaultArgument
-    def __init__(self, private_ds_size=-1, private_model_pars=None, ensemble_metrics=[MaskedSparseCategoricalAccuracy()], **kwargs):
+    def __init__(self,
+                 early_stopping=True,
+                 private_ds_size=-1,
+                 private_model_pars=None,
+                 ensemble_metrics=[MaskedSparseCategoricalAccuracy()], **kwargs):
         super(P2PAgent, self).__init__(**kwargs)
 
+        self.early_stopping = early_stopping
         self.private_model = None
         if private_model_pars is not None and private_ds_size <= self.train_len:
             self.private_model = create_model(**private_model_pars)
@@ -63,7 +68,7 @@ class P2PAgent(AsyncAgent):
             return
 
         for _ in range(self.train_rounds):
-            if self._has_bn_layers:
+            if self._has_bn_layers and self.early_stopping:
                 acc_before = self.shared_val_acc()
                 self.train_epoch()
                 acc_after = self.shared_val_acc()
