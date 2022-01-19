@@ -151,6 +151,8 @@ def show(viz_dict, x_axises=tuple(['comms']), agg_fn=np.average):
 
 def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5), n_rows=1):
     fig, axs = plt.subplots(n_rows, int(len(viz_dict) / n_rows))
+    if not isinstance(axs, np.ndarray):
+        axs = np.array([axs])
     axs = axs.flatten()
     for ax, (plot_k, plot_v) in zip(axs, viz_dict.items()):
         plot_items(ax, plot_v['x_axis'], plot_v['viz'], plot_k, agg_fn)
@@ -164,7 +166,7 @@ def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5), n_rows=1):
     plt.show()
 
 
-def plot_graph(viz_dict, fig_size=(10, 5), n_rows=1):
+def plot_graph(viz_dict, fig_size=(10, 5), n_rows=1, node_size=300):
     import networkx as nx
     from p2p.graph_manager import nx_graph_from_saved_lists
     fig, axs = plt.subplots(n_rows, int(len(viz_dict) / n_rows))
@@ -176,10 +178,10 @@ def plot_graph(viz_dict, fig_size=(10, 5), n_rows=1):
         for i in range(nx_graph.number_of_nodes()):
             if nx_graph.has_edge(i, i):
                 nx_graph.remove_edge(i, i)
-        ax.set_title(k)
+        ax.set_title(k, fontsize=18)
         # pos = nx.spring_layout(nx_graph)
         pos = None
-        nx.draw(nx_graph, pos=pos, ax=ax, node_color='b')
+        nx.draw(nx_graph, pos=pos, ax=ax, node_color='b', node_size=node_size)
 
     fig.set_figwidth(fig_size[0])
     fig.set_figheight(fig_size[1])
