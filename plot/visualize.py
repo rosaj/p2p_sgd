@@ -92,8 +92,10 @@ def parse_timeline(name, filename, x_axis='Examples', agg_fn=np.average):
         return resolve_timeline(filename, x_axis, agg_fn)
     if isinstance(filename, list):
         time_t, acc_t = None, None
+        accs = []
         for fl in filename:
             time, acc = resolve_timeline(fl, x_axis, agg_fn)
+            accs.append(acc)
             if acc_t is None:
                 acc_t = acc
                 time_t = time
@@ -101,7 +103,14 @@ def parse_timeline(name, filename, x_axis='Examples', agg_fn=np.average):
                 acc_t = np.add(acc_t, acc)
                 time_t = np.add(time_t, time)
 
-        return np.array(time_t) / float(len(filename)), np.array(acc_t) / float(len(filename))
+        return np.array(time_t) / float(len(filename)), np.array(acc_t) / float(len(filename)), accs
+
+
+def calc_fill_between(accs):
+    accs = np.array(accs)
+    min_vals = [min(accs[:, i]) for i in range(accs.shape[1])]
+    max_vals = [max(accs[:, i]) for i in range(accs.shape[1])]
+    return min_vals, max_vals
 
 
 def plot_items(ax, x_axis, viz_dict, title=None, agg_fn=np.average):
@@ -111,11 +120,13 @@ def plot_items(ax, x_axis, viz_dict, title=None, agg_fn=np.average):
         x_axis, x_axis2 = x_axis
 
     for k, v in viz_dict.items():
-        x_time, t_acc = parse_timeline(k, v, x_axis, agg_fn)
+        x_time, t_acc, accs = parse_timeline(k, v, x_axis, agg_fn)
         ax.plot(x_time, t_acc)
+        min_acc, max_acc = calc_fill_between(accs)
+        ax.fill_between(x_time, max_acc, min_acc,  alpha=0.2)
         legend.append(k)
         if x_axis2 is not None:
-            x_time2, t_acc2 = parse_timeline(k, v, x_axis2, agg_fn)
+            x_time2, t_acc2, accs2 = parse_timeline(k, v, x_axis2, agg_fn)
             xmin, xmax = x_time[0], x_time[-1]
 
             def x_lim_fn(x):

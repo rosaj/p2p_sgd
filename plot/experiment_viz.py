@@ -362,7 +362,7 @@ def plot_experiment_2_graph():
 
 def plot_experiment_3():
     side_by_side({
-        'Results': {
+        '': {
             'x_axis': 'epoch',
             'viz': {
                 ALG_NAME + ' (100)': [
@@ -397,7 +397,7 @@ def plot_experiment_3():
                 ]
             }
         },
-        'Per-agent messages': {
+        ' ': {
             'x_axis': 'acomms',
             'viz': {
                 ALG_NAME + ' (100)': [
