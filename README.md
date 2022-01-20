@@ -31,13 +31,13 @@ This good performance is due to using a variant of early stopping by only traini
 
 
 
-All result files of the experiments can be found on a [shared google drive](TODO: add link) and can also be reproduced following instructions bellow.
+All result files of the experiments can be found on a shared [google drive](https://drive.google.com/drive/folders/1wu21lUgfCDK8_h8YoJAevGZjn14kyWLV?usp=sharing) and can also be reproduced following instructions bellow. To visualise existing results, use [`plot/experiment_viz.py`](plot/experiment_viz.py) and place the downloaded data in `log/` directory.
 
 ## Running simulations
 
 #### Dataset preparation
 
-Preprocessed dataset can be downloaded from a [shared google drive](TODO: add link). Unpack the zip into the `data` directory. When completed, folder `data/reddit/clients/` must contain all `.h5` files containing the training, validation and test data. Tokenizer must be placed in `data/reddit/`
+Preprocessed dataset can be downloaded from a shared [google drive](https://drive.google.com/drive/folders/1p1RqD0eeTMxXgyFB7WxVgSXEmkHMqPdV?usp=sharing). Unpack the zip into the `data` directory. When completed, folder `data/reddit/clients/` must contain all `.h5` files containing the training, validation and test data. Tokenizer must be placed in `data/reddit/`
 
 Alternatively, you can recreate this dataset by following the info in [Reddit.md](./data/Reddit.md).
 
