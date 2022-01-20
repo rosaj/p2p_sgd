@@ -1,4 +1,5 @@
-from plot.visualize import side_by_side, show, plot_graph, resolve_timeline
+from plot.visualize import side_by_side, show, plot_graph, resolve_timeline, parse_timeline
+from scipy.stats import mannwhitneyu
 
 ALG_NAME = 'P2P-BN'
 
@@ -420,7 +421,7 @@ def plot_experiment_3():
     }, fig_size=(7, 7 / 2))
 
 
-def exp_es():
+def exp_bn_ft():
     side_by_side({
         'Effects of BN fine-tuning': {
             'x_axis': 'epoch',
@@ -450,5 +451,40 @@ def exp_es():
     }, fig_size=(7/2, 7/2))
 
 
+def bn_ft_significance():
+    viz = {
+            ALG_NAME + ' (100 - no BN FT)': [
+                'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_02_41',
+                'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_03_01',
+                'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_03_24',
+            ],
+            ALG_NAME + ' (300 - no BN FT)': [
+                'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_19-01-2022_12_07',
+                'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_19-01-2022_18_02',
+                'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_19-01-2022_19_20',
+            ],
+            ALG_NAME + ' (100)': [
+                'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_03_53',
+                'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_10_56',
+                'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_04_15',
+            ],
+            ALG_NAME + ' (300)': [
+                'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_20-01-2022_01_48',
+                'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_20-01-2022_04_53',
+                'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_20-01-2022_07_17',
+            ],
+        }
+
+    accs = []
+    for k, v in viz.items():
+        _, acc, _ = parse_timeline(None, v)
+        accs.append(acc)
+
+    half_len = int(len(accs)/2)
+    names = list(viz.keys())
+    for i in range(half_len):
+        print(names[i], "<->", names[i+half_len], mannwhitneyu(accs[i][20:81], accs[i+half_len][20:]))
+
+
 if __name__ == '__main__':
-    exp_es()
+    bn_ft_significance()
