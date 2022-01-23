@@ -423,7 +423,7 @@ def plot_experiment_3():
 
 def exp_bn_ft():
     side_by_side({
-        'Effects of BN fine-tuning': {
+        'Sparse (directed)': {
             'x_axis': 'epoch',
             'viz': {
                 ALG_NAME + ' (100 - no BN FT)': [
@@ -447,31 +447,78 @@ def exp_bn_ft():
                     'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_20-01-2022_07_17',
                 ],
             }
-        }
-    }, fig_size=(7/2, 7/2))
+        },
+        'Sparse (undirected)': {
+            'x_axis': 'epoch',
+            'viz': {
+                ALG_NAME + ' (100 - no BN FT)': [
+                    'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_16_50',
+                    'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_17_07',
+                    'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_17_33',
+                ],
+                ALG_NAME + ' (300 - no BN FT)': [
+                    'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_07_21',
+                    'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_06_24',
+                    'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_04_12',
+
+                ],
+                ALG_NAME + ' (100)': [
+                    'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_17_15',
+                    'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_17_54',
+                    'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_22-01-2022_00_46',
+                ],
+                ALG_NAME + ' (300)': [
+                    'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_20_35',
+                    'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_19_17',
+                    'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_20_43',
+                ],
+            }
+        },
+    }, fig_size=(7, 7/2))
 
 
 def bn_ft_significance():
     viz = {
-            ALG_NAME + ' (100 - no BN FT)': [
+            ALG_NAME + ' (100 - no BN FT) - directed': [
                 'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_02_41',
                 'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_03_01',
                 'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_03_24',
             ],
-            ALG_NAME + ' (300 - no BN FT)': [
+            ALG_NAME + ' (300 - no BN FT) - directed': [
                 'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_19-01-2022_12_07',
                 'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_19-01-2022_18_02',
                 'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_19-01-2022_19_20',
             ],
-            ALG_NAME + ' (100)': [
+            ALG_NAME + ' (100 - no BN FT) - undirected': [
+                'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_16_50',
+                'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_17_07',
+                'exp_es/no_es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_17_33',
+            ],
+            ALG_NAME + ' (300 - no BN FT) - undirected': [
+                'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_07_21',
+                'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_06_24',
+                'exp_es/no_es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_04_12',
+
+            ],
+            ALG_NAME + ' (100) - directed': [
                 'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_03_53',
                 'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_10_56',
                 'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_19-01-2022_04_15',
             ],
-            ALG_NAME + ' (300)': [
+            ALG_NAME + ' (300) - directed': [
                 'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_20-01-2022_01_48',
                 'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_20-01-2022_04_53',
                 'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(directed)_N300_NB3_TV-1_20-01-2022_07_17',
+            ],
+            ALG_NAME + ' (100) - undirected': [
+                'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_17_15',
+                'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_21-01-2022_17_54',
+                'exp_es/es/P2PAgent_100A_100E_50B_4V_sparse(undirected)_N100_NB3_TV-1_22-01-2022_00_46',
+            ],
+            ALG_NAME + ' (300) - undirected': [
+                'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_20_35',
+                'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_19_17',
+                'exp_es/es/P2PAgent_300A_100E_50B_4V_sparse(undirected)_N300_NB3_TV-1_22-01-2022_20_43',
             ],
         }
 
