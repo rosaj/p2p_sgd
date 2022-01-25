@@ -1,24 +1,20 @@
 # P2P-BN
 
-This is a repository of a paper [paper name](paper link). This paper proposes using Batch Normalization (BN) layers as an aid in normalizing non-IID data across decentralized agents. A variant of early stopping technique is developed that, in combination with BN layers, acts as a tool for fine-tuning the agent’s local model. Other decentralized algorithms used in the paper experiments are also a part of this project. 
+This is a repository of a paper [Peer-to-peer Deep Learning With Non-IID Data](https://). This paper proposes using Batch Normalization (BN) layers as an aid in normalizing non-IID data across decentralized agents. A variant of early stopping technique is developed that, in combination with BN layers, acts as a tool for fine-tuning the agent’s local model. Other decentralized algorithms used in the paper experiments are also a part of this project. 
 
 ---
 
-Experiments were performed on a cleaned [Reddit](https://github.com/TalwalkarLab/leaf) dataset as it presents as a viable non-IID dataset. To prove this, we employed the Jensen-Shannon divergence metric to express divergence between clients' classes distribution in their local datasets, respectively. We also included some artificial datasets formed from the MNIST dataset for comparison. Slight divergence (close to 0) means that the distribution of classes in both datasets is very similar. In contrast, significant divergence (close to 1) implies that the distribution of classes is very different.
-
-![distance matrix](imgs/dist_matrix.png)
+Experiments were performed on a cleaned [Reddit](https://github.com/TalwalkarLab/leaf) dataset as it presents as a viable non-IID dataset.
 
 
-Figure shows distance matrices of Jensen-Shannon divergence between users’ local dataset label distribution for MNIST and Reddit dataset. The MNIST dataset is partitioned into shards of 100 clients for all three settings, and five groups were created for the practical non-IID setting. Out of the users used in all experiments, 100 users were randomly sampled for the Reddit dataset. The average JSD of 0.6633 for Reddit shows that the dataset is somewhere in between pathological (0.8116) and practical (0.5229).
+Our experiments showed that using BN layers in a NN model benefits all decentralized algorithms. Figure below shows that all algorithms show positive feedback when using the model containing BN layers in a directed and undirected ring communication scheme.
 
----
 
-Our experiments showed that using BN layers in a NN model benefits all decentralized algorithms. Figure below shows that all algorithms show positive feedback when using the model containing BN layers in a directed and undirected communication scheme in a ring topology.
 ![exp_1](imgs/exp_1.svg)
 
 
 
-P2P-BN substantially outperforms other decentralized algorithms when trained in a sparse topology with 3 neighbors per agent.
+P2P-BN substantially outperforms other decentralized algorithms when trained in a sparse topology with three neighbors per agent.
 
 ![exp_2](imgs/exp_2.svg)
 
