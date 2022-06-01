@@ -1,21 +1,22 @@
+from tensorflow.keras.losses import KLDivergence
 from p2p.agents.async_agent import *
 
 
 class P2PAgent(AsyncAgent):
     # noinspection PyDefaultArgument
     def __init__(self,
-                 early_stopping=True,
+                 early_stopping=False,
                  increase_momentum=False,
                  private_ds_size=-1,
                  private_model_pars=None,
-                 ensemble_metrics=[MaskedSparseCategoricalAccuracy()], **kwargs):
+                 ensemble_metrics=[], **kwargs):
         super(P2PAgent, self).__init__(**kwargs)
 
         self.early_stopping = early_stopping
         self.increase_momentum = increase_momentum
         self.private_model = None
         if private_model_pars is not None and private_ds_size <= self.train_len:
-            self.private_model = create_model(**private_model_pars)
+            self.private_model = self.model_pars['model_mod'].create_model(**private_model_pars)
         self.ensemble_metrics = ensemble_metrics or []
         self.kl_loss = KLDivergence()
         self.mm_decay = tf.keras.optimizers.schedules.ExponentialDecay(0.9, 5, 1.01)
@@ -53,9 +54,9 @@ class P2PAgent(AsyncAgent):
         if self.train_rounds < 1:
             return False
 
-        reset_compiled_metrics(self.model)
+        self.model_pars['model_mod'].reset_compiled_metrics(self.model)
         if self.has_private:
-            reset_compiled_metrics(self.private_model)
+            self.model_pars['model_mod'].reset_compiled_metrics(self.private_model)
 
         for (x, y) in self.train:
             self._train_on_batch(x, y)
@@ -97,7 +98,7 @@ class P2PAgent(AsyncAgent):
         return self.train_len
 
     def shared_val_acc(self):
-        for k, v in eval_model_metrics(self.model, self.val).items():
+        for k, v in self.model_pars['model_mod'].eval_model_metrics(self.model, self.val).items():
             if 'acc' in k:
                 return v
         return None
@@ -189,17 +190,17 @@ class P2PAgent(AsyncAgent):
     @property
     def memory_footprint(self):
         if self.has_private:
-            return calculate_memory_model_size(self.model) + calculate_memory_model_size(self.private_model)
+            return self.model_pars['model_mod'].calculate_memory_model_size(self.model) + self.model_pars['model_mod'].calculate_memory_model_size(self.private_model)
         return super(P2PAgent, self).memory_footprint
 
     def deserialize(self):
         super(P2PAgent, self).deserialize()
         if self.has_private:
-            self.private_model = load('p2p_models/{}/agent_{}_private'.format(self.__class__.__name__, self.id))
+            self.private_model = self.model_pars['model_mod'].load('p2p_models/{}/agent_{}_private'.format(self.__class__.__name__, self.id))
 
     def serialize(self, save_only=False):
         super(P2PAgent, self).serialize(save_only)
         if self.has_private:
-            save(self.private_model, 'p2p_models/{}/agent_{}_private'.format(self.__class__.__name__, self.id))
+            self.model_pars['model_mod'].save(self.private_model, 'p2p_models/{}/agent_{}_private'.format(self.__class__.__name__, self.id))
             if not save_only:
                 self.private_model = True

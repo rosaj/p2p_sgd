@@ -12,5 +12,5 @@ else:
     from tqdm import tqdm
 
 from common.util import *
-from common.model import *
+from common.abstract_model import *
 

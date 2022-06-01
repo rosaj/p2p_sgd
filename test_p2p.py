@@ -1,5 +1,6 @@
 import argparse
 import json
+import importlib
 
 from p2p.train import do_train
 
@@ -61,12 +62,12 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
-    mod = __import__('p2p.agents').agents
+    # mod = __import__('p2p').agents
+    # if not hasattr(mod, args.agent):
+    #     raise ValueError(f"{args.agent} not found in 'p2p.agents' module")
 
-    if not hasattr(mod, args.agent):
-        raise ValueError(f"{args.agent} not found in 'p2p.agents' module")
-
-    do_train(getattr(mod, args.agent),
+    do_train(importlib.import_module('p2p.agents.' + args.agent),
+             importlib.import_module('data.reddit.clients_data'),
              num_clients=args.clients,
              batch_size=args.batch_size,
              model_pars={"model_v": args.model_v, "lr": args.lr, "default_weights": True},

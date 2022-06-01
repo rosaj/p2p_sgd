@@ -206,20 +206,12 @@ def plot_graph(viz_dict, fig_size=(10, 5), n_rows=1, node_size=300):
 
 if __name__ == '__main__':
     show({
-        'decay(0.0045) - 100': 'experiment_3/decaying_45_P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_22-12-2021_12_41',
-        'decay(0.009) - 100': 'experiment_3/decaying_9_P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_22-12-2021_16_06',
-        'decay - 100': 'experiment_3/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_14-12-2021_00_22',
 
-        # 'fixed - 500': 'experiment_3/old_P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_04-12-2021_16_20',
-        # 'decaying': 'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_14-12-2021_15_37',
-        # 'fixed-1000': 'experiment_3/old_P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_09-12-2021_04_28',
-        # 'decay-1000': 'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_19-12-2021_16_30',
-        # 'Fixed-100': 'experiment_2/fixed/directed/P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_29-11-2021_20_59',
-        # 'Decaying-100': 'P2PAgent_100A_100E_50B_4V_sparse(directed)_N100_NB3_TV-1_10-12-2021_21_37',
-        # 'Fix(0.99)-100': 'P2PAgent_100A_99E_50B_4V_sparse(directed)_N100_NB3_TV-1_12-12-2021_22_24',
-        # 'Fixed-500': 'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_04-12-2021_16_20',
-        # 'FL-500': 'experiment_3/fl_500C_10TR_2V(0_005S-0_005C)_100E_num_examples_06-12-2021_12_24',
-        # 'Decaying-500': 'P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_11-12-2021_16_03',
+        '500': 'P2PAgent_500A_100E_50B_2V_sparse(directed)_N500_NB3_TV-1_05-04-2022_00_23',
+        '1000': 'P2PAgent_1000A_100E_50B_2V_sparse(directed)_N1000_NB3_TV-1_07-04-2022_03_06',
+        'BN-500': 'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_14-12-2021_15_37',
+        'BN-1000': 'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_19-12-2021_16_30',
+
 
     },
         x_axises=['epoch'],

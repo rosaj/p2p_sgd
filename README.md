@@ -35,7 +35,7 @@ All result files of the experiments can be found on a shared [google drive](http
 
 Preprocessed dataset can be downloaded from a shared [google drive](https://drive.google.com/drive/folders/1p1RqD0eeTMxXgyFB7WxVgSXEmkHMqPdV?usp=sharing). Unpack the zip into the `data` directory. When completed, folder `data/reddit/clients/` must contain all `.h5` files containing the training, validation and test data. Tokenizer must be placed in `data/reddit/`
 
-Alternatively, you can recreate this dataset by following the info in [Reddit.md](./data/Reddit.md).
+Alternatively, you can recreate this dataset by following the info in [Reddit.md](data/reddit/Reddit.md).
 
 
 **Simulations can be run either through [notebooks](/notebooks) or through cmd.**

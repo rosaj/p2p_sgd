@@ -4,9 +4,11 @@ import time
 
 def init_agents(agent_class, train_clients, val_clients, test_clients, batch_size, model_pars=None, agent_pars=None):
     start_time = time.time()
-    model_default = {"model_v": 1, "lr": 0.001, "decay": 0, "default_weights": False}
-    model_pars = model_default if model_pars is None else {**model_default, **model_pars}
+    # model_default = {"model_v": 1, "lr": 0.001, "decay": 0, "default_weights": False}
+    # model_pars = model_default if model_pars is None else {**model_default, **model_pars}
     agent_pars = agent_pars or {}
+    # model_mod = model_pars['model_mod']
+    # m_pars = {k: v for k, v in model_pars if k not in ['model_mod']}
 
     num_agents = len(train_clients)
     print("{}: {} agents, batch size: {}, model_pars: {}, agent_pars: {}".format(
@@ -26,7 +28,8 @@ def init_agents(agent_class, train_clients, val_clients, test_clients, batch_siz
             agent_pars['val'] = val
             agent_pars['test'] = test
             agent_pars['batch_size'] = batch_size
-            agent_pars['model'] = create_model(**model_pars)
+            # agent_pars['model'] = model_mod.create_model(**m_pars)
+            agent_pars['model'] = model_pars
             a = agent_class(**agent_pars)
             a.device = device
             a.id = agent_id
