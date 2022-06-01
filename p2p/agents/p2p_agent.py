@@ -5,7 +5,7 @@ from p2p.agents.async_agent import *
 class P2PAgent(AsyncAgent):
     # noinspection PyDefaultArgument
     def __init__(self,
-                 early_stopping=False,
+                 early_stopping=True,
                  increase_momentum=False,
                  private_ds_size=-1,
                  private_model_pars=None,

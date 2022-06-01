@@ -111,7 +111,7 @@ def evaluate(model, batched_eval_data, label_map, out_ind, pad_ind, do_print=Fal
     out_dict = {}
     for k, v in class_dict.items():
         for dk, dv in v.items():
-            out_dict[(k+'_'+'_'.join(dk.split(' '))).replace('-', '_')] = dv
+            out_dict[k.replace('-', '_').replace(' ', '_') + '_' + dk.replace('-', '_').replace(' ', '_')] = dv
     return out_dict
 
 
