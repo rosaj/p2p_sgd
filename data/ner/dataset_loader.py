@@ -221,7 +221,8 @@ class DataProcessor(object):
         return self.initial_tokens
 
     def label_len(self):
-        return len(self.get_labels()) - min(len(self.initial_tokens)-1, 0)
+        # get label from subclass, but subtract all additional tokens, other than 0 (one)
+        return len(self.get_labels()) - max(len(self.initial_tokens)-1, 0)
 
     def get_label_map(self):
         return {i: label for i, label in enumerate(self.get_labels(), 0)}
