@@ -68,7 +68,7 @@ def train_loop(agent_class, clients_data_pars, model_pars, graph_pars, agent_par
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
 
     filename = "{}_{}A_{}E_{}B_{}V_{}_{}".format(
-        agent_class.__name__, len(agents), epochs, batch_size, model_pars['model_v'],
+        agent_class.__name__, len(agents), epochs, clients_data_pars['batch_size'], model_pars['model_v'],
         graph_manager.graph_info().replace(': ', '').replace(' ', '').replace(',', '_'),
         datetime.now().strftime("%d-%m-%Y_%H_%M"))
     dump_acc_hist('log/' + filename + '.json', agents, graph_manager.as_numpy_array())
