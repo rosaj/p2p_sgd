@@ -7,17 +7,18 @@ class P2PAgent(AsyncAgent):
     def __init__(self,
                  early_stopping=True,
                  increase_momentum=False,
-                 private_ds_size=-1,
                  private_model_pars=None,
-                 ensemble_metrics=[], **kwargs):
+                 **kwargs):
         super(P2PAgent, self).__init__(**kwargs)
 
         self.early_stopping = early_stopping
         self.increase_momentum = increase_momentum
         self.private_model = None
-        if private_model_pars is not None and private_ds_size <= self.train_len:
-            self.private_model = self.model_pars['model_mod'].create_model(**private_model_pars)
-        self.ensemble_metrics = ensemble_metrics or []
+        self.private_model_pars = private_model_pars
+        if private_model_pars is not None:
+            if private_model_pars['ds_size'] <= self.train_len:
+                self.private_model = self._create_model(private_model_pars, ['model_mod', 'ds_size', 'ensemble_metrics'])
+
         self.kl_loss = KLDivergence()
         self.mm_decay = tf.keras.optimizers.schedules.ExponentialDecay(0.9, 5, 1.01)
 
@@ -135,7 +136,7 @@ class P2PAgent(AsyncAgent):
 
             for key, dataset in zip(["train_ensemble", "val_ensemble", "test_ensemble"], [self.train, self.val, self.test]):
                 self._add_hist_metric(
-                    self.model_pars['model_mod'].eval_ensemble_metrics([self.model, self.private_model], dataset, self.ensemble_metrics),
+                    self.model_pars['model_mod'].eval_ensemble_metrics([self.model, self.private_model], dataset, self.private_model_pars['ensemble_metrics']),
                     key, metrics_names
                 )
 

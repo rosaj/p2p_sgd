@@ -4,9 +4,10 @@ import tensorflow as tf
 
 class Agent:
     # noinspection PyDefaultArgument
-    def __init__(self, train, val, test, model, graph=None, batch_size=50, eval_batch_size=50):
+    def __init__(self, train, val, test, model, graph=None, data_pars=None, eval_batch_size=50):
 
-        self.batch_size = batch_size
+        self.data_pars = data_pars
+        self.batch_size = data_pars['batch_size']
         self.eval_batch_size = eval_batch_size
         self.train = self._create_dataset(train[0], train[1], self.batch_size)
         self.val = self._create_dataset(val[0], val[1], self.eval_batch_size)
@@ -14,7 +15,7 @@ class Agent:
         self.train_len = len(train[1])
 
         self.model_pars = model
-        self.model = self._create_model(self.model_pars)
+        self.model = self._create_model(self.model_pars, ['model_mod'])
         self.graph = graph
 
         self.trained_examples = 0
@@ -30,8 +31,8 @@ class Agent:
         self.id = 0
 
     @staticmethod
-    def _create_model(m_pars):
-        return m_pars['model_mod'].create_model(**{k: v for k, v in m_pars.items() if k not in ['model_mod']})
+    def _create_model(m_pars, ignored_keys):
+        return m_pars['model_mod'].create_model(**{k: v for k, v in m_pars.items() if k not in ignored_keys})
 
     @staticmethod
     def _create_dataset(x, y, batch_size):

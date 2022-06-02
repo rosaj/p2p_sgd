@@ -15,10 +15,10 @@ def parse_acc_step(accuracy_step, examples):
     return accuracy_step
 
 
-def train_loop(agent_class, train, val, test, batch_size, model_pars, graph_pars, agent_pars=None, epochs=1, seed=None,
+def train_loop(agent_class, clients_data_pars, model_pars, graph_pars, agent_pars=None, epochs=1, seed=None,
                accuracy_step='epoch'):
     set_seed(seed)
-    agents = init_agents(agent_class, train, val, test, batch_size, model_pars, agent_pars)
+    agents = init_agents(agent_class, clients_data_pars, model_pars, agent_pars)
     graph_manager = GraphManager(nodes=agents, **graph_pars)
     for a in agents:
         a.graph = graph_manager

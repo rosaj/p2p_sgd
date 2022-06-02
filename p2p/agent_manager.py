@@ -2,18 +2,19 @@ from p2p.p2p_utils import *
 import time
 
 
-def init_agents(agent_class, train_clients, val_clients, test_clients, batch_size, model_pars=None, agent_pars=None):
+def init_agents(agent_class, clients_data_pars, model_pars=None, agent_pars=None):
     start_time = time.time()
-    # model_default = {"model_v": 1, "lr": 0.001, "decay": 0, "default_weights": False}
-    # model_pars = model_default if model_pars is None else {**model_default, **model_pars}
+
     agent_pars = agent_pars or {}
-    # model_mod = model_pars['model_mod']
-    # m_pars = {k: v for k, v in model_pars if k not in ['model_mod']}
+    train_clients, val_clients, test_clients = clients_data_pars['clients_data']\
+        .load_clients(**{k: v for k, v in clients_data_pars.items() if k not in ['clients_data', 'batch_size']})
+    batch_size = clients_data_pars['batch_size']
 
     num_agents = len(train_clients)
     print("{}: {} agents, batch size: {}, model_pars: {}, agent_pars: {}".format(
         agent_class.__name__, num_agents, batch_size, model_pars, agent_pars))
 
+    # model_pars['model_mod'].clear_def_weights_cache()
     clear_def_weights_cache()
 
     pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init agents')
@@ -27,7 +28,8 @@ def init_agents(agent_class, train_clients, val_clients, test_clients, batch_siz
             agent_pars['train'] = train
             agent_pars['val'] = val
             agent_pars['test'] = test
-            agent_pars['batch_size'] = batch_size
+            agent_pars['data_pars'] = clients_data_pars
+            # agent_pars['batch_size'] = batch_size
             # agent_pars['model'] = model_mod.create_model(**m_pars)
             agent_pars['model'] = model_pars
             a = agent_class(**agent_pars)

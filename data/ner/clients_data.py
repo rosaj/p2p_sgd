@@ -6,8 +6,11 @@ from common.ner.bert.tokenization import FullTokenizer
 global PROCESSOR
 
 
-def load_clients_data(num_clients, starting_client, seq_len=128, vocab_path='data/ner'):
-    processor = NerProcessor('data/ner/conll')
+def load_clients_data(num_clients, dataset='conll', seq_len=128, vocab_path='data/ner'):
+    if dataset == 'conll':
+        processor = NerProcessor('data/ner/conll')
+    else:
+        processor = FewNERDProcessor('data/ner/few_nerd')
     global PROCESSOR
     PROCESSOR = processor
     tokenizer = FullTokenizer(os.path.join(vocab_path, "vocab.txt"), True)
