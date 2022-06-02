@@ -54,6 +54,23 @@ def eval_model_metrics(m, dataset):
     return {metric.name: metric.result().numpy() for metric in metrics}
 
 
+def eval_ensemble_metrics(models, dataset, metrics, weights=None):
+    if weights is None:
+        weights = len(models) * [1 / len(models)]
+
+    for metric in metrics:
+        if hasattr(metric, "reset_state"):
+            metric.reset_state()
+        else:
+            metric.reset_states()
+
+    for (dx, dy) in dataset:
+        m_preds = [m(dx, training=False) for m in models]
+        for metric in metrics:
+            metric.update_state(dy, sum((pred * w for pred, w in zip(m_preds, weights))))
+    return {metric.name: metric.result().numpy() for metric in metrics}
+
+
 def calculate_memory_model_size(model):
     return model.count_params() * 4 / (1024 ** 2) * 2
 

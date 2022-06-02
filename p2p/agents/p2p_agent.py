@@ -135,25 +135,9 @@ class P2PAgent(AsyncAgent):
 
             for key, dataset in zip(["train_ensemble", "val_ensemble", "test_ensemble"], [self.train, self.val, self.test]):
                 self._add_hist_metric(
-                    P2PAgent._eval_ensemble_metrics(self.model, self.private_model, dataset, self.ensemble_metrics),
+                    self.model_pars['model_mod'].eval_ensemble_metrics([self.model, self.private_model], dataset, self.ensemble_metrics),
                     key, metrics_names
                 )
-
-    @staticmethod
-    def _eval_ensemble_metrics(m1, m2, dataset, metrics):
-        alpha = 0.5
-        for metric in metrics:
-            if hasattr(metric, "reset_state"):
-                metric.reset_state()
-            else:
-                metric.reset_states()
-
-        for (dx, dy) in dataset:
-            m1_pred = m1(dx, training=False)
-            m2_pred = m2(dx, training=False)
-            for metric in metrics:
-                metric.update_state(dy, (m1_pred * (1 - alpha) + m2_pred * alpha))
-        return {metric.name: metric.result().numpy() for metric in metrics}
 
     @property
     def hist_train_private_metric(self, metric_name='acc'):

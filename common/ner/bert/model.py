@@ -122,3 +122,52 @@ def eval_model_metrics(m, dataset):
                     processor.token_ind('O'),
                     processor.token_ind('[SEP]'),
                     processor.token_ind('[PAD]'))
+
+
+def eval_ensemble_metrics(models, dataset, metrics, weights=None):
+    if weights is None:
+        weights = len(models) * [1 / len(models)]
+    processor = cd.PROCESSOR
+    return evaluate_models(models, weights, dataset,
+                           processor.get_label_map(),
+                           processor.token_ind('O'),
+                           processor.token_ind('[SEP]'),
+                           processor.token_ind('[PAD]'))
+
+
+def evaluate_models(models, weights, batched_eval_data, label_map, out_ind, pad_ind, do_print=False):
+    y_true, y_pred = [], []
+    for (input_ids, input_masks, segment_ids, valid_ids), (label_ids, label_mask) in batched_eval_data:
+        logits_list = [model((input_ids, input_masks, segment_ids, valid_ids), training=False) for model in models]
+        logits = sum((m_logits * w for m_logits, w in zip(logits_list, weights)))
+        logits = tf.argmax(logits, axis=2)
+        for i in range(label_ids.shape[0]):
+            lbl_ids = label_ids[i]
+            pred_ids = logits[i]
+            cond = tf.not_equal(lbl_ids, tf.constant(pad_ind, dtype=tf.int64))
+            lbl_ids = tf.squeeze(tf.gather(lbl_ids, tf.where(cond)))[1:-1]
+            pred_ids = tf.squeeze(tf.gather(pred_ids, tf.where(cond)))[1:-1]
+
+            # temp_1 = list(map(lambda x: label_map[x.numpy()], lbl_ids))
+            temp_1 = list(map(
+                lambda x: label_map[x.numpy()] if label_map[x.numpy()] not in ['[SEP]', '[PAD]', '[CLS]'] else
+                label_map[out_ind], lbl_ids))
+
+            temp_2 = list(map(
+                lambda x: label_map[x.numpy()] if label_map[x.numpy()] not in ['[SEP]', '[PAD]', '[CLS]'] else
+                label_map[out_ind], pred_ids))
+
+            y_true.append(temp_1)
+            y_pred.append(temp_2)
+
+    # accuracy = accuracy_score(y_true, y_pred)
+
+    if do_print:
+        print(classification_report(y_true, y_pred, digits=4, zero_division=0))
+    class_dict = classification_report(y_true, y_pred, zero_division=0, output_dict=True)
+    # class_dict['accuracy'] = accuracy
+    out_dict = {}
+    for k, v in class_dict.items():
+        for dk, dv in v.items():
+            out_dict[k.replace('-', '_').replace(' ', '_') + '_' + dk.replace('-', '_').replace(' ', '_')] = dv
+    return out_dict
