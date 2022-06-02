@@ -11,12 +11,19 @@ def print_acc(accs, info):
         print("{}\t\t{:.3%}\t\t{:.3%}".format(info, np.average(accs), np.median(accs)))
 
 
+def calc_agent_new_metrics(agent, device):
+    with tf.device(device or 'CPU'):
+        agent.calc_new_metrics()
+
+
 def calc_new_agent_metrics_parallel(agents):
     from threading import Thread
 
+    devices = environ.get_devices()
     threads = []
     for a in agents:
-        t = Thread(target=lambda agent: agent.calc_new_metrics(), args=(a,))
+        device = resolve_agent_device(agents, a, devices)
+        t = Thread(target=calc_agent_new_metrics, args=(a, device))
         threads.append(t)
         t.start()
 
