@@ -7,7 +7,7 @@ def init_agents(agent_class, clients_data_pars, model_pars=None, agent_pars=None
 
     agent_pars = agent_pars or {}
     train_clients, val_clients, test_clients = clients_data_pars['clients_data']\
-        .load_clients(**{k: v for k, v in clients_data_pars.items() if k not in ['clients_data', 'batch_size']})
+        .load_clients_data(**{k: v for k, v in clients_data_pars.items() if k not in ['clients_data', 'batch_size']})
     batch_size = clients_data_pars['batch_size']
 
     num_agents = len(train_clients)
