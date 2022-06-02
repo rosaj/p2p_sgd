@@ -1,6 +1,7 @@
 import os
 import tensorflow as tf
 from tensorflow import keras
+import numpy as np
 
 from common.ner.bert.bert_modeling import BertConfig, BertModel
 # import common.abstract_model as ab_mod
@@ -77,37 +78,30 @@ def compile_model(model, lr=0.001, decay=0):
     )
 
 
-def evaluate(model, batched_eval_data, label_map, out_ind, pad_ind, do_print=False):
+def evaluate(model, batched_eval_data, label_map, out_ind, sep_ind, pad_ind, do_print=False):
     y_true, y_pred = [], []
-    # for (input_ids, input_mask, segment_ids, valid_ids, label_ids) in batched_eval_data:
+
+    def label_map_fn(x):
+        return label_map[x] if label_map[x] not in ['[SEP]', '[PAD]', '[CLS]'] else label_map[out_ind]
+
     for (input_ids, input_masks, segment_ids, valid_ids), (label_ids, label_mask) in batched_eval_data:
         logits = model((input_ids, input_masks, segment_ids, valid_ids), training=False)
         logits = tf.argmax(logits, axis=2)
         for i in range(label_ids.shape[0]):
-            lbl_ids = label_ids[i]
-            pred_ids = logits[i]
-            cond = tf.not_equal(lbl_ids, tf.constant(pad_ind, dtype=tf.int64))
-            lbl_ids = tf.squeeze(tf.gather(lbl_ids, tf.where(cond)))[1:-1]
-            pred_ids = tf.squeeze(tf.gather(pred_ids, tf.where(cond)))[1:-1]
 
-            # temp_1 = list(map(lambda x: label_map[x.numpy()], lbl_ids))
-            temp_1 = list(map(
-                lambda x: label_map[x.numpy()] if label_map[x.numpy()] not in ['[SEP]', '[PAD]', '[CLS]'] else
-                label_map[out_ind], lbl_ids))
+            lbl_ids = label_ids[i].numpy()
+            lbl_ids = lbl_ids[lbl_ids > pad_ind]  # Skipping padding when evaluating
 
-            temp_2 = list(map(
-                lambda x: label_map[x.numpy()] if label_map[x.numpy()] not in ['[SEP]', '[PAD]', '[CLS]'] else
-                label_map[out_ind], pred_ids))
+            sep_indxs = np.where(lbl_ids == sep_ind)[0]
+            lbl_ids = np.split(lbl_ids, sep_indxs)[0]
+            pred_ids = np.split(logits[i].numpy(), sep_indxs)[0]
 
-            y_true.append(temp_1)
-            y_pred.append(temp_2)
-
-    # accuracy = accuracy_score(y_true, y_pred)
+            y_true.append([label_map_fn(x) for x in lbl_ids])
+            y_pred.append([label_map_fn(x) for x in pred_ids])
 
     if do_print:
         print(classification_report(y_true, y_pred, digits=4, zero_division=0))
     class_dict = classification_report(y_true, y_pred, zero_division=0, output_dict=True)
-    # class_dict['accuracy'] = accuracy
     out_dict = {}
     for k, v in class_dict.items():
         for dk, dv in v.items():
@@ -135,37 +129,31 @@ def eval_ensemble_metrics(models, dataset, metrics, weights=None):
                            processor.token_ind('[PAD]'))
 
 
-def evaluate_models(models, weights, batched_eval_data, label_map, out_ind, pad_ind, do_print=False):
+def evaluate_models(models, weights, batched_eval_data, label_map, out_ind, sep_ind, pad_ind, do_print=False):
     y_true, y_pred = [], []
+
+    def label_map_fn(x):
+        return label_map[x] if label_map[x] not in ['[SEP]', '[PAD]', '[CLS]'] else label_map[out_ind]
+
     for (input_ids, input_masks, segment_ids, valid_ids), (label_ids, label_mask) in batched_eval_data:
         logits_list = [model((input_ids, input_masks, segment_ids, valid_ids), training=False) for model in models]
         logits = sum((m_logits * w for m_logits, w in zip(logits_list, weights)))
         logits = tf.argmax(logits, axis=2)
         for i in range(label_ids.shape[0]):
-            lbl_ids = label_ids[i]
-            pred_ids = logits[i]
-            cond = tf.not_equal(lbl_ids, tf.constant(pad_ind, dtype=tf.int64))
-            lbl_ids = tf.squeeze(tf.gather(lbl_ids, tf.where(cond)))[1:-1]
-            pred_ids = tf.squeeze(tf.gather(pred_ids, tf.where(cond)))[1:-1]
 
-            # temp_1 = list(map(lambda x: label_map[x.numpy()], lbl_ids))
-            temp_1 = list(map(
-                lambda x: label_map[x.numpy()] if label_map[x.numpy()] not in ['[SEP]', '[PAD]', '[CLS]'] else
-                label_map[out_ind], lbl_ids))
+            lbl_ids = label_ids[i].numpy()
+            lbl_ids = lbl_ids[lbl_ids > pad_ind]  # Skipping padding when evaluating
 
-            temp_2 = list(map(
-                lambda x: label_map[x.numpy()] if label_map[x.numpy()] not in ['[SEP]', '[PAD]', '[CLS]'] else
-                label_map[out_ind], pred_ids))
+            sep_indxs = np.where(lbl_ids == sep_ind)[0]
+            lbl_ids = np.split(lbl_ids, sep_indxs)[0]
+            pred_ids = np.split(logits[i].numpy(), sep_indxs)[0]
 
-            y_true.append(temp_1)
-            y_pred.append(temp_2)
-
-    # accuracy = accuracy_score(y_true, y_pred)
+            y_true.append([label_map_fn(x) for x in lbl_ids])
+            y_pred.append([label_map_fn(x) for x in pred_ids])
 
     if do_print:
         print(classification_report(y_true, y_pred, digits=4, zero_division=0))
     class_dict = classification_report(y_true, y_pred, zero_division=0, output_dict=True)
-    # class_dict['accuracy'] = accuracy
     out_dict = {}
     for k, v in class_dict.items():
         for dk, dv in v.items():
