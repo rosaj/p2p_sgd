@@ -11,8 +11,20 @@ def print_acc(accs, info):
         print("{}\t\t{:.3%}\t\t{:.3%}".format(info, np.average(accs), np.median(accs)))
 
 
-def calc_agents_metrics(agents, e=0):
-    print("Epoch:", e)
+def calc_new_agent_metrics_parallel(agents):
+    from threading import Thread
+
+    threads = []
+    for a in agents:
+        t = Thread(target=lambda agent: agent.calc_new_metrics(), args=(a,))
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+
+
+def calc_new_agent_metrics(agents):
     devices = environ.get_devices()
     pbar = tqdm(total=len(agents), position=0, leave=False, desc='Evaluating agents')
     for a in agents:
@@ -22,6 +34,10 @@ def calc_agents_metrics(agents, e=0):
         update_pb(pbar, agents)
     pbar.close()
 
+
+def calc_agents_metrics(agents, e=0):
+    print("Epoch:", e)
+    calc_new_agent_metrics_parallel(agents)
     h = {}
     for a in agents:
         for hk, hv in a.hist.items():
