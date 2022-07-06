@@ -95,5 +95,11 @@ def update_pb(pbar, agents, n=1, start_time=None):
     pbar.set_postfix(postfix)
 
 
-def dump_acc_hist(filename, agents, graph):
+def dump_acc_hist(filename, agents, graph, info={}):
+    if type(info) is dict:
+        for k, v in info.items():
+            if type(v) is dict:
+                info[k] = {ki: str(vi) for ki, vi in v.items()}
+            else:
+                info[k] = str(v)
     save_json(filename, {'agents': {a.id: a.hist for a in agents}, 'graph': graph})

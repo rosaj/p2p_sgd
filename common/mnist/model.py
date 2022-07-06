@@ -1,7 +1,7 @@
 from common import abstract_model as ab_mod
 
 from tensorflow.keras import Input, Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dropout, Dense, BatchNormalization
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dropout, Dense, BatchNormalization, ReLU
 from tensorflow.keras.metrics import SparseCategoricalAccuracy
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
@@ -14,26 +14,26 @@ def create_model(model_v=1, lr=0.001, decay=0, num_classes=10, input_shape=(28, 
         model = Sequential(
             [
                 Input(shape=input_shape),
-                Conv2D(32, kernel_size=(3, 3), activation="relu"),
-                MaxPooling2D(pool_size=(2, 2)),
-                Conv2D(64, kernel_size=(3, 3), activation="relu"),
-                MaxPooling2D(pool_size=(2, 2)),
+                Conv2D(32, kernel_size=(5, 5), padding='same'),
+                MaxPooling2D(pool_size=(2, 2), padding='same'),
+                Conv2D(64, kernel_size=(5, 5), padding='same'),
+                MaxPooling2D(pool_size=(2, 2), padding='same'),
                 Flatten(),
-                Dropout(0.5),
+                Dense(512, activation='relu'),
                 Dense(num_classes, activation="softmax"),
             ], "model_{}_{}".format(model_v, ab_mod.next_model_id('mnist')))
     elif model_v == 2:
         model = Sequential(
             [
                 Input(shape=input_shape),
-                Conv2D(32, kernel_size=(3, 3), activation="relu"),
+                Conv2D(32, kernel_size=(5, 5), padding='same'),
                 BatchNormalization(momentum=0.9, scale=False, center=False),
-                MaxPooling2D(pool_size=(2, 2)),
-                Conv2D(64, kernel_size=(3, 3), activation="relu"),
+                MaxPooling2D(pool_size=(2, 2), padding='same'),
+                Conv2D(64, kernel_size=(5, 5), padding='same'),
                 BatchNormalization(momentum=0.9, scale=False, center=False),
-                MaxPooling2D(pool_size=(2, 2)),
+                MaxPooling2D(pool_size=(2, 2), padding='same'),
                 Flatten(),
-                Dropout(0.5),
+                Dense(512, activation='relu'),
                 Dense(num_classes, activation="softmax"),
             ], "model_{}_{}".format(model_v, ab_mod.next_model_id('mnist')))
     else:

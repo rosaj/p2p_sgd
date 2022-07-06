@@ -7,6 +7,11 @@ from datetime import datetime
 import time
 
 
+def print_pars_info(**kwargs):
+    for k, v in kwargs.items():
+        print(k+":", v)
+
+
 def parse_acc_step(accuracy_step, examples):
     if 'epoch' in accuracy_step:
         accuracy_step = examples
@@ -15,20 +20,23 @@ def parse_acc_step(accuracy_step, examples):
     return accuracy_step
 
 
-def train_loop(agent_class, clients_data_pars, model_pars, graph_pars, agent_pars=None, epochs=1, seed=None,
-               accuracy_step='epoch'):
-    set_seed(seed)
-    agents = init_agents(agent_class, clients_data_pars, model_pars, agent_pars)
+def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
+    print_pars_info(agent_pars=agent_pars, agent_data_pars=agent_data_pars,
+                    model_pars=model_pars, graph_pars=graph_pars, sim_pars=sim_pars)
+    set_seed(sim_pars.get('seed'))
+
+    agents = init_agents(agent_pars, agent_data_pars, model_pars)
     graph_manager = GraphManager(nodes=agents, **graph_pars)
     for a in agents:
         a.graph = graph_manager
-    print(graph_manager.graph_info())
 
     start_time = time.time()
     examples = sum([a.train_len for a in agents])
 
     devices = environ.get_devices()
     # accuracy_step = parse_acc_step(accuracy_step, examples)
+    epochs = sim_pars.get('epochs', 1)
+    agent_class = agent_pars['agent_class']
     max_examples = epochs * examples
     total_examples, round_num = 0, 0
 
@@ -68,10 +76,19 @@ def train_loop(agent_class, clients_data_pars, model_pars, graph_pars, agent_par
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
 
     filename = "{}_{}A_{}E_{}B_{}_{}".format(
-        agent_class.__name__, len(agents), epochs, clients_data_pars['batch_size'],
-        graph_manager.graph_info().replace(': ', '').replace(' ', '').replace(',', '_'),
+        agent_class.__name__, len(agents), epochs, agent_data_pars['batch_size'],
+        graph_pars['graph_type'] + '(' + ('' if graph_pars['directed'] else 'un') + 'directed-' + str(graph_pars['num_neighbors']) + ')',
         datetime.now().strftime("%d-%m-%Y_%H_%M"))
-    dump_acc_hist('log/' + filename + '.json', agents, graph_manager.as_numpy_array())
+
+    sim_pars['sim_time'] = time.time() - start_time
+    dump_acc_hist('log/' + filename + '.json',
+                  agents,
+                  graph_manager.as_numpy_array(),
+                  {'agent_pars': agent_pars,
+                   'agent_data_pars': agent_data_pars,
+                   'model_pars': model_pars,
+                   'graph_pars': graph_pars,
+                   'sim_pars': sim_pars})
 
 
 def checkpoint(pbar, agents, round_num, examples, total_examples):

@@ -36,14 +36,14 @@ def human_format(num, pos):
     return '%i%s' % (num, ['', 'K', 'M', 'G', 'T', 'P'][magnitude])
 
 
-def calc_agent_timeline(data, x_axis, agg_fn):
+def calc_agent_timeline(data, x_axis, agg_fn, metric='test_model-accuracy_no_oov'):
     acc, v_acc, t_acc = [], [], []
-    mk = 'model-accuracy_no_oov'
-    rounds = list(range(len(data[list(data.keys())[0]]['train_' + mk])))
+
+    rounds = list(range(len(data[list(data.keys())[0]][metric])))
     total_examples = sum([data[a_key]['train_len'] for a_key in list(data.keys())])
     x_time = [] if x_axis != 'Round' else rounds
     for rind in rounds:
-        test = [data[a_id]['test_' + mk][rind] for a_id in data.keys()]
+        test = [data[a_id][metric][rind] for a_id in data.keys()]
         t_acc.append(agg_fn(test) * 100)
 
         examples = sum([data[a_key]['examples'][rind] for a_key in list(data.keys())])
@@ -80,23 +80,23 @@ def calc_fl_timeline(data, x_axis, agg_fn):
     return x_time, t_acc
 
 
-def resolve_timeline(filename, x_axis, agg_fn=np.average):
+def resolve_timeline(filename, x_axis, agg_fn=np.average, metric='test_model-accuracy_no_oov'):
     data = read_json(filename)
     if 'agents' in data:
-        return calc_agent_timeline(data['agents'], x_axis, agg_fn)
+        return calc_agent_timeline(data['agents'], x_axis, agg_fn, metric)
     else:
         return calc_fl_timeline(data, x_axis, agg_fn)
 
 
-def parse_timeline(name, filename, x_axis='Examples', agg_fn=np.average):
+def parse_timeline(name, filename, x_axis='Examples', agg_fn=np.average, metric='test_model-accuracy_no_oov'):
     if isinstance(filename, str):
-        t, a = resolve_timeline(filename, x_axis, agg_fn)
+        t, a = resolve_timeline(filename, x_axis, agg_fn, metric)
         return t, a, None
     if isinstance(filename, list):
         time_t, acc_t = None, None
         accs = []
         for fl in filename:
-            time, acc = resolve_timeline(fl, x_axis, agg_fn)
+            time, acc = resolve_timeline(fl, x_axis, agg_fn, metric)
             accs.append(acc)
             if acc_t is None:
                 acc_t = acc
@@ -115,21 +115,25 @@ def calc_fill_between(accs):
     return min_vals, max_vals
 
 
-def plot_items(ax, x_axis, viz_dict, title=None, agg_fn=np.average):
+def plot_items(ax, x_axis, viz_dict, title=None, colors=None, agg_fn=np.average, metric='test_model-accuracy_no_oov'):
     legend = []
     x_axis2 = None
     if isinstance(x_axis, list):
         x_axis, x_axis2 = x_axis
 
-    for k, v in viz_dict.items():
-        x_time, t_acc, accs = parse_timeline(k, v, x_axis, agg_fn)
-        ax.plot(x_time, t_acc)
+    for i, (k, v) in enumerate(viz_dict.items()):
+        x_time, t_acc, accs = parse_timeline(k, v, x_axis, agg_fn, metric)
+        # ax.plot(x_time, t_acc)
+        args = {}
+        if colors is not None:
+            args['color'] = colors[i]
+        ax.plot(x_time, t_acc, **args)
         if accs is not None:
             min_acc, max_acc = calc_fill_between(accs)
-            ax.fill_between(x_time, max_acc, min_acc,  alpha=0.2)
+            ax.fill_between(x_time, max_acc, min_acc, alpha=0.1, **args)
         legend.append(k)
         if x_axis2 is not None:
-            x_time2, t_acc2, accs2 = parse_timeline(k, v, x_axis2, agg_fn)
+            x_time2, t_acc2, accs2 = parse_timeline(k, v, x_axis2, agg_fn, metric)
             xmin, xmax = x_time[0], x_time[-1]
 
             def x_lim_fn(x):
@@ -143,23 +147,31 @@ def plot_items(ax, x_axis, viz_dict, title=None, agg_fn=np.average):
             ax2.xaxis.set_major_formatter(FuncFormatter(human_format))
             ax2.set_xlabel(LABELS[x_axis2])
 
-    ax.set_xlabel(LABELS[x_axis] + "\n" + string.ascii_lowercase[ax.get_subplotspec().num1] + ")")
+    # ax.set_xlabel(LABELS[x_axis] + "\n" + string.ascii_lowercase[ax.get_subplotspec().num1] + ")")
+    gs = ax.get_subplotspec().get_gridspec()
+    if gs.ncols * gs.nrows > 1:
+        ax.set_xlabel(LABELS[x_axis] + "\n" + string.ascii_lowercase[ax.get_subplotspec().num1] + ")")
+    else:
+        ax.set_xlabel(LABELS[x_axis])
     ax.xaxis.set_major_formatter(FuncFormatter(human_format))
     ax.set_ylabel('Test UA (%)')
     ax.grid()
-    ax.legend(legend, loc='lower right')
+    ax.legend(legend) # , loc='lower right')
     ax.yaxis.set_major_locator(MultipleLocator())
     # ax.text(0.5, -.5, string.ascii_lowercase[ax.get_subplotspec().colspan.start] + ")")
     if title:
         ax.set_title(title)
 
 
-def show(viz_dict, x_axises=tuple(['comms']), agg_fn=np.average):
+def show(viz_dict, x_axises=tuple(['comms']), agg_fn=np.average, metric='test_model-accuracy_no_oov'):
     fig, axs = plt.subplots(1, len(x_axises))
     if len(x_axises) < 2:
         axs = [axs]
     for ax, x_axis in zip(axs, x_axises):
-        plot_items(ax, x_axis, viz_dict, None, agg_fn)
+        plot_items(ax, x_axis, viz_dict, None, agg_fn, metric=metric)
+    max_y = round(max([ax.get_ylim()[1] for ax in axs]))
+    for ax in axs:
+        ax.set_ylim([0, max_y])
     # plt.savefig('/Users/robert/Desktop/acomms.svg', format='svg', dpi=1200)
     plt.show()
 
@@ -170,7 +182,7 @@ def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5), n_rows=1):
         axs = np.array([axs])
     axs = axs.flatten()
     for ax, (plot_k, plot_v) in zip(axs, viz_dict.items()):
-        plot_items(ax, plot_v['x_axis'], plot_v['viz'], plot_k, agg_fn)
+        plot_items(ax, plot_v['x_axis'], plot_v['viz'], plot_k, plot_v.get('colors', None), agg_fn, plot_v.get('metric', 'test_model-accuracy_no_oov'))
     max_y = round(max([ax.get_ylim()[1] for ax in axs]))
     for ax in axs:
         ax.set_ylim([0, max_y])
@@ -205,15 +217,43 @@ def plot_graph(viz_dict, fig_size=(10, 5), n_rows=1, node_size=300):
 
 
 if __name__ == '__main__':
-    show({
-
-        '500': 'P2PAgent_500A_100E_50B_2V_sparse(directed)_N500_NB3_TV-1_05-04-2022_00_23',
-        '1000': 'P2PAgent_1000A_100E_50B_2V_sparse(directed)_N1000_NB3_TV-1_07-04-2022_03_06',
-        'BN-500': 'experiment_3/P2PAgent_500A_100E_50B_4V_sparse(directed)_N500_NB3_TV-1_14-12-2021_15_37',
-        'BN-1000': 'experiment_3/P2PAgent_1000A_100E_50B_4V_sparse(directed)_N1000_NB3_TV-1_19-12-2021_16_30',
-
-
-    },
-        x_axises=['epoch'],
-        # 'round', 'examples', 'epoch', 'comms', 'acomms'
-    )
+    # """
+    side_by_side({
+        'Model-test': {
+            'x_axis': 'epoch',
+            'metric': 'test_model-macro_avg_f1_score',
+            'viz': {
+                'BERT-2': 'P2PAgent_50A_100E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_22_38',
+                'BERT-4': 'P2PAgent_50A_100E_32B_sparse(directed)_N50_NB3_TV-1_04-06-2022_00_27',
+                'BERT-DML': 'P2PAgent_50A_100E_32B_sparse(directed)_N50_NB3_TV-1_04-06-2022_16_39'
+            },
+        },
+    })
+    """
+    side_by_side({
+        'Model-test': {
+            'x_axis': 'epoch',
+            'metric': 'test_model-macro_avg_f1_score',
+            'viz': {
+                'DML-2-4': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_15_03',
+                'BERT-2': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_16_33',
+                'BERT-4': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_16_50'
+            },
+        },
+        'Private-test': {
+            'x_axis': 'epoch',
+            'metric': 'test_private-macro_avg_f1_score',
+            'viz': {
+                'DML-2-4': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_15_03'
+            },
+        },
+        'Ensemble-test': {
+            'x_axis': 'epoch',
+            'metric': 'test_ensemble-macro_avg_f1_score',
+            'viz': {
+                'DML-2-4': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_15_03'
+            },
+        },
+    })
+    """
+    #   x_axises=['epoch'], # 'round', 'examples', 'epoch', 'comms', 'acomms'
