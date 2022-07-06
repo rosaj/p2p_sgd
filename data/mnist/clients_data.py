@@ -12,6 +12,12 @@ def load_clients_data(num_clients=100, mode='IID'):
     x_train = np.expand_dims(x_train, -1)
     x_test = np.expand_dims(x_test, -1)
 
-    c_train = np.array_split(x_train, num_clients)
-    c_test = np.array_split(x_test, num_clients)
+    c_x_train = np.array_split(x_train, num_clients)
+    c_y_train = np.array_split(y_train, num_clients)
+    c_x_test = np.array_split(x_test, num_clients)
+    c_y_test = np.array_split(y_test, num_clients)
+
+    c_train = list(zip(c_x_train, c_y_train))
+    c_test = list(zip(c_x_test, c_y_test))
+
     return c_train, c_train, c_test

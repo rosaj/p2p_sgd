@@ -1,7 +1,7 @@
 from common import abstract_model as ab_mod
 
 from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dropout, Dense, BatchNormalization, ReLU
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dropout, Dense, BatchNormalization, Input
 from tensorflow.keras.metrics import SparseCategoricalAccuracy
 from tensorflow.keras.losses import SparseCategoricalCrossentropy
 
@@ -13,7 +13,8 @@ def create_model(model_v=1, lr=0.001, decay=0, num_classes=10, input_shape=(28, 
     if model_v == 1:
         model = Sequential(
             [
-                Conv2D(32, kernel_size=(5, 5), padding='same', input_shape=input_shape),
+                Input(shape=input_shape),
+                Conv2D(32, kernel_size=(5, 5), padding='same'),
                 MaxPooling2D(pool_size=(2, 2), padding='same'),
                 Conv2D(64, kernel_size=(5, 5), padding='same'),
                 MaxPooling2D(pool_size=(2, 2), padding='same'),
@@ -24,7 +25,8 @@ def create_model(model_v=1, lr=0.001, decay=0, num_classes=10, input_shape=(28, 
     elif model_v == 2:
         model = Sequential(
             [
-                Conv2D(32, kernel_size=(5, 5), padding='same', input_shape=input_shape),
+                Input(shape=input_shape),
+                Conv2D(32, kernel_size=(5, 5), padding='same'),
                 BatchNormalization(momentum=0.9, scale=False, center=False),
                 MaxPooling2D(pool_size=(2, 2), padding='same'),
                 Conv2D(64, kernel_size=(5, 5), padding='same'),
