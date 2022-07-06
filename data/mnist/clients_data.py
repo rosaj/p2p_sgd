@@ -14,4 +14,4 @@ def load_clients_data(num_clients=100, mode='IID'):
 
     c_train = np.array_split(x_train, num_clients)
     c_test = np.array_split(x_test, num_clients)
-    return c_train, np.array([]), c_test
+    return c_train, c_train, c_test
