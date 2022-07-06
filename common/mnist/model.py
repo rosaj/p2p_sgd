@@ -1,4 +1,5 @@
-from common import abstract_model as ab_mod
+# from common import abstract_model as ab_mod
+from common.abstract_model import *
 
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dropout, Dense, BatchNormalization, InputLayer
@@ -21,7 +22,7 @@ def create_model(model_v=1, lr=0.001, decay=0, num_classes=10, input_shape=(28, 
                 Flatten(),
                 Dense(512, activation='relu'),
                 Dense(num_classes, activation="softmax"),
-            ], "model_{}_{}".format(model_v, ab_mod.next_model_id('mnist')))
+            ], "model_{}_{}".format(model_v, next_model_id('mnist')))
     elif model_v == 2:
         model = Sequential(
             [
@@ -35,7 +36,7 @@ def create_model(model_v=1, lr=0.001, decay=0, num_classes=10, input_shape=(28, 
                 Flatten(),
                 Dense(512, activation='relu'),
                 Dense(num_classes, activation="softmax"),
-            ], "model_{}_{}".format(model_v, ab_mod.next_model_id('mnist')))
+            ], "model_{}_{}".format(model_v, next_model_id('mnist')))
     else:
         raise ValueError("Invalid model version")
 
@@ -43,7 +44,7 @@ def create_model(model_v=1, lr=0.001, decay=0, num_classes=10, input_shape=(28, 
         compile_model(model, lr, decay)
 
     if default_weights:
-        ab_mod.assign_default_weights(model, 'mnist' + str(model_v))
+        assign_default_weights(model, 'mnist' + str(model_v))
 
     return model
 
@@ -55,8 +56,8 @@ def compile_model(model, lr=0.001, decay=0):
 
 
 def load(model_path):
-    return ab_mod.load('mnist/' + model_path, )
+    return load('mnist/' + model_path, )
 
 
 def save(model, model_path):
-    ab_mod.save(model, 'mnist/' + model_path)
+    save(model, 'mnist/' + model_path)
