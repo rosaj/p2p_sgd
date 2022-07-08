@@ -70,7 +70,10 @@ def create_torus(**kwargs):
 def create_grid(**kwargs):
     assert kwargs['n'] % kwargs['num_neighbors'] == 0
     if not kwargs['create_using'].is_directed():
-        return nx.grid_2d_graph(kwargs['num_neighbors'], int(kwargs['n'] / kwargs['num_neighbors']), [False, True], kwargs['create_using'])
+        g = nx.grid_2d_graph(kwargs['num_neighbors'], int(kwargs['n'] / kwargs['num_neighbors']), [False, True], kwargs['create_using'])
+        mx = nx.to_numpy_matrix(g)
+        g = nx.from_numpy_matrix(mx, create_using=kwargs['create_using'])
+        return g
 
     graph = nx.grid_graph([kwargs['num_neighbors'], int(kwargs['n'] / kwargs['num_neighbors'])], periodic=[False, True])
     edges = graph.edges()
@@ -160,7 +163,7 @@ class GraphManager:
         return self.nodes[node_id]
 
     def draw(self):
-        nx.draw(self._nx_graph, pos=nx.spring_layout(self._nx_graph))
+        nx.draw(self._nx_graph, pos=nx.spring_layout(self._nx_graph), with_labels=True)
 
     def graph_info(self):
         nb_num = self.num_neighbors
