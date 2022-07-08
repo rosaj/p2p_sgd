@@ -32,39 +32,28 @@ def sparse_graph(n, num_neighbors, create_using):
     return g
 
 
-"""
 def create_torus(**kwargs):
-    kwargs = {'num_neighbors': 3, 'n': 9, 'create_using': nx.DiGraph()}
-    graph = nx.grid_graph([3,9 ], periodic=True)
-    graph = nx.grid_2d_graph(kwargs['num_neighbors'], kwargs['n'], True, kwargs['create_using'])
-    nx.draw(graph, with_labels=True)
-    edges = []
-    for u, v in graph.edges():
-        if (v, u) in edges:
-            print("skipping")
-            continue
-        edges.append((u, v))
-    edges = graph.edges()
-    g = nx.from_edgelist(edges, nx.DiGraph())
-    mx = nx.to_numpy_matrix(g)
-    g = nx.from_numpy_matrix(mx, create_using=kwargs['create_using'])
-    nx.draw(g, with_labels=True, pos=nx.spring_layout(g))
+    assert kwargs['n'] % kwargs['num_neighbors'] == 0
+    # kwargs = {'num_neighbors': 3, 'n': 15, 'create_using': nx.DiGraph()}
+    if not kwargs['create_using'].is_directed():
+        g = nx.grid_graph([kwargs['num_neighbors'], int(kwargs['n'] / kwargs['num_neighbors'])], [True, True])
+        mx = nx.to_numpy_matrix(g)
+        g = nx.from_numpy_matrix(mx, create_using=kwargs['create_using'])
+        return g
+    else:
+        """
+        g = nx.grid_graph([kwargs['num_neighbors'], int(kwargs['n'] / kwargs['num_neighbors'])], [True, True])
+        mx = nx.to_numpy_matrix(g)
+        g = nx.from_numpy_matrix(mx, create_using=kwargs['create_using'])
+        mx = nx.to_numpy_matrix(g)
+        for i in range(len(mx)):
+            for j in range(i+1, len(mx)):
+                mx[i, j] = 0
 
-    
-    # mx[i, :] out edge
-    # mx[:, i] in edge
-
-    graph = nx.from_numpy_matrix(mx, create_using=kwargs['create_using'])
-    nx.draw(graph, with_labels=True, pos=nx.spring_layout(graph))
-
-    if kwargs['create_using'].is_directed():
-        mx = nx.to_numpy_matrix(graph)
-        # for i in range(kwargs['n']):
-            # for j in range(0, kwargs['n']):
-        graph = nx.from_numpy_matrix(mx, create_using=kwargs['create_using'])
-        nx.draw(graph, with_labels=True)
-    return graph
-"""
+        nx.draw(g, pos=nx.spring_layout(g), with_labels=True)
+        return g
+        """
+        raise NotImplementedError()
 
 
 def create_grid(**kwargs):
@@ -74,13 +63,16 @@ def create_grid(**kwargs):
         mx = nx.to_numpy_matrix(g)
         g = nx.from_numpy_matrix(mx, create_using=kwargs['create_using'])
         return g
-
-    graph = nx.grid_graph([kwargs['num_neighbors'], int(kwargs['n'] / kwargs['num_neighbors'])], periodic=[False, True])
-    edges = graph.edges()
-    g = nx.from_edgelist(edges, nx.DiGraph())
-    mx = nx.to_numpy_matrix(g)
-    g = nx.from_numpy_matrix(mx, create_using=kwargs['create_using'])
-    return g
+    else:
+        """
+        graph = nx.grid_graph([kwargs['num_neighbors'], int(kwargs['n'] / kwargs['num_neighbors'])], periodic=[False, True])
+        edges = graph.edges()
+        g = nx.from_edgelist(edges, nx.DiGraph())
+        mx = nx.to_numpy_matrix(g)
+        g = nx.from_numpy_matrix(mx, create_using=kwargs['create_using'])
+        return g
+        """
+        raise NotImplementedError()
 
 
 _graph_type_dict = {
@@ -89,7 +81,7 @@ _graph_type_dict = {
     'sparse': lambda **kwargs: sparse_graph(kwargs['n'], kwargs['num_neighbors'], create_using=kwargs['create_using']),
     'erdos_renyi': lambda **kwargs: nx.erdos_renyi_graph(kwargs['n'], kwargs['p'], directed=kwargs['directed']),
     'binomial': lambda **kwargs: nx.binomial_graph(kwargs['n'], kwargs['p'], directed=kwargs['directed']),
-    # 'torus': create_torus,
+    'torus': create_torus,
     'grid': create_grid
 }
 
@@ -186,5 +178,5 @@ def nx_graph_from_saved_lists(np_array, directed=False):
 
 
 if __name__ == "__main__":
-    gm = GraphManager('grid', [DummyNode(_) for _ in range(10)], directed=False, num_neighbors=2)
+    gm = GraphManager('grid', [DummyNode(_) for _ in range(15)], directed=True, num_neighbors=3)
     gm.draw()

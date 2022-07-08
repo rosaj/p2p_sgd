@@ -28,6 +28,14 @@ def load_clients_data(num_clients=100, mode='IID'):
         shard_ind = np.split(sorted_ind, shard_num)
         np.random.shuffle(shard_ind)
 
+        sh_inds = []
+        for i in range(0, len(shard_ind), shards):
+            sh_inds.append(np.concatenate([shard_ind[sh_ind] for sh_ind in range(i, i+shards)]))
+        c_x_train, c_y_train = [], []
+        for sh_ind in sh_inds:
+            c_x_train.append(x_train[sh_ind])
+            c_y_train.append(y_train[sh_ind])
+        """
         c_x_train, c_y_train = [], []
         for i in range(0, len(shard_ind), shards):
             cxtr, cytr = [], []
@@ -36,7 +44,7 @@ def load_clients_data(num_clients=100, mode='IID'):
                 cytr.extend(y_train[shard_ind][sh_ind])
             c_x_train.append(cxtr)
             c_y_train.append(cytr)
-
+        """
         # Test data is uniformly distributed
         c_x_test = np.array_split(x_test, num_clients)
         c_y_test = np.array_split(y_test, num_clients)
