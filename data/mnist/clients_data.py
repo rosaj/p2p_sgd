@@ -91,7 +91,7 @@ def load_clients_data(num_clients=100, mode='IID'):
                     num_samples = int(cls_count[j] * sample_pct[1] / (n_groups - 1))
                     inds = np.where(y == j)[0]
                     y_samples = np.array_split(y[inds[:num_samples]], group_clients)
-                    x_samples = np.array_split(y[inds[:num_samples]], group_clients)
+                    x_samples = np.array_split(x[inds[:num_samples]], group_clients)
                     y = np.delete(y, inds[:num_samples])
                     x = np.delete(x, inds[:num_samples], axis=0)
                     groups[g_ind].append((x_samples, y_samples))
@@ -118,6 +118,11 @@ def load_clients_data(num_clients=100, mode='IID'):
         c_x_train, c_y_train = group_split(x_train, y_train)
         # print("Test")
         c_x_test, c_y_test = group_split(x_test, y_test)
+
+        # Sanity check
+        # for i in range(100):
+        #     print(np.unique(c_y_train[i], return_counts=True))
+
         # Test data is uniformly distributed
         # c_x_test = np.array_split(x_test, num_clients)
         # c_y_test = np.array_split(y_test, num_clients)
