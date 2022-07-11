@@ -22,23 +22,32 @@ def load_clients_data(num_clients=100, mode='IID'):
         # Non-IID, where we first sort the data by digit label,
         # divide it into 200 shards of size 300, and assign each of 100 clients 2 shards.
         # This is a pathological non-IID partition of the data, as most clients will only have examples of two digits.
-        shards = 2
+        shards, num_cls = 2, 10
         shard_num = shards * num_clients
-        shuffled_ind = list(range(0, int(shard_num / 10)))
-        np.random.shuffle(shuffled_ind)
+        shuffled_ind = list(range(0, shard_num))
+        # si_copy = shuffled_ind.copy()
+        # np.random.shuffle(shuffled_ind)
+        # shuffled_ind = np.random.permutation(shard_num)
+        step = int(shard_num / num_cls)  # 20
+        shuffled_ind = [shuffled_ind[ci] for cl in range(0, step) for ci in range(cl, len(shuffled_ind), step)]
+        # si = 0
+        # for cl in range(0, step):
+        #      for ci in range(cl, len(si_copy), step):
+        #         shuffled_ind[si] = si_copy[ci]
+        #         si += 1
+        # for ah in range(0, len(shuffled_ind)-1):
+        #     if abs(shuffled_ind[ah] - shuffled_ind[ah+1]) < 20:
+        #         print(shuffled_ind[ah], shuffled_ind[ah+1])
 
         def shard_split(x, y):
             sorted_ind = np.argsort(y)
             cls, c_count = np.unique(y, return_counts=True)
-            # shard_count = np.round(c_count/shards).astype(np.int)
             shard_ind = []
             for c in range(0, len(cls)):
                 start_ind = sum(c_count[:c])
-                shard_count = int(c_count[c] / shards)
-                for si in range(0, shards):
-                    shard_ind.append(sorted_ind[start_ind + si * shard_count: start_ind + (si + 1) + shard_count])
-            # shard_ind = np.split(sorted_ind, shard_num)
-            # np.random.shuffle(shard_ind)
+                shard_count = int(c_count[c] / shard_num * len(cls))
+                for si in range(0, int(c_count[c] / shard_count)):
+                    shard_ind.append(sorted_ind[start_ind + si * shard_count: start_ind + (si + 1) * shard_count])
             shard_ind = np.array(shard_ind, dtype=object)[shuffled_ind]
 
             sh_inds = []
@@ -53,7 +62,7 @@ def load_clients_data(num_clients=100, mode='IID'):
         c_x_test, c_y_test = shard_split(x_test, y_test)
 
         # for yt, ytt in zip(c_y_train, c_y_test):
-        #   print(np.unique(yt), np.unique(ytt))
+        #     print(np.unique(yt, return_counts=True), np.unique(ytt))
 
     elif mode == 'practical non-IID':
         # Huang2020
