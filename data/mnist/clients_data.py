@@ -24,81 +24,94 @@ def load_clients_data(num_clients=100, mode='IID'):
         # This is a pathological non-IID partition of the data, as most clients will only have examples of two digits.
         shards = 2
         shard_num = shards * num_clients
-        sorted_ind = np.argsort(y_train)
-        shard_ind = np.split(sorted_ind, shard_num)
-        np.random.shuffle(shard_ind)
+        shuffled_ind = list(range(0, int(shard_num / 10)))
+        np.random.shuffle(shuffled_ind)
 
-        sh_inds = []
-        for i in range(0, len(shard_ind), shards):
-            sh_inds.append(np.concatenate([shard_ind[sh_ind] for sh_ind in range(i, i+shards)]))
-        c_x_train, c_y_train = [], []
-        for sh_ind in sh_inds:
-            c_x_train.append(x_train[sh_ind])
-            c_y_train.append(y_train[sh_ind])
-        """
-        c_x_train, c_y_train = [], []
-        for i in range(0, len(shard_ind), shards):
-            cxtr, cytr = [], []
-            for sh_ind in range(i, i+shards):
-                cxtr.extend(x_train[shard_ind][sh_ind])
-                cytr.extend(y_train[shard_ind][sh_ind])
-            c_x_train.append(cxtr)
-            c_y_train.append(cytr)
-        """
-        # Test data is uniformly distributed
-        c_x_test = np.array_split(x_test, num_clients)
-        c_y_test = np.array_split(y_test, num_clients)
+        def shard_split(x, y):
+            sorted_ind = np.argsort(y)
+            cls, c_count = np.unique(y, return_counts=True)
+            # shard_count = np.round(c_count/shards).astype(np.int)
+            shard_ind = []
+            for c in range(0, len(cls)):
+                start_ind = sum(c_count[:c])
+                shard_count = int(c_count[c] / shards)
+                for si in range(0, shards):
+                    shard_ind.append(sorted_ind[start_ind + si * shard_count: start_ind + (si + 1) + shard_count])
+            # shard_ind = np.split(sorted_ind, shard_num)
+            # np.random.shuffle(shard_ind)
+            shard_ind = np.array(shard_ind, dtype=object)[shuffled_ind]
+
+            sh_inds = []
+            for i in range(0, len(shard_ind), shards):
+                sh_inds.append(np.concatenate([shard_ind[sh_ind] for sh_ind in range(i, i+shards)]))
+            c_x, c_y = [], []
+            for sh_ind in sh_inds:
+                c_x.append(x[sh_ind])
+                c_y.append(y[sh_ind])
+            return c_x, c_y
+        c_x_train, c_y_train = shard_split(x_train, y_train)
+        c_x_test, c_y_test = shard_split(x_test, y_test)
+
+        # for yt, ytt in zip(c_y_train, c_y_test):
+        #   print(np.unique(yt), np.unique(ytt))
+
     elif mode == 'practical non-IID':
         # Huang2020
         # A practical non-IID data
-        cls, cls_count = np.unique(y_train, return_counts=True)
-        n_groups, num_classes = 5, len(cls)
+        n_groups, num_classes = 5, 10
         group_clients = int(num_clients / n_groups)
         n_group_classes = int(num_classes / n_groups)
         sample_pct = (0.8, 0.2)
-        groups = {_: [] for _ in range(int(num_classes/n_group_classes))}
-        for i_n in range(0, num_classes, n_group_classes):
-            g_ind = int(i_n / n_group_classes)
-            domin_ind = []
-            for i in range(i_n, i_n + n_group_classes):
-                domin_ind.append(i)
-                num_samples = int(cls_count[i] * sample_pct[0])
-                inds = np.where(y_train == i)[0]
-                y_samples = np.array_split(y_train[inds[:num_samples]], group_clients)
-                x_samples = np.array_split(x_train[inds[:num_samples]], group_clients)
-                y_train = np.delete(y_train, inds[:num_samples])
-                x_train = np.delete(x_train, inds[:num_samples], axis=0)
-                groups[g_ind].append((x_samples, y_samples))
-            for j in np.delete(np.array(range(num_classes)), domin_ind):
-                num_samples = int(cls_count[j] * sample_pct[1] / (n_groups - 1))
-                inds = np.where(y_train == j)[0]
-                y_samples = np.array_split(y_train[inds[:num_samples]], group_clients)
-                x_samples = np.array_split(x_train[inds[:num_samples]], group_clients)
-                y_train = np.delete(y_train, inds[:num_samples])
-                x_train = np.delete(x_train, inds[:num_samples], axis=0)
-                groups[g_ind].append((x_samples, y_samples))
 
-        """ Sanity check
-        for gk, gv in groups.items():
-            print(gk, end=' ')
-            for i in range(10):
-                c = sum([len(d) for d in gv[i][1]])
-                print(round(c/cls_count[gv[i][1][0][0]], 2), '({})'.format(gv[i][1][0][0]), end=' ')
-            print()
-        """
-        x_clients = {_: [] for _ in range(num_clients)}
-        y_clients = {_: [] for _ in range(num_clients)}
-        for gk, gv in groups.items():
-            for cl in gv:
-                for i, ci in enumerate(list(x_clients.keys())[gk*group_clients:(gk+1)*group_clients]):
-                    x_clients[ci].extend(cl[0][i])
-                    y_clients[ci].extend(cl[1][i])
+        def group_split(x, y):
+            groups = {_: [] for _ in range(int(num_classes/n_group_classes))}
+            cls, cls_count = np.unique(y, return_counts=True)
+            for i_n in range(0, num_classes, n_group_classes):
+                g_ind = int(i_n / n_group_classes)
+                domin_ind = []
+                for i in range(i_n, i_n + n_group_classes):
+                    domin_ind.append(i)
+                    num_samples = int(cls_count[i] * sample_pct[0])
+                    inds = np.where(y == i)[0]
+                    y_samples = np.array_split(y[inds[:num_samples]], group_clients)
+                    x_samples = np.array_split(x[inds[:num_samples]], group_clients)
+                    y = np.delete(y, inds[:num_samples])
+                    x = np.delete(x, inds[:num_samples], axis=0)
+                    groups[g_ind].append((x_samples, y_samples))
+                for j in np.delete(np.array(range(num_classes)), domin_ind):
+                    num_samples = int(cls_count[j] * sample_pct[1] / (n_groups - 1))
+                    inds = np.where(y == j)[0]
+                    y_samples = np.array_split(y[inds[:num_samples]], group_clients)
+                    x_samples = np.array_split(y[inds[:num_samples]], group_clients)
+                    y = np.delete(y, inds[:num_samples])
+                    x = np.delete(x, inds[:num_samples], axis=0)
+                    groups[g_ind].append((x_samples, y_samples))
 
-        c_x_train = [x_clients[_] for _ in range(num_clients)]
-        c_y_train = [y_clients[_] for _ in range(num_clients)]
+            """ Sanity check
+            for gk, gv in groups.items():
+                print(gk, end=' ')
+                for i in range(10):
+                    c = sum([len(d) for d in gv[i][1]])
+                    print(round(c/cls_count[gv[i][1][0][0]], 2), '({})'.format(gv[i][1][0][0]), end=' ')
+                print()
+            """
+            x_clients = {_: [] for _ in range(num_clients)}
+            y_clients = {_: [] for _ in range(num_clients)}
+            for gk, gv in groups.items():
+                for cl in gv:
+                    for i, ci in enumerate(list(x_clients.keys())[gk*group_clients:(gk+1)*group_clients]):
+                        x_clients[ci].extend(cl[0][i])
+                        y_clients[ci].extend(cl[1][i])
+
+            return [x_clients[_] for _ in range(num_clients)], [y_clients[_] for _ in range(num_clients)]
+
+        # print("Train")
+        c_x_train, c_y_train = group_split(x_train, y_train)
+        # print("Test")
+        c_x_test, c_y_test = group_split(x_test, y_test)
         # Test data is uniformly distributed
-        c_x_test = np.array_split(x_test, num_clients)
-        c_y_test = np.array_split(y_test, num_clients)
+        # c_x_test = np.array_split(x_test, num_clients)
+        # c_y_test = np.array_split(y_test, num_clients)
     else:
         raise ValueError("Invalid mode")
 
