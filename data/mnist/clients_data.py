@@ -131,5 +131,6 @@ def load_clients_data(num_clients=100, mode='IID'):
 
     c_train = list(zip(c_x_train, c_y_train))
     c_test = list(zip(c_x_test, c_y_test))
-    c_val = [([], []) for _ in range(len(c_train))]
+    c_val = list(zip(np.array_split(x_test, num_clients), np.array_split(y_test, num_clients)))
+    # c_val = [([], []) for _ in range(len(c_train))]
     return c_train, c_val, c_test
