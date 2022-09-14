@@ -52,7 +52,6 @@ def load_from_file(filename):
 
 def markdown_to_text(markdown_string):
     """ Converts a markdown string to plaintext """
-    markdown_string = markdown_string.lower()
     # text = re.sub(r"\[(.+)\]\(.+\)", r"\1", markdown_string)
     text = re.sub(r"\[(.*?)\]\(.*?\)", r"\1", markdown_string)
 
@@ -66,6 +65,7 @@ def markdown_to_text(markdown_string):
 
 
 def clean_text(text, str_translator):
+    text = text.lower()
     text = markdown_to_text(text)
     text = text.strip() \
         .replace('\n', ' ').replace('\r', ' ').replace('\ufeff', '').translate(str_translator) \
@@ -76,7 +76,7 @@ def clean_text(text, str_translator):
 def parse_json_agents(json_data):
     j_agents = []
     for u_id, u_comms in json_data.items():
-        j_agents.append([clean_text(t, translator) for t in u_comms])
+        j_agents.append([clean_text(t, translator) for t in u_comms if t is not None])
     return j_agents
 
 
@@ -117,7 +117,7 @@ def parse_clients(json_data, text_tokenizer, words_backwards, vocab_size, max_cl
 def create_tokenizer(vocab_size, train_filenames_list):
     c = Counter()
     for filename in train_filenames_list:
-        j_data = load_stackoverflow_json('{}/users/{}'.format(DATA_PATH, filename))
+        j_data = load_stackoverflow_json('{}users/{}'.format(DATA_PATH, filename))
         agents = parse_json_agents(j_data)
         c.update(''.join([''.join(a) for a in agents]).split())
 
@@ -160,7 +160,7 @@ def parse_stackoverflow_file(stackoverflow_index=0, word_backwards=10, max_clien
     # print(vocab_size)
     filename = 'stackoverflow_{}.json'.format(stackoverflow_index)
     print("Parsing", filename)
-    json_data = load_stackoverflow_json('{}/users/{}'.format(DATA_PATH, filename))
+    json_data = load_stackoverflow_json('{}users/{}'.format(DATA_PATH, filename))
     parse_clients(json_data, tokenizer,
                   words_backwards=word_backwards,
                   vocab_size=vocab_size,
