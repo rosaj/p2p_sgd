@@ -76,7 +76,14 @@ def save_json(filename, json_dict):
                 return obj.tolist()
             return json.JSONEncoder.default(self, obj)
 
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
-    with open(filename, "w") as outfile:
+    if os.path.dirname(filename) != '':
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+    num = ''
+    while os.path.exists(filename + num):
+        if num == '':
+            num = '_(1)'
+        else:
+            num = '_({})'.format(num[num.index('(')+1:-1])
+    with open(filename + num, "w") as outfile:
         json.dump(json_dict, outfile, indent=None, cls=NumpyValuesEncoder)
     print("Saved to", filename)
