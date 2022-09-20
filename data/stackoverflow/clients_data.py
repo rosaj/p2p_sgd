@@ -4,7 +4,7 @@ import numpy as np
 
 def load_clients_data(num_clients=100, seed=608361, max_train_examples=20_000):
     clients = load_clients(25_000)
-    choices = [i for i, tr in enumerate(clients) if 0 < len(tr[1]) <= max_train_examples]
+    choices = [i for i, tr in enumerate(clients) if 10 < len(tr[1]) <= max_train_examples]
     if seed is not None:
         from numpy.random import MT19937
         from numpy.random import RandomState, SeedSequence
