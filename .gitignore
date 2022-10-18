@@ -119,4 +119,10 @@ models/*
 *.DS_STORE
 .idea/*
 log/*
-common/ner/bert/models/*
+models/ner/bert/models/*
+data/stackoverflow/credentials.json
+data/stackoverflow/clients/*
+data/stackoverflow/users/*
+data/stackoverflow/stackoverflow_tokenizer.pkl
+*.json
+*.md5

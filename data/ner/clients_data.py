@@ -1,7 +1,7 @@
 import os
 import numpy as np
 from data.ner.dataset_loader import NerProcessor, FewNERDProcessor
-from common.ner.bert.tokenization import FullTokenizer
+from models.ner.bert.tokenization import FullTokenizer
 
 global PROCESSOR
 

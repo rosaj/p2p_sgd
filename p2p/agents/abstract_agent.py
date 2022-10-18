@@ -1,4 +1,3 @@
-# from common.abstract_model import *
 import tensorflow as tf
 
 

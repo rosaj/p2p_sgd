@@ -1,14 +1,11 @@
 html==1.10
 html-parser==0.2
 HTMLParser==0.0.2
-GPUtil==1.4.0
 networkx==2.6.3
 numpy==1.19.5
 nltk==3.5
-python-dotenv==0.17.1
 psutil==5.8.0
 opencv-python==4.4.0.46
-fastcluster==1.2.4
 matplotlib==3.3.3
 h5py==3.1.0
 keras-nightly==2.5.0.dev2021032900
@@ -20,3 +17,9 @@ seqeval==1.2.2
 tqdm==4.62.0
 scipy==1.7.1
 Pillow==8.0.1
+google-cloud-bigquery==3.3.5
+pandas==1.3.5
+db-dtypes==1.0.4
+python-dotenv==0.17.1
+GPUtil==1.4.0
+fastcluster==1.2.4

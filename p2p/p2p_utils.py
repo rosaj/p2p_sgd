@@ -1,4 +1,4 @@
-from common import *
+from models import *
 import numpy as np
 import tensorflow as tf
 
