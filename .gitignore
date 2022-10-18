@@ -115,7 +115,7 @@ dmypy.json
 
 
 
-models/*
+# models/*
 *.DS_STORE
 .idea/*
 log/*
