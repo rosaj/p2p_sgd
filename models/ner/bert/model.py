@@ -99,14 +99,7 @@ def evaluate(model, batched_eval_data, label_map, out_ind, sep_ind, pad_ind, do_
             y_true.append([label_map_fn(x) for x in lbl_ids])
             y_pred.append([label_map_fn(x) for x in pred_ids])
 
-    if do_print:
-        print(classification_report(y_true, y_pred, digits=4, zero_division=0))
-    class_dict = classification_report(y_true, y_pred, zero_division=0, output_dict=True)
-    out_dict = {}
-    for k, v in class_dict.items():
-        for dk, dv in v.items():
-            out_dict[k.replace('-', '_').replace(' ', '_') + '_' + dk.replace('-', '_').replace(' ', '_')] = dv
-    return out_dict
+    return _do_classification_report(y_true, y_pred, label_map, do_print)
 
 
 def eval_model_metrics(m, dataset):
@@ -151,9 +144,17 @@ def evaluate_models(models, weights, batched_eval_data, label_map, out_ind, sep_
             y_true.append([label_map_fn(x) for x in lbl_ids])
             y_pred.append([label_map_fn(x) for x in pred_ids])
 
+    return _do_classification_report(y_true, y_pred, label_map, do_print)
+
+
+def _do_classification_report(y_true, y_pred, label_map, do_print=False):
     if do_print:
         print(classification_report(y_true, y_pred, digits=4, zero_division=0))
     class_dict = classification_report(y_true, y_pred, zero_division=0, output_dict=True)
+    entities = np.unique([val.replace('B-', '').replace('I-', '') for val in label_map.values() if '[' not in val and val != 'O'])
+    for entity in entities:
+        if entity not in class_dict:
+            class_dict[entity] = {'precision': 0.0, 'recall': 0.0, 'f1-score': 0.0, 'support': 0}
     out_dict = {}
     for k, v in class_dict.items():
         for dk, dv in v.items():
