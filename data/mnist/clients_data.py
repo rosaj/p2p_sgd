@@ -1,4 +1,5 @@
 from tensorflow import keras
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 
 
@@ -52,12 +53,13 @@ def load_clients_data(num_clients=100, mode='IID'):
 
             sh_inds = []
             for i in range(0, len(shard_ind), shards):
-                sh_inds.append(np.concatenate([shard_ind[sh_ind] for sh_ind in range(i, i+shards)]))
+                sh_inds.append(np.concatenate([shard_ind[sh_ind] for sh_ind in range(i, i + shards)]))
             c_x, c_y = [], []
             for sh_ind in sh_inds:
                 c_x.append(x[sh_ind])
                 c_y.append(y[sh_ind])
             return c_x, c_y
+
         c_x_train, c_y_train = shard_split(x_train, y_train)
         c_x_test, c_y_test = shard_split(x_test, y_test)
 
@@ -73,7 +75,7 @@ def load_clients_data(num_clients=100, mode='IID'):
         sample_pct = (0.8, 0.2)
 
         def group_split(x, y):
-            groups = {_: [] for _ in range(int(num_classes/n_group_classes))}
+            groups = {_: [] for _ in range(int(num_classes / n_group_classes))}
             cls, cls_count = np.unique(y, return_counts=True)
             for i_n in range(0, num_classes, n_group_classes):
                 g_ind = int(i_n / n_group_classes)
@@ -108,7 +110,7 @@ def load_clients_data(num_clients=100, mode='IID'):
             y_clients = {_: [] for _ in range(num_clients)}
             for gk, gv in groups.items():
                 for cl in gv:
-                    for i, ci in enumerate(list(x_clients.keys())[gk*group_clients:(gk+1)*group_clients]):
+                    for i, ci in enumerate(list(x_clients.keys())[gk * group_clients:(gk + 1) * group_clients]):
                         x_clients[ci].extend(cl[0][i])
                         y_clients[ci].extend(cl[1][i])
 
@@ -131,6 +133,18 @@ def load_clients_data(num_clients=100, mode='IID'):
 
     c_train = list(zip(c_x_train, c_y_train))
     c_test = list(zip(c_x_test, c_y_test))
-    c_val = list(zip(np.array_split(x_test, num_clients), np.array_split(y_test, num_clients)))
+    # c_val = list(zip(np.array_split(x_test, num_clients), np.array_split(y_test, num_clients)))
     # c_val = [([], []) for _ in range(len(c_train))]
+    c_val = []
+    for (ctrx, ctry), (_, ctesty) in zip(c_train, c_test):
+        image_generator = ImageDataGenerator(
+            # rotation_range=10, # =1
+            # zoom_range=0.05,
+            width_shift_range=0.025,
+            height_shift_range=0.025,
+            data_format="channels_last")
+        rnd_ind = np.random.randint(len(ctry), size=len(ctesty))
+        image_generator.fit(ctrx, augment=True)
+        x_augmented, y_augmented = image_generator.flow(ctrx[rnd_ind], ctry[rnd_ind], batch_size=len(rnd_ind), shuffle=False).next()[0:2]
+        c_val.append([x_augmented, y_augmented])
     return c_train, c_val, c_test
