@@ -127,7 +127,7 @@ def plot_items(ax, x_axis, viz_dict, title=None, colors=None, agg_fn=np.average,
         args = {}
         if colors is not None:
             args['color'] = colors[i]
-        ax.plot(x_time, t_acc, **args)
+        ax.plot(x_time, t_acc, **args, label=k)
         if accs is not None:
             min_acc, max_acc = calc_fill_between(accs)
             ax.fill_between(x_time, max_acc, min_acc, alpha=0.1, **args)
@@ -156,7 +156,7 @@ def plot_items(ax, x_axis, viz_dict, title=None, colors=None, agg_fn=np.average,
     ax.xaxis.set_major_formatter(FuncFormatter(human_format))
     ax.set_ylabel('Test UA (%)')
     ax.grid()
-    ax.legend(legend) # , loc='lower right')
+    ax.legend(legend, loc='lower right')
     ax.yaxis.set_major_locator(MultipleLocator())
     # ax.text(0.5, -.5, string.ascii_lowercase[ax.get_subplotspec().colspan.start] + ")")
     if title:
@@ -176,21 +176,30 @@ def show(viz_dict, x_axises=tuple(['comms']), agg_fn=np.average, metric='test_mo
     plt.show()
 
 
-def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5), n_rows=1):
+def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5), n_rows=1, axis_lim=None):
+    # plt.rcParams.update({'font.size': 11})
     fig, axs = plt.subplots(n_rows, int(len(viz_dict) / n_rows))
     if not isinstance(axs, np.ndarray):
         axs = np.array([axs])
     axs = axs.flatten()
     for ax, (plot_k, plot_v) in zip(axs, viz_dict.items()):
-        plot_items(ax, plot_v['x_axis'], plot_v['viz'], plot_k, plot_v.get('colors', None), agg_fn, plot_v.get('metric', 'test_model-accuracy_no_oov'))
+        plot_items(ax, plot_v['x_axis'], plot_v['viz'], plot_k, plot_v.get('colors', None), agg_fn,
+                   plot_v.get('metric', 'test_model-accuracy_no_oov'))
     max_y = round(max([ax.get_ylim()[1] for ax in axs]))
-    for ax in axs:
-        ax.set_ylim([0, max_y])
+    min_y = 0
+    if axis_lim is not None and 'y' in axis_lim:
+        min_y, max_y = axis_lim['y']
+    for ai, ax in enumerate(axs):
+        if axis_lim is not None and hasattr(axis_lim, '__iter__'):
+            min_y, max_y = axis_lim[ai]['y']
+        ax.set_ylim([min_y, max_y])
+        # print(ax.get_legend_handles_labels())
     # plt.savefig('/Users/robert/Desktop/test.svg', format='svg', dpi=300)
     fig.set_figwidth(fig_size[0])
     fig.set_figheight(fig_size[1])
     plt.tight_layout(pad=0, h_pad=1, w_pad=1)
     plt.show()
+    return fig, axs
 
 
 def plot_graph(viz_dict, fig_size=(10, 5), n_rows=1, node_size=300):
@@ -217,41 +226,26 @@ def plot_graph(viz_dict, fig_size=(10, 5), n_rows=1, node_size=300):
 
 
 if __name__ == '__main__':
-    # """
+
     side_by_side({
-        'Model-test': {
+        'Pathological': {
             'x_axis': 'epoch',
-            'metric': 'test_model-macro_avg_f1_score',
+            'metric': 'test_model-sparse_categorical_accuracy',
             'viz': {
-                'BERT-2': 'P2PAgent_50A_100E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_22_38',
-                'BERT-4': 'P2PAgent_50A_100E_32B_sparse(directed)_N50_NB3_TV-1_04-06-2022_00_27',
-                'BERT-DML': 'P2PAgent_50A_100E_32B_sparse(directed)_N50_NB3_TV-1_04-06-2022_16_39'
+                'SGP': 'rev/SGPPushSumAgent_100A_100E_32B_sparse(directed-3)_14-09-2022_18_54',
             },
         },
     })
     """
     side_by_side({
-        'Model-test': {
+        '0.001 LR': {
             'x_axis': 'epoch',
-            'metric': 'test_model-macro_avg_f1_score',
+            'metric': 'test_model-sparse_categorical_accuracy',
             'viz': {
-                'DML-2-4': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_15_03',
-                'BERT-2': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_16_33',
-                'BERT-4': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_16_50'
-            },
-        },
-        'Private-test': {
-            'x_axis': 'epoch',
-            'metric': 'test_private-macro_avg_f1_score',
-            'viz': {
-                'DML-2-4': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_15_03'
-            },
-        },
-        'Ensemble-test': {
-            'x_axis': 'epoch',
-            'metric': 'test_ensemble-macro_avg_f1_score',
-            'viz': {
-                'DML-2-4': 'P2PAgent_50A_40E_32B_sparse(directed)_N50_NB3_TV-1_03-06-2022_15_03'
+                'BN': 'P2PAgent_50A_100E_32B_sparse(directed-3)_13-10-2022_17_20',
+                'BN-Mom': 'P2PAgent_50A_100E_32B_sparse(directed-3)_13-10-2022_23_09',
+                'BN-NoES': 'P2PAgent_50A_100E_32B_sparse(directed-3)_13-10-2022_20_27',
+                'No-BN': 'P2PAgent_50A_100E_32B_sparse(directed-3)_13-10-2022_14_48',
             },
         },
     })

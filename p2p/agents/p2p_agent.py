@@ -24,6 +24,7 @@ class P2PAgent(AsyncAgent):
 
         self.train_rounds = 1
         self.received_msg = False
+        self.hist_ind = 1
 
     @property
     def _has_bn_layers(self):
@@ -85,6 +86,7 @@ class P2PAgent(AsyncAgent):
                     al1.trainable = acc_before < acc_after
             else:
                 self.train_epoch()
+        self._calc_new_metrics()
 
     def train_fn(self):
         self.fit()
@@ -128,6 +130,18 @@ class P2PAgent(AsyncAgent):
         return tf.divide(tf.add(bd_loss, cd_loss), 2)
 
     def calc_new_metrics(self, metrics_names=None):
+        self.hist_ind += 1
+        checkpoints = len(self.hist['examples'])
+        for _ in range(abs(checkpoints - self.hist_ind)):
+            for _, v in self.hist.items():
+                if not hasattr(v, '__iter__'):
+                    continue
+                if self.hist_ind < checkpoints:
+                    del v[-2]
+                elif self.hist_ind > checkpoints:
+                    v.append(v[-1])
+
+    def _calc_new_metrics(self, metrics_names=None):
         super(P2PAgent, self).calc_new_metrics(metrics_names)
         if self.has_private:
             self._add_hist_metric(self._eval_train_metrics(self.private_model), "train_private", metrics_names)
