@@ -23,7 +23,7 @@ import math
 import six
 import tensorflow as tf
 
-from models.ner.bert import tf_utils
+from models.zoo.bert import tf_utils
 
 
 class BertConfig(object):

@@ -147,4 +147,9 @@ def load_clients_data(num_clients=100, mode='IID'):
         image_generator.fit(ctrx, augment=True)
         x_augmented, y_augmented = image_generator.flow(ctrx[rnd_ind], ctry[rnd_ind], batch_size=len(rnd_ind), shuffle=False).next()[0:2]
         c_val.append([x_augmented, y_augmented])
-    return c_train, c_val, c_test
+    data = {
+        "train": c_train,
+        "val": c_val,
+        "test": c_test,
+    }
+    return data

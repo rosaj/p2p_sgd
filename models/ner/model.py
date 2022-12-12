@@ -1,13 +1,12 @@
 import os
-import tensorflow as tf
 from tensorflow import keras
 import numpy as np
 
-from models.ner.bert.bert_modeling import BertConfig, BertModel
-# import models.abstract_model as ab_mod
+from models.zoo.bert.bert_modeling import BertConfig, BertModel
+from models.zoo.bert.bert_utils import restore_model_ckpt
 from models.abstract_model import *
-from models.ner.bert.metrics import MaskedSparseCategoricalCrossentropy
-from seqeval.metrics import classification_report, accuracy_score
+from models.zoo.bert.metrics import MaskedSparseCategoricalCrossentropy
+from seqeval.metrics import classification_report
 
 import data.ner.clients_data as cd
 
@@ -42,7 +41,7 @@ def build_BertNer(bert_model, num_labels, max_seq_length):
         bert_config = BertConfig.from_dict(bert_model)
 
     bert_layer = BertModel(config=bert_config, float_type=float_type)
-    _, sequence_output = bert_layer(input_word_ids, input_mask, input_type_ids)
+    pooled_output, sequence_output = bert_layer(input_word_ids, input_mask, input_type_ids)
 
     val_layer = ValidationLayer()(sequence_output, valid_ids)
 
@@ -60,13 +59,21 @@ def build_BertNer(bert_model, num_labels, max_seq_length):
 
 def create_model(bert_config, seq_len=128, lr=0.001, decay=0, do_compile=True, default_weights=True):
     processor = cd.PROCESSOR
-    model = build_BertNer('models/ner/bert/models/' + bert_config, processor.label_len(), seq_len)
+    bert_path = 'models/zoo/bert/models/' + bert_config
+    model = build_BertNer(bert_path, processor.label_len(), seq_len)
 
     if do_compile:
         compile_model(model, lr, decay)
 
-    if default_weights:
-        assign_default_weights(model, 'mnist' + str(bert_config))
+    if default_weights == 'pretrained':
+        model = restore_model_ckpt(model, bert_path)
+    elif default_weights == 'pretrained-frozen':
+        model = restore_model_ckpt(model, bert_path)
+        for layer in model.layers:
+            if isinstance(layer, BertModel):
+                layer.trainable = False
+    elif default_weights is True:
+        assign_default_weights(model, 'bert' + str(bert_config))
 
     return model
 
@@ -88,7 +95,6 @@ def evaluate(model, batched_eval_data, label_map, out_ind, sep_ind, pad_ind, do_
         logits = model((input_ids, input_masks, segment_ids, valid_ids), training=False)
         logits = tf.argmax(logits, axis=2)
         for i in range(label_ids.shape[0]):
-
             lbl_ids = label_ids[i].numpy()
             lbl_ids = lbl_ids[lbl_ids > pad_ind]  # Skipping padding when evaluating
 
@@ -133,7 +139,6 @@ def evaluate_models(models, weights, batched_eval_data, label_map, out_ind, sep_
         logits = sum((m_logits * w for m_logits, w in zip(logits_list, weights)))
         logits = tf.argmax(logits, axis=2)
         for i in range(label_ids.shape[0]):
-
             lbl_ids = label_ids[i].numpy()
             lbl_ids = lbl_ids[lbl_ids > pad_ind]  # Skipping padding when evaluating
 
@@ -151,7 +156,8 @@ def _do_classification_report(y_true, y_pred, label_map, do_print=False):
     if do_print:
         print(classification_report(y_true, y_pred, digits=4, zero_division=0))
     class_dict = classification_report(y_true, y_pred, zero_division=0, output_dict=True)
-    entities = np.unique([val.replace('B-', '').replace('I-', '') for val in label_map.values() if '[' not in val and val != 'O'])
+    entities = np.unique(
+        [val.replace('B-', '').replace('I-', '') for val in label_map.values() if '[' not in val and val != 'O'])
     for entity in entities:
         if entity not in class_dict:
             class_dict[entity] = {'precision': 0.0, 'recall': 0.0, 'f1-score': 0.0, 'support': 0}

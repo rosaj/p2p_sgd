@@ -238,6 +238,7 @@ class DataProcessor(object):
         return readfile(input_file)
 
     def get_train_as_features(self, max_seq_length, tokenizer):
+
         return convert_examples_to_features(self.get_train_examples(), self.get_labels(), max_seq_length, tokenizer)
 
     def get_dev_as_features(self, max_seq_length, tokenizer):
@@ -247,7 +248,7 @@ class DataProcessor(object):
         return convert_examples_to_features(self.get_test_examples(), self.get_labels(), max_seq_length, tokenizer)
 
 
-class NerProcessor(DataProcessor):
+class CoNLLProcessor(DataProcessor):
     """Processor for the CoNLL-2003 data set."""
 
     def get_train_examples(self):
@@ -266,7 +267,7 @@ class NerProcessor(DataProcessor):
             self._read_tsv(os.path.join(self.data_dir, "test.txt")), "test")
 
     def get_labels(self):
-        return super(NerProcessor, self).get_labels() + ["B-MISC", "I-MISC", "B-PER", "I-PER", "B-ORG", "I-ORG",
+        return super(CoNLLProcessor, self).get_labels() + ["B-MISC", "I-MISC", "B-PER", "I-PER", "B-ORG", "I-ORG",
                                                          "B-LOC", "I-LOC"]
 
     def _create_examples(self, lines, set_type):
@@ -307,7 +308,7 @@ class FewNERDProcessor(DataProcessor):
 
     def get_dev_examples(self):
         """See base class."""
-        return self.parse_examples("valid.txt", "dev")
+        return self.parse_examples("dev.txt", "dev")
 
     def get_test_examples(self):
         """See base class."""

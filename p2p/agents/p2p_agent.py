@@ -102,6 +102,7 @@ class P2PAgent(AsyncAgent):
 
     def shared_val_acc(self):
         for k, v in self.model_pars['model_mod'].eval_model_metrics(self.model, self.val).items():
+            # TODO: Add this as a parameter, not always is acc considered
             if 'acc' in k:
                 return v
         return None

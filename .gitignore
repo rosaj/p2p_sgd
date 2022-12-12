@@ -119,10 +119,14 @@ dmypy.json
 *.DS_STORE
 .idea/*
 log/*
-models/ner/bert/models/*
+models/zoo/bert/models/*
+data/reddit/source/data/reddit_leaf/*
+data/reddit/*.pkl
 data/stackoverflow/credentials.json
 data/stackoverflow/clients/*
 data/stackoverflow/users/*
 data/stackoverflow/stackoverflow_tokenizer.pkl
-*.json
+data/femnist/femnist/data/*
+# *.json
 *.md5
+*.h5

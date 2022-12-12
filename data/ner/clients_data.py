@@ -1,14 +1,14 @@
 import os
 import numpy as np
-from data.ner.dataset_loader import NerProcessor, FewNERDProcessor
-from models.ner.bert.tokenization import FullTokenizer
+from data.ner.dataset_loader import CoNLLProcessor, FewNERDProcessor
+from models.zoo.bert.tokenization import FullTokenizer
 
 global PROCESSOR
 
 
 def load_clients_data(num_clients, dataset='conll', seq_len=128, vocab_path='data/ner'):
     if dataset == 'conll':
-        processor = NerProcessor('data/ner/conll')
+        processor = CoNLLProcessor('data/ner/conll')
     else:
         processor = FewNERDProcessor('data/ner/few_nerd')
     global PROCESSOR
@@ -19,7 +19,12 @@ def load_clients_data(num_clients, dataset='conll', seq_len=128, vocab_path='dat
     val_features = processor.get_dev_as_features(seq_len, tokenizer)
     test_features = processor.get_test_as_features(seq_len, tokenizer)
 
-    return split_features(train_features, num_clients), split_features(val_features, num_clients), split_features(test_features, num_clients)
+    data = {
+        "train": split_features(train_features, num_clients),
+        "val": split_features(val_features, num_clients),
+        "test": split_features(test_features, num_clients),
+    }
+    return data
 
 
 def split_features(features, num_clients):

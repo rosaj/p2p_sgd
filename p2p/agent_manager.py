@@ -5,9 +5,9 @@ import time
 def init_agents(agent_pars, agent_data_pars, model_pars=None):
     start_time = time.time()
 
-    train_clients, val_clients, test_clients = agent_data_pars['agents_data']\
-        .load_clients_data(**{k: v for k, v in agent_data_pars.items() if k not in ['agents_data', 'batch_size']})
-    num_agents = len(train_clients)
+    client_pars = {k: v for k, v in agent_data_pars.items() if k not in ['agents_data', 'batch_size']}
+    data_dict = agent_data_pars['agents_data'].load_clients_data(**client_pars)
+    num_agents = len(data_dict["train"])
 
     clear_def_weights_cache()
 
@@ -16,13 +16,15 @@ def init_agents(agent_pars, agent_data_pars, model_pars=None):
     agents = []
     agent_class = agent_pars['agent_class']
 
-    for agent_id, (train, val, test) in enumerate(zip(train_clients, val_clients, test_clients)):
+    # for agent_id, (train, val, test) in enumerate(zip(train_clients, val_clients, test_clients)):
+    for agent_id in range(num_agents):
         device = resolve_agent_device(agents, None, devices)
         with tf.device(device or 'CPU'):
             clear_session()
 
             a_p = {k: v for k, v in agent_pars.items() if k not in ['agent_class']}
-            a_p['train'], a_p['val'], a_p['test'] = train, val, test
+            a_p['data'] = {k: v[agent_id] for k, v in data_dict.items()}
+            # a_p['train'], a_p['val'], a_p['test'] = train, val, test
             a_p['data_pars'], a_p['model'] = agent_data_pars, model_pars
 
             a = agent_class(**a_p)

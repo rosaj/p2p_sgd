@@ -771,21 +771,29 @@ def exp_bn_ft_so():
                     'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_17-09-2022_04_28',
                     'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_20-09-2022_07_23',
                     'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_20-09-2022_23_39',
+                    'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_24-10-2022_11_07',
+                    'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_26-10-2022_07_15',
                 ],
                 ALG_NAME + ' (100)': [
                     'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_15-09-2022_04_28',
                     'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_19-09-2022_10_45',
                     'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_19-09-2022_17_26',
+                    'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_07-10-2022_23_19',
+                    'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_08-10-2022_20_35',
                 ],
                 ALG_NAME + ' (300 - no BN FT)': [
                     'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_17-09-2022_05_41',
                     'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_23-09-2022_00_19',
                     'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_23-09-2022_19_51',
+                    'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_14-10-2022_22_29',
+                    'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(directed-3)_19-10-2022_04_40',
                 ],
                 ALG_NAME + ' (100 - no BN FT)': [
                     'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_15-09-2022_03_55',
                     'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_19-09-2022_00_42',
                     'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_19-09-2022_13_32',
+                    'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_10-10-2022_20_12',
+                    'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(directed-3)_11-10-2022_19_14',
                 ],
             }
         },
@@ -797,21 +805,29 @@ def exp_bn_ft_so():
                     'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_17-09-2022_05_01',
                     'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_21-09-2022_20_56',
                     'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_22-09-2022_10_38',
+                    'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_23-10-2022_23_00',
+                    'exp_es/es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_22-10-2022_07_53',
                 ],
                 ALG_NAME + ' (100)': [
                     'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_15-09-2022_04_25',
                     'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_19-09-2022_10_34',
                     'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_19-09-2022_17_23',
+                    'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_09-10-2022_11_29',
+                    'exp_es/es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_10-10-2022_02_03',
                 ],
                 ALG_NAME + ' (300 - no BN FT)': [
                     'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_17-09-2022_05_39',
                     'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_29-09-2022_21_24',
                     'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_01-10-2022_11_42',
+                    'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_20-10-2022_19_55',
+                    'exp_es/no_es/so/P2PAgent_300A_100E_50B_sparse(undirected-3)_22-10-2022_16_10',
                 ],
                 ALG_NAME + ' (100 - no BN FT)': [
                     'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_15-09-2022_03_50',
                     'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_19-09-2022_01_00',
                     'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_19-09-2022_13_16',
+                    'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_12-10-2022_10_11',
+                    'exp_es/no_es/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_12-10-2022_23_59',
                 ],
             }
         },
@@ -852,21 +868,29 @@ def plot_so_experiment_1():
                     'experiment_1/undirected/nonbn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_15-09-2022_04_20',
                     'experiment_1/undirected/nonbn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_20-09-2022_05_54',
                     'experiment_1/undirected/nonbn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_20-09-2022_18_50',
+                    'experiment_1/undirected/nonbn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_07-10-2022_20_28',
+                    'experiment_1/undirected/nonbn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_08-10-2022_10_52',
                 ],
                 'GoSGD': [
                     'experiment_1/undirected/nonbn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_16-09-2022_03_20',
                     'experiment_1/undirected/nonbn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_20-09-2022_18_21',
                     'experiment_1/undirected/nonbn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_22-09-2022_02_47',
+                    'experiment_1/undirected/nonbn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_08-10-2022_15_26',
+                    'experiment_1/undirected/nonbn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_10-10-2022_01_48',
                 ],
                 'D$^2$': [
                     'experiment_1/undirected/nonbn/so/D2Agent_100A_100E_50B_ring(undirected-2)_17-09-2022_16_46',
                     'experiment_1/undirected/nonbn/so/D2Agent_100A_100E_50B_ring(undirected-2)_20-09-2022_21_07',
                     'experiment_1/undirected/nonbn/so/D2Agent_100A_100E_50B_ring(undirected-2)_22-09-2022_05_37',
+                    'experiment_1/undirected/nonbn/so/D2Agent_100A_100E_50B_ring(undirected-2)_09-10-2022_16_39',
+                    'experiment_1/undirected/nonbn/so/D2Agent_100A_100E_50B_ring(undirected-2)_11-10-2022_18_34',
                 ],
                 'SGP': [
                     'experiment_1/undirected/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-2)_16-09-2022_10_16',
                     'experiment_1/undirected/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-2)_21-09-2022_01_53',
                     'experiment_1/undirected/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-2)_21-09-2022_23_13',
+                    'experiment_1/undirected/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-2)_09-10-2022_13_34',
+                    'experiment_1/undirected/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-2)_11-10-2022_16_43',
                 ],
             },
         },
@@ -878,21 +902,29 @@ def plot_so_experiment_1():
                     'experiment_1/undirected/bn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_15-09-2022_04_38',
                     'experiment_1/undirected/bn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_21-09-2022_06_38',
                     'experiment_1/undirected/bn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_21-09-2022_20_08',
+                    'experiment_1/undirected/bn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_10-10-2022_21_25',
+                    'experiment_1/undirected/bn/so/P2PAgent_100A_100E_50B_ring(undirected-2)_11-10-2022_20_09',
                 ],
                 'GoSGD': [
                     'experiment_1/undirected/bn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_16-09-2022_04_20',
                     'experiment_1/undirected/bn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_23-09-2022_06_20',
                     'experiment_1/undirected/bn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_24-09-2022_12_52',
+                    'experiment_1/undirected/bn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_15-10-2022_13_34',
+                    'experiment_1/undirected/bn/so/GoSGDAgent_100A_100E_50B_ring(undirected-2)_16-10-2022_18_30',
                 ],
                 'D$^2$': [
                     'experiment_1/undirected/bn/so/D2Agent_100A_100E_50B_ring(undirected-2)_17-09-2022_19_10',
                     'experiment_1/undirected/bn/so/D2Agent_100A_100E_50B_ring(undirected-2)_23-09-2022_07_04',
                     'experiment_1/undirected/bn/so/D2Agent_100A_100E_50B_ring(undirected-2)_24-09-2022_13_12',
+                    'experiment_1/undirected/bn/so/D2Agent_100A_100E_50B_ring(undirected-2)_20-10-2022_06_55',
+                    'experiment_1/undirected/bn/so/D2Agent_100A_100E_50B_ring(undirected-2)_21-10-2022_14_15',
                 ],
                 'SGP': [
                     'experiment_1/undirected/bn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-2)_16-09-2022_12_16',
                     'experiment_1/undirected/bn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-2)_23-09-2022_21_16',
                     'experiment_1/undirected/bn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-2)_24-09-2022_15_07',
+                    'experiment_1/undirected/bn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-1)_26-10-2022_02_36',
+                    'experiment_1/undirected/bn/so/SGPPushSumAgent_100A_100E_50B_ring(undirected-1)_26-10-2022_00_05',
                 ],
             },
         },
@@ -904,21 +936,29 @@ def plot_so_experiment_1():
                     'experiment_1/directed/nonbn/so/P2PAgent_100A_100E_50B_ring(directed-1)_15-09-2022_04_07',
                     'experiment_1/directed/nonbn/so/P2PAgent_100A_100E_50B_ring(directed-1)_23-09-2022_05_40',
                     'experiment_1/directed/nonbn/so/P2PAgent_100A_100E_50B_ring(directed-1)_23-09-2022_18_04',
+                    'experiment_1/directed/nonbn/so/P2PAgent_100A_100E_50B_ring(directed-1)_09-10-2022_09_24',
+                    'experiment_1/directed/nonbn/so/P2PAgent_100A_100E_50B_ring(directed-1)_09-10-2022_23_53',
                 ],
                 'GoSGD': [
                     'experiment_1/directed/nonbn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_16-09-2022_02_51',
                     'experiment_1/directed/nonbn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_29-09-2022_04_34',
                     'experiment_1/directed/nonbn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_29-09-2022_10_26',
+                    'experiment_1/directed/nonbn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_11-10-2022_14_12',
+                    'experiment_1/directed/nonbn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_12-10-2022_20_11',
                 ],
                 'D$^2$': [
                     'experiment_1/directed/nonbn/so/D2Agent_100A_100E_50B_ring(directed-1)_17-09-2022_15_55',
                     'experiment_1/directed/nonbn/so/D2Agent_100A_100E_50B_ring(directed-1)_25-09-2022_17_25',
                     'experiment_1/directed/nonbn/so/D2Agent_100A_100E_50B_ring(directed-1)_25-09-2022_01_11',
+                    'experiment_1/directed/nonbn/so/D2Agent_100A_100E_50B_ring(directed-1)_15-10-2022_06_16',
+                    'experiment_1/directed/nonbn/so/D2Agent_100A_100E_50B_ring(directed-1)_18-10-2022_16_35',
                 ],
                 'SGP': [
                     'experiment_1/directed/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_16-09-2022_08_51',
                     'experiment_1/directed/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_22-09-2022_12_14',
                     'experiment_1/directed/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_23-09-2022_05_01',
+                    'experiment_1/directed/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_14-10-2022_16_15',
+                    'experiment_1/directed/nonbn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_18-10-2022_03_58',
                 ],
             },
         },
@@ -930,21 +970,29 @@ def plot_so_experiment_1():
                     'experiment_1/directed/bn/so/P2PAgent_100A_100E_50B_ring(directed-1)_15-09-2022_04_40',
                     'experiment_1/directed/bn/so/P2PAgent_100A_100E_50B_ring(directed-1)_22-09-2022_06_46',
                     'experiment_1/directed/bn/so/P2PAgent_100A_100E_50B_ring(directed-1)_22-09-2022_18_54',
+                    'experiment_1/directed/bn/so/P2PAgent_100A_100E_50B_ring(directed-1)_12-10-2022_11_12',
+                    'experiment_1/directed/bn/so/P2PAgent_100A_100E_50B_ring(directed-1)_13-10-2022_00_55',
                 ],
                 'GoSGD': [
                     'experiment_1/directed/bn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_16-09-2022_03_46',
                     'experiment_1/directed/bn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_25-09-2022_19_09',
                     'experiment_1/directed/bn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_27-09-2022_00_36',
+                    'experiment_1/directed/bn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_18-10-2022_12_16',
+                    'experiment_1/directed/bn/so/GoSGDAgent_100A_100E_50B_ring(directed-1)_19-10-2022_19_44',
                 ],
                 'D$^2$': [
                     'experiment_1/directed/bn/so/D2Agent_100A_100E_50B_ring(directed-1)_17-09-2022_18_51',
                     'experiment_1/directed/bn/so/D2Agent_100A_100E_50B_ring(directed-1)_26-09-2022_06_09',
                     'experiment_1/directed/bn/so/D2Agent_100A_100E_50B_ring(directed-1)_28-09-2022_11_44',
+                    'experiment_1/directed/bn/so/D2Agent_100A_100E_50B_ring(directed-1)_23-10-2022_00_22',
+                    'experiment_1/directed/bn/so/D2Agent_100A_100E_50B_ring(directed-1)_24-10-2022_15_19',
                 ],
                 'SGP': [
                     'experiment_1/directed/bn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_16-09-2022_11_29',
                     'experiment_1/directed/bn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_25-09-2022_09_30',
                     'experiment_1/directed/bn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_26-09-2022_05_38',
+                    'experiment_1/directed/bn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_25-10-2022_21_11',
+                    'experiment_1/directed/bn/so/SGPPushSumAgent_100A_100E_50B_ring(directed-1)_25-10-2022_18_28',
                 ],
             },
         },
@@ -984,21 +1032,29 @@ def plot_so_experiment_2():
                     'experiment_2/fixed/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_18-09-2022_22_33',
                     'experiment_2/fixed/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_26-09-2022_18_41',
                     'experiment_2/fixed/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_27-09-2022_09_43',
+                    'experiment_2/fixed/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_09-10-2022_12_08',
+                    'experiment_2/fixed/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_10-10-2022_02_11',
                 ],
                 'GoSGD': [
                     'experiment_2/fixed/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_17-09-2022_14_57',
                     'experiment_2/fixed/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_28-09-2022_11_52',
                     'experiment_2/fixed/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_30-09-2022_12_38',
+                    'experiment_2/fixed/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_08-10-2022_17_20',
+                    'experiment_2/fixed/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_10-10-2022_03_40',
                 ],
                 'D$^2$': [
                     'experiment_2/fixed/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_17-09-2022_19_28',
                     'experiment_2/fixed/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_29-09-2022_13_05',
                     'experiment_2/fixed/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_30-09-2022_18_02',
+                    'experiment_2/fixed/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_09-10-2022_19_29',
+                    'experiment_2/fixed/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_11-10-2022_20_13',
                 ],
                 'SGP': [
                     'experiment_2/fixed/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_18-09-2022_17_19',
                     'experiment_2/fixed/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_26-09-2022_22_54',
                     'experiment_2/fixed/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_28-09-2022_00_38',
+                    'experiment_2/fixed/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_08-10-2022_21_56',
+                    'experiment_2/fixed/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_10-10-2022_07_28',
                 ],
             }
         },
@@ -1010,21 +1066,29 @@ def plot_so_experiment_2():
                     'experiment_2/fixed/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_18-09-2022_22_25',
                     'experiment_2/fixed/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_27-09-2022_20_15',
                     'experiment_2/fixed/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_28-09-2022_09_10',
+                    'experiment_2/fixed/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_07-10-2022_22_56',
+                    'experiment_2/fixed/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_08-10-2022_14_22',
                 ],
                 'GoSGD': [
                     'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_17-09-2022_14_16',
                     'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_01-10-2022_13_02',
                     'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_02-10-2022_19_35',
+                    'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_11-10-2022_16_31',
+                    'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_12-10-2022_21_49',
                 ],
                 'D$^2$': [
                     'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_17-09-2022_19_33',
                     'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_01-10-2022_19_06',
                     'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_03-10-2022_02_15',
+                    'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_15-10-2022_10_13',
+                    'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_18-10-2022_20_38',
                 ],
                 'SGP': [
                     'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_18-09-2022_17_26',
                     'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_28-09-2022_20_12',
                     'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_30-09-2022_01_15',
+                    'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_11-10-2022_20_52',
+                    'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_13-10-2022_17_08',
                 ],
             }
         },
@@ -1036,21 +1100,29 @@ def plot_so_experiment_2():
                     'experiment_2/varying/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_17-09-2022_21_45',
                     'experiment_2/varying/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_29-09-2022_16_46',
                     'experiment_2/varying/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_29-09-2022_05_35',
+                    'experiment_2/varying/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_12-10-2022_11_14',
+                    'experiment_2/varying/undirected/so/P2PAgent_100A_100E_50B_sparse(undirected-3)_13-10-2022_00_59',
                 ],
                 'GoSGD': [
                     'experiment_2/varying/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_18-09-2022_15_36',
                     'experiment_2/varying/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_03-10-2022_22_02',
                     'experiment_2/varying/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_05-10-2022_03_51',
+                    'experiment_2/varying/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_18-10-2022_12_17',
+                    'experiment_2/varying/undirected/so/GoSGDAgent_100A_100E_50B_sparse(undirected-3)_19-10-2022_20_03',
                 ],
                 'D$^2$': [
                     'experiment_2/varying/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_18-09-2022_17_48',
                     'experiment_2/varying/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_04-10-2022_05_46',
                     'experiment_2/varying/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_03-10-2022_05_24',
+                    'experiment_2/varying/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_20-10-2022_07_51',
+                    'experiment_2/varying/undirected/so/D2Agent_100A_100E_50B_sparse(undirected-3)_21-10-2022_14_39',
                 ],
                 'SGP': [
                     'experiment_2/varying/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_18-09-2022_18_11',
                     'experiment_2/varying/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_30-09-2022_20_26',
                     'experiment_2/varying/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_01-10-2022_16_29',
+                    'experiment_2/varying/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_18-10-2022_15_30',
+                    'experiment_2/varying/undirected/so/SGPPushSumAgent_100A_100E_50B_sparse(undirected-3)_19-10-2022_23_32',
                 ],
             }
         },
@@ -1062,22 +1134,30 @@ def plot_so_experiment_2():
                     'experiment_2/varying/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_17-09-2022_21_43',
                     'experiment_2/varying/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_28-09-2022_16_27',
                     'experiment_2/varying/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_28-09-2022_01_19',
+                    'experiment_2/varying/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_10-10-2022_21_43',
+                    'experiment_2/varying/directed/so/P2PAgent_100A_100E_50B_sparse(directed-3)_11-10-2022_20_15',
                 ],
                 'GoSGD': [
                     'experiment_2/varying/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_18-09-2022_15_46',
                     'experiment_2/varying/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_05-10-2022_03_55',
                     'experiment_2/varying/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_04-10-2022_09_02',
+                    'experiment_2/varying/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_15-10-2022_14_11',
+                    'experiment_2/varying/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_16-10-2022_18_39',
                 ],
                 'D$^2$': [
                     'experiment_2/varying/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_18-09-2022_17_43',
                     'experiment_2/varying/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_01-10-2022_23_03',
                     'experiment_2/varying/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_30-09-2022_22_36',
+                    'experiment_2/varying/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_23-10-2022_01_54',
+                    'experiment_2/varying/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_24-10-2022_16_17',
 
                 ],
                 'SGP': [
                     'experiment_2/varying/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_18-09-2022_18_13',
                     'experiment_2/varying/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_02-10-2022_07_04',
                     'experiment_2/varying/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_03-10-2022_01_27',
+                    'experiment_2/varying/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_15-10-2022_18_14',
+                    'experiment_2/varying/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_17-10-2022_00_54',
                 ],
             }
         },
@@ -1128,34 +1208,50 @@ def plot_so_experiment_3():
                     'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_04-10-2022_10_22',
                     'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_04-10-2022_15_16',
                     'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_04-10-2022_21_47',
+                    'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_25-10-2022_14_18',
+                    'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_25-10-2022_13_28',
                 ],
                 'GoSGD (500)': [
                     'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_07-10-2022_22_54',
                     'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_13-10-2022_00_21',
                     'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_08-10-2022_05_42',
+                    'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_18-10-2022_20_07',
+                    'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_23-10-2022_07_48',
                 ],
                 'GoSGD (100)': [
                     'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_17-09-2022_14_16',
                     'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_01-10-2022_13_02',
                     'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_02-10-2022_19_35',
+                    'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_11-10-2022_16_31',
+                    'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_12-10-2022_21_49',
                 ],
                 'D$^2$ (500)': [
                     'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_28-09-2022_09_44',
                     'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_06-10-2022_18_28',
+                    'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_23-10-2022_14_45',
+                    'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_30-10-2022_18_19',
+                    'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_31-10-2022_01_35',
                 ],
                 'SGP (500)': [
                     'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_27-09-2022_23_18',
                     'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_06-10-2022_17_37',
+                    'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_25-10-2022_10_19',
+                    'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_30-10-2022_19_01',
+                    'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_01-11-2022_19_41',
                 ],
                 'D$^2$ (100)': [
                     'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_17-09-2022_19_33',
                     'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_01-10-2022_19_06',
                     'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_03-10-2022_02_15',
+                    'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_15-10-2022_10_13',
+                    'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_18-10-2022_20_38',
                 ],
                 'SGP (100)': [
                     'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_18-09-2022_17_26',
                     'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_28-09-2022_20_12',
                     'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_30-09-2022_01_15',
+                    'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_11-10-2022_20_52',
+                    'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_13-10-2022_17_08',
                 ],
             }
         },
@@ -1262,44 +1358,65 @@ def plot_reddit_so_experiment_3():
                 ALG_NAME + ' (1000)': [
                     'experiment_3/so/P2PAgent_1000A_100E_50B_sparse(directed-3)_09-10-2022_21_47',
                     'experiment_3/so/P2PAgent_1000A_100E_50B_sparse(directed-3)_10-10-2022_21_28',
+                    'experiment_3/so/P2PAgent_1000A_100E_50B_sparse(directed-3)_13-10-2022_07_30',
+                    'experiment_3/so/P2PAgent_1000A_100E_50B_sparse(directed-3)_13-10-2022_12_59',
+                    'experiment_3/so/P2PAgent_1000A_100E_50B_sparse(directed-3)_16-10-2022_21_09',
                 ],
                 ALG_NAME + ' (500)': [
                     'experiment_3/so/P2PAgent_500A_100E_50B_sparse(directed-3)_20-09-2022_17_44',
                     'experiment_3/so/P2PAgent_500A_100E_50B_sparse(directed-3)_22-09-2022_03_17',
                     'experiment_3/so/P2PAgent_500A_100E_50B_sparse(directed-3)_23-09-2022_12_57',
+                    'experiment_3/so/P2PAgent_500A_100E_50B_sparse(directed-3)_14-10-2022_11_51',
+                    'experiment_3/so/P2PAgent_500A_100E_50B_sparse(directed-3)_15-10-2022_12_38',
                 ],
                 ALG_NAME + ' (100)': [
                     'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_04-10-2022_10_22',
                     'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_04-10-2022_15_16',
                     'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_04-10-2022_21_47',
+                    'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_25-10-2022_14_18',
+                    'experiment_3/so/P2PAgent_100A_100E_50B_sparse(directed-3)_25-10-2022_13_28',
                 ],
                 'GoSGD (500)': [
                     'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_07-10-2022_22_54',
-                    # "'experiment_3/so/',
+                    'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_13-10-2022_00_21',
                     'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_08-10-2022_05_42',
+                    'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_18-10-2022_20_07',
+                    'experiment_3/so/GoSGDAgent_500A_100E_50B_sparse(directed-3)_23-10-2022_07_48',
                 ],
                 'GoSGD (100)': [
                     'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_17-09-2022_14_16',
                     'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_01-10-2022_13_02',
                     'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_02-10-2022_19_35',
+                    'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_11-10-2022_16_31',
+                    'experiment_2/fixed/directed/so/GoSGDAgent_100A_100E_50B_sparse(directed-3)_12-10-2022_21_49',
                 ],
                 'D$^2$ (500)': [
                     'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_28-09-2022_09_44',
                     'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_06-10-2022_18_28',
+                    'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_23-10-2022_14_45',
+                    'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_30-10-2022_18_19',
+                    'experiment_3/so/D2Agent_500A_100E_50B_sparse(directed-3)_31-10-2022_01_35',
                 ],
                 'SGP (500)': [
                     'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_27-09-2022_23_18',
                     'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_06-10-2022_17_37',
+                    'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_25-10-2022_10_19',
+                    'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_30-10-2022_19_01',
+                    'experiment_3/so/SGPPushSumAgent_500A_100E_50B_sparse(directed-3)_01-11-2022_19_41',
                 ],
                 'D$^2$ (100)': [
                     'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_17-09-2022_19_33',
                     'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_01-10-2022_19_06',
                     'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_03-10-2022_02_15',
+                    'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_15-10-2022_10_13',
+                    'experiment_2/fixed/directed/so/D2Agent_100A_100E_50B_sparse(directed-3)_18-10-2022_20_38',
                 ],
                 'SGP (100)': [
                     'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_18-09-2022_17_26',
                     'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_28-09-2022_20_12',
                     'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_30-09-2022_01_15',
+                    'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_11-10-2022_20_52',
+                    'experiment_2/fixed/directed/so/SGPPushSumAgent_100A_100E_50B_sparse(directed-3)_13-10-2022_17_08',
                 ],
             }
         },
@@ -1483,7 +1600,7 @@ def independent_acc():
 
 
 def review_exp_ring():
-    side_by_side({
+    viz = {
         'MNIST-IID (Undirected)': {
             'x_axis': 'epoch',
             'metric': 'test_model-sparse_categorical_accuracy',
@@ -1664,12 +1781,40 @@ def review_exp_ring():
                 ],
             },
         }
-    }, n_rows=2, fig_size=(15, 7), axis_lim=[{'y': [85, 100]}, {'y': [85, 100]}, {'y': [85, 100]}, {'y': [0, 10]},
-                                             {'y': [85, 100]}, {'y': [85, 100]}, {'y': [85, 100]}, {'y': [0, 10]}])
+    }
+    side_by_side(viz, n_rows=2, fig_size=(15, 7), axis_lim=[{'y': [85, 100]}, {'y': [85, 100]}, {'y': [85, 100]}, {'y': [0, 10]},
+                                                            {'y': [85, 100]}, {'y': [85, 100]}, {'y': [85, 100]}, {'y': [0, 10]}])
+
+    print("Statistics")
+    data = {}
+    for _, g in viz.items():
+        for k, v in g['viz'].items():
+            if k in data:
+                data[k + '-' + _].extend(v)
+            else:
+                data[k + '-' + _] = v
+    res = {}
+    for k, v in data.items():
+        t = 0
+        acc = 0
+        for vl in v:
+            t1, t_acc = resolve_timeline(vl, 'comms', metric='test_model-accuracy_no_oov' if 'Reddit' in k else 'test_model-sparse_categorical_accuracy')
+            t1 = t1[:101]
+            t += t1[-1] / 100
+            acc += max(t_acc)
+        print(k, "# msgs:", round(t / len(v)), "Avg top acc:", round(acc / len(v), 2))
+        k1 = k.split(' ')[0]
+        if k1 in res:
+            res[k1].append(round(acc / len(v), 2))
+        else:
+            res[k1] = [round(acc / len(v), 2)]
+    print('---------------------')
+    for k, v in res.items():
+        print(k, round(np.mean(v), 2))
 
 
 def review_exp_sparse():
-    side_by_side({
+    viz = {
         'MNIST-IID (Undirected)': {
             'x_axis': 'epoch',
             'metric': 'test_model-sparse_categorical_accuracy',
@@ -1850,9 +1995,37 @@ def review_exp_sparse():
                 ],
             }
         },
-    }, n_rows=2, fig_size=(15, 7), axis_lim=[{'y': [85, 100]}, {'y': [85, 100]}, {'y': [85, 100]}, {'y': [0, 10]},
+    }
+    side_by_side(viz, n_rows=2, fig_size=(15, 7), axis_lim=[{'y': [85, 100]}, {'y': [85, 100]}, {'y': [85, 100]}, {'y': [0, 10]},
                                              {'y': [85, 100]}, {'y': [85, 100]}, {'y': [85, 100]}, {'y': [0, 10]}])
+
+    print("Statistics")
+    data = {}
+    for _, g in viz.items():
+        for k, v in g['viz'].items():
+            if k in data:
+                data[k + '-' + _].extend(v)
+            else:
+                data[k + '-' + _] = v
+    res = {}
+    for k, v in data.items():
+        t = 0
+        acc = 0
+        for vl in v:
+            t1, t_acc = resolve_timeline(vl, 'comms', metric='test_model-accuracy_no_oov' if 'Reddit' in k else 'test_model-sparse_categorical_accuracy')
+            t1 = t1[:101]
+            t += t1[-1] / 100
+            acc += max(t_acc)
+        print(k, "# msgs:", round(t / len(v)), "Avg top acc:", round(acc / len(v), 2))
+        k1 = k.split(' ')[0]
+        if k1 in res:
+            res[k1].append(round(acc / len(v), 2))
+        else:
+            res[k1] = [round(acc / len(v), 2)]
+    print('---------------------')
+    for k, v in res.items():
+        print(k, round(np.mean(v), 2))
 
 
 if __name__ == '__main__':
-    review_exp_sparse()
+    review_exp_ring()

@@ -3,15 +3,17 @@ import tensorflow as tf
 
 class Agent:
     # noinspection PyDefaultArgument
-    def __init__(self, train, val, test, model, graph=None, data_pars=None, eval_batch_size=50):
+    def __init__(self, data, model, graph=None, data_pars=None, eval_batch_size=50):
 
         self.data_pars = data_pars
         self.batch_size = data_pars['batch_size']
         self.eval_batch_size = eval_batch_size
+        train, val, test = data.pop('train'), data.pop('val'), data.pop('test')
         self.train = self._create_dataset(train[0], train[1], self.batch_size)
         self.val = self._create_dataset(val[0], val[1], self.eval_batch_size)
         self.test = self._create_dataset(test[0], test[1], self.eval_batch_size)
         self.train_len = len(train[1])
+        self._data = data
 
         self.model_pars = model
         self.model = self._create_model(self.model_pars, ['model_mod'])
