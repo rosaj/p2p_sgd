@@ -103,6 +103,7 @@ def clean_text(text):
     return text
 
 
+"""
 def parse_reddit_file(reddit_filename='reddit_0_train.json', seq_len=10, tokenizer_path='data/ner/vocab.txt'):
     tokenizer = FullTokenizer(tokenizer_path, True)
     reddit_filepath = 'data/reddit/source/data/reddit_leaf/' + reddit_filename.split('.')[0].split('_')[-1] + '/' + reddit_filename
@@ -124,9 +125,45 @@ def parse_reddit_file(reddit_filename='reddit_0_train.json', seq_len=10, tokeniz
         j_agents_x.append(j_agent_data_x)
         j_agents_y.append(j_agent_data_y)
     return j_agents_x, j_agents_y
+"""
 
 
+# Joined code from two functions to save data as parsing to reduce memory footprint
 def parse_and_save_reddit_file(reddit_filename='reddit_0_train.json', seq_len=10, tokenizer_path='data/ner/vocab.txt', max_client_num=1_000):
+    os.makedirs('data/reddit/bert_clients/', exist_ok=True)
+    pre_filename = reddit_filename.split('.')[0]
+    tokenizer = FullTokenizer(tokenizer_path, True)
+    reddit_filepath = 'data/reddit/source/data/reddit_leaf/' + reddit_filename.split('.')[0].split('_')[-1] + '/' + reddit_filename
+    with open(reddit_filepath, 'r') as inf:
+        cdata = json.load(inf)
+    json_data = cdata['user_data']
+
+    j_agents_x, j_agents_y, part = [], [], 0
+
+    def save_part():
+        save_agents = [(x, y) for x, y in zip(j_agents_x, j_agents_y)]
+        save_to_file(save_agents, 'data/reddit/bert_clients/{}_{}SL_{}CN_{}PT.h5'.format(pre_filename, seq_len, max_client_num, part))
+        return [], [], part + 1
+
+    for key in list(json_data.keys()):
+        j_agent_data_x = []
+        j_agent_data_y = []
+        for sx, sy in zip(json_data[str(key)]['x'], json_data[str(key)]['y']):
+            s = ' '.join([' '.join(l) for l in sx])
+            s = clean_text(s)
+            features = convert_nwp_examples_to_features(s.split('.'), seq_len=seq_len, tokenizer=tokenizer)
+            j_agent_data_x.extend(features)
+            j_agent_data_y.extend([sy['subreddit']] * len(features))
+
+        j_agents_x.append(j_agent_data_x)
+        j_agents_y.append(j_agent_data_y)
+        if len(j_agents_x) == max_client_num:
+            j_agents_x, j_agents_y, part = save_part()
+
+    if len(j_agents_x) > 0:
+        j_agents_x, j_agents_y, part = save_part()
+
+    """
     agents_x, agents_y = parse_reddit_file(reddit_filename, seq_len, tokenizer_path)
     agents = [(x, y) for x, y in zip(agents_x, agents_y)]
     pre_filename = reddit_filename.split('.')[0]
@@ -142,6 +179,7 @@ def parse_and_save_reddit_file(reddit_filename='reddit_0_train.json', seq_len=10
         prev_ind = cur_ind
         cur_ind += max_client_num
         part += 1
+    # """
 
 
 def save_to_file(data_clients, filename):
