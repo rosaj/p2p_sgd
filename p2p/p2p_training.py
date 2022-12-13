@@ -25,7 +25,10 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
                     model_pars=model_pars, graph_pars=graph_pars, sim_pars=sim_pars)
     set_seed(sim_pars.get('seed'))
 
-    agents = init_agents(agent_pars, agent_data_pars, model_pars)
+    agents = []
+    for ap, adp, mp in zip(agent_pars, agent_data_pars, model_pars):
+        agents.extend(init_agents(ap, adp, mp))
+
     graph_manager = GraphManager(nodes=agents, **graph_pars)
     for a in agents:
         a.graph = graph_manager
