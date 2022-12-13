@@ -3,6 +3,7 @@ import json
 import os
 import numpy as np
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+import tensorflow as tf
 from models.zoo.bert.tokenization import FullTokenizer
 import h5py
 
@@ -142,7 +143,7 @@ def parse_and_save_reddit_file(reddit_filename='reddit_0_train.json', seq_len=10
 
     def save_part():
         save_agents = [(x, y) for x, y in zip(j_agents_x, j_agents_y)]
-        save_to_file(save_agents, 'data/reddit/bert_clients/{}_{}SL_{}CN_{}PT.h5'.format(pre_filename, seq_len, max_client_num, part))
+        save_to_file(save_agents, 'data/reddit/bert_clients/clients_{}_{}SL_{}CN_{}PT.h5'.format(pre_filename, seq_len, max_client_num, part))
         return [], [], part + 1
 
     for key in list(json_data.keys()):
@@ -173,7 +174,7 @@ def parse_and_save_reddit_file(reddit_filename='reddit_0_train.json', seq_len=10
     while True:
         save_agents = agents[prev_ind:min(cur_ind, len(agents))]
         save_to_file(save_agents,
-                     'data/reddit/bert_clients/{}_{}SL_{}CN_{}PT.h5'.format(pre_filename, seq_len, max_client_num, part))
+                     'data/reddit/bert_clients/clients_{}_{}SL_{}CN_{}PT.h5'.format(pre_filename, seq_len, max_client_num, part))
         if len(agents) <= cur_ind:
             break
         prev_ind = cur_ind
@@ -228,7 +229,7 @@ def load_clients(data_type, client_num, seq_len=10, max_client_num=1_000):
     clients = []
 
     def parsed_name():
-        return 'data/reddit/bert_clients/clients_reddit_{}_{}_{}SL__{}CN_{}PT.h5'\
+        return 'data/reddit/bert_clients/clients_reddit_{}_{}_{}SL_{}CN_{}PT.h5'\
             .format(reddit_index, data_type, seq_len, max_client_num, part)
 
     while len(clients) < client_num:
@@ -242,18 +243,31 @@ def load_clients(data_type, client_num, seq_len=10, max_client_num=1_000):
     return clients
 
 
+def unpack_features(features):
+    c_input_ids = [f.input_ids for f in features]
+    c_input_mask = [f.input_mask for f in features]
+    c_segment_ids = [f.segment_ids for f in features]
+    c_valid_ids = [f.valid_ids for f in features]
+    c_label_id = [f.label_id for f in features]
+    c_label_mask = [f.label_mask for f in features]
+    return (
+            (np.asarray(c_input_ids), np.asarray(c_input_mask), np.asarray(c_segment_ids), np.asarray(c_valid_ids)),
+            tf.boolean_mask(c_label_id, c_label_mask)
+        )
+
+
 def load_client_datasets(num_clients=1_000):
     train = load_clients('train', num_clients)
     val = load_clients('val', num_clients)
     test = load_clients('test', num_clients)
     metadata = []
     for tr, v, ts in zip(train, val, test):
-        subreddits = [d.decode() for d in tr[2]] + [d.decode() for d in v[2]] + [d.decode() for d in ts[2]]
+        subreddits = [d.decode() for d in tr[1]] + [d.decode() for d in v[1]] + [d.decode() for d in ts[1]]
         metadata.append(np.unique(subreddits))
 
-    train = [el[:2] for el in train]
-    val = [el[:2] for el in val]
-    test = [el[:2] for el in test]
+    train = [unpack_features(el[0]) for el in train]
+    val = [unpack_features(el[0]) for el in val]
+    test = [unpack_features(el[0]) for el in test]
     return train, val, test, metadata
 
 
