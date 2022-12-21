@@ -12,7 +12,11 @@ class Agent:
         self.train = self._create_dataset(train[0], train[1], self.batch_size)
         self.val = self._create_dataset(val[0], val[1], self.eval_batch_size)
         self.test = self._create_dataset(test[0], test[1], self.eval_batch_size)
-        self.train_len = len(train[1])
+
+        temp_train = train[1]
+        while isinstance(temp_train, tuple):
+            temp_train = temp_train[0]
+        self.train_len = len(temp_train)
         self._data = data
 
         self.model_pars = model

@@ -11,10 +11,10 @@ def init_agents(agent_pars, agent_data_pars, model_pars=None):
 
     clear_def_weights_cache()
 
-    pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init agents')
+    agent_class = agent_pars['agent_class']
+    pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init {} agents'.format(agent_class.__name__.split('.')[-1]))
     devices = environ.get_devices()
     agents = []
-    agent_class = agent_pars['agent_class']
 
     # for agent_id, (train, val, test) in enumerate(zip(train_clients, val_clients, test_clients)):
     for agent_id in range(num_agents):
@@ -33,7 +33,7 @@ def init_agents(agent_pars, agent_data_pars, model_pars=None):
             agents.append(a)
         update_pb(pbar, agents, 1, start_time)
     pbar.close()
-    print("Init agents: {} minutes".format(round((time.time() - start_time) / 60)))
+    print("Init {} agents: {} minutes".format(agent_class.__name__.split('.')[-1], round((time.time() - start_time) / 60)))
     return agents
 
 

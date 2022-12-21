@@ -268,7 +268,7 @@ class CoNLLProcessor(DataProcessor):
 
     def get_labels(self):
         return super(CoNLLProcessor, self).get_labels() + ["B-MISC", "I-MISC", "B-PER", "I-PER", "B-ORG", "I-ORG",
-                                                         "B-LOC", "I-LOC"]
+                                                           "B-LOC", "I-LOC"]
 
     def _create_examples(self, lines, set_type):
         examples = []

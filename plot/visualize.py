@@ -39,11 +39,11 @@ def human_format(num, pos):
 def calc_agent_timeline(data, x_axis, agg_fn, metric='test_model-accuracy_no_oov'):
     acc, v_acc, t_acc = [], [], []
 
-    rounds = list(range(len(data[list(data.keys())[0]][metric])))
+    rounds = list(range(len(data[list(data.keys())[0]]["examples"])))
     total_examples = sum([data[a_key]['train_len'] for a_key in list(data.keys())])
     x_time = [] if x_axis != 'Round' else rounds
     for rind in rounds:
-        test = [data[a_id][metric][rind] for a_id in data.keys()]
+        test = [data[a_id][metric][rind] for a_id in data.keys() if metric in data[a_id]]
         t_acc.append(agg_fn(test) * 100)
 
         examples = sum([data[a_key]['examples'][rind] for a_key in list(data.keys())])
@@ -228,11 +228,14 @@ def plot_graph(viz_dict, fig_size=(10, 5), n_rows=1, node_size=300):
 if __name__ == '__main__':
 
     side_by_side({
-        'Pathological': {
+        '': {
             'x_axis': 'epoch',
-            'metric': 'test_model-sparse_categorical_accuracy',
+            # 'metric': 'test_model-sparse_categorical_accuracy',
             'viz': {
-                'SGP': 'rev/SGPPushSumAgent_100A_100E_32B_sparse(directed-3)_14-09-2022_18_54',
+                'Reddit': ['P2PAgent_10A_20E_50B_sparse-1(directed-3)_25-10-2022_18_49',
+                           'P2PAgent_10A_21E_50B_sparse-1(directed-3)_26-10-2022_10_00'],
+                'Sparse': ['P2PAgent_10A_20E_50B_sparse(directed-3)_25-10-2022_18_43',
+                           'P2PAgent_10A_20E_50B_sparse(directed-3)_26-10-2022_09_42']
             },
         },
     })

@@ -25,7 +25,7 @@ def convert_nwp_examples_to_features(paragraphs, seq_len, tokenizer):
 
     def tokenize(sent):
         return tokenizer.tokenize(
-            sent.strip().translate(translator).replace(' ' * 4, '').replace(' ' * 3, '').replace(' ' * 2, ' '))
+            sent.strip().translate(translator).replace(' ' * 4, ' ').replace(' ' * 3, ' ').replace(' ' * 2, ' '))
 
     sentence_tokens = []
     for p in paragraphs:
@@ -39,14 +39,15 @@ def convert_nwp_examples_to_features(paragraphs, seq_len, tokenizer):
     seqs = []
     valid_seq_ind = []
     cls = tokenizer.vocab['[CLS]']
-    # sep = tokenizer.vocab['[SEP]']
+    sep = tokenizer.vocab['[SEP]']
     for sentence, valid_tokens in zip(sentences, valid_tokens_sentences):
-        for i in range(1, len(sentence)):
+        for i in range(0, len(sentence)):
             # skip predicting non-valid tokens
             if valid_tokens[i] == 1:
-                start_ind = max(i - seq_len + 2, 0)
-                words = sentence[start_ind: i + 1]
-                valid_word_ind = valid_tokens[start_ind: i + 1]
+                start_ind = max(i - seq_len + 3, 0)
+                end_ind = i + 1
+                words = sentence[start_ind: end_ind]
+                valid_word_ind = valid_tokens[start_ind: end_ind]
                 if valid_tokens[start_ind] != 1:
                     prev_valid_tokens = np.ndarray.flatten(np.argwhere(valid_tokens[:start_ind] == 1))
                     first_valid_word_ind = np.argwhere(valid_word_ind == 1)[0][0]
@@ -59,9 +60,9 @@ def convert_nwp_examples_to_features(paragraphs, seq_len, tokenizer):
                         words.pop(0)
                         valid_word_ind = valid_word_ind[1:]
                 words.insert(0, cls)
-                # words.append(sep)
+                words.append(sep)
                 valid_word_ind = np.insert(valid_word_ind, 0, 1)
-                # valid_word_ind = np.append(valid_word_ind, 1)
+                valid_word_ind = np.append(valid_word_ind, 1)
                 seqs.append(words)
                 valid_seq_ind.append(valid_word_ind)
     text_seqs = np.array(
@@ -76,9 +77,9 @@ def convert_nwp_examples_to_features(paragraphs, seq_len, tokenizer):
     for i in range(len(t_x)):
         ind = np.where(t_x[i] == 0)
         if len(ind[0]) > 0:
-            ind = ind[0][0] - 1
+            ind = ind[0][0] - 2
         else:
-            ind = len(t_x[i]) - 1
+            ind = len(t_x[i]) - 2
         label_ids[i][ind] = t_x[i][ind]
         t_x[i][ind] = mask_ind
         input_mask[i][:ind + 1] = 1
@@ -130,7 +131,7 @@ def parse_reddit_file(reddit_filename='reddit_0_train.json', seq_len=10, tokeniz
 
 
 # Joined code from two functions to save data as parsing to reduce memory footprint
-def parse_and_save_reddit_file(reddit_filename='reddit_0_train.json', seq_len=10, tokenizer_path='data/ner/vocab.txt', max_client_num=1_000):
+def parse_and_save_reddit_file(reddit_filename='reddit_0_train.json', seq_len=128, tokenizer_path='data/ner/vocab.txt', max_client_num=1_000):
     os.makedirs('data/reddit/bert_clients/', exist_ok=True)
     pre_filename = reddit_filename.split('.')[0]
     tokenizer = FullTokenizer(tokenizer_path, True)
@@ -224,7 +225,7 @@ def load_from_file(filename):
     return data_clients
 
 
-def load_clients(data_type, client_num, seq_len=10, max_client_num=1_000):
+def load_clients(data_type, client_num, seq_len=128, max_client_num=1_000):
     reddit_index, part = 0, 0
     clients = []
 
@@ -243,7 +244,7 @@ def load_clients(data_type, client_num, seq_len=10, max_client_num=1_000):
     return clients
 
 
-def unpack_features(features):
+def unpack_features(features, sequenced=True):
     c_input_ids = [f.input_ids for f in features]
     c_input_mask = [f.input_mask for f in features]
     c_segment_ids = [f.segment_ids for f in features]
@@ -252,14 +253,16 @@ def unpack_features(features):
     c_label_mask = [f.label_mask for f in features]
     return (
             (np.asarray(c_input_ids), np.asarray(c_input_mask), np.asarray(c_segment_ids), np.asarray(c_valid_ids)),
-            tf.boolean_mask(c_label_id, c_label_mask)
+            (np.asarray(c_label_id), np.asarray(c_label_mask)) if sequenced else tf.boolean_mask(c_label_id, c_label_mask)
+            # tf.boolean_mask(c_label_id, c_label_mask)  # Pooled
+            # (np.asarray(c_label_id), np.asarray(c_label_mask))  # Sequence
         )
 
 
-def load_client_datasets(num_clients=1_000):
-    train = load_clients('train', num_clients)
-    val = load_clients('val', num_clients)
-    test = load_clients('test', num_clients)
+def load_client_datasets(num_clients=1_000, seq_len=10):
+    train = load_clients('train', num_clients, seq_len)
+    val = load_clients('val', num_clients, seq_len)
+    test = load_clients('test', num_clients, seq_len)
     metadata = []
     for tr, v, ts in zip(train, val, test):
         subreddits = [d.decode() for d in tr[1]] + [d.decode() for d in v[1]] + [d.decode() for d in ts[1]]
@@ -271,8 +274,8 @@ def load_client_datasets(num_clients=1_000):
     return train, val, test, metadata
 
 
-def load_clients_data(num_clients=100, starting_client=0):
-    tr, val, test, metadata = load_client_datasets(num_clients + starting_client)
+def load_clients_data(num_clients=100, starting_client=0, seq_len=10):
+    tr, val, test, metadata = load_client_datasets(num_clients + starting_client, seq_len)
     data = {
         "train": tr[starting_client:num_clients + starting_client],
         "val": val[starting_client:num_clients + starting_client],

@@ -5,6 +5,8 @@ from p2p.agents import SyncAgent
 
 from datetime import datetime
 import time
+import tensorflow as tf
+import logging
 
 
 def print_pars_info(**kwargs):
@@ -29,6 +31,9 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
     for ap, adp, mp in zip(agent_pars, agent_data_pars, model_pars):
         agents.extend(init_agents(ap, adp, mp))
 
+    for a_i, a in enumerate(agents):
+        a.id = a_i
+
     graph_manager = GraphManager(nodes=agents, **graph_pars)
     for a in agents:
         a.graph = graph_manager
@@ -39,9 +44,11 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
     devices = environ.get_devices()
     # accuracy_step = parse_acc_step(accuracy_step, examples)
     epochs = sim_pars.get('epochs', 1)
-    agent_class = agent_pars['agent_class']
+    agent_class = agent_pars[0]['agent_class']
     max_examples = epochs * examples
     total_examples, round_num = 0, 0
+
+    tf.get_logger().setLevel(logging.ERROR)
 
     pbar = new_progress_bar(examples, 'Training')
     for a in agents:
@@ -79,7 +86,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
 
     filename = "{}_{}A_{}E_{}B_{}_{}".format(
-        agent_class.__name__, len(agents), epochs, agent_data_pars['batch_size'],
+        agent_class.__name__, len(agents), epochs, agent_data_pars[0]['batch_size'],
         graph_pars['graph_type'] + '(' + ('' if graph_pars['directed'] else 'un') + 'directed-' + str(graph_pars['num_neighbors']) + ')',
         datetime.now().strftime("%d-%m-%Y_%H_%M"))
 

@@ -1,14 +1,18 @@
-import os
 from tensorflow import keras
 import numpy as np
 
-from models.zoo.bert.bert_modeling import BertConfig, BertModel
-from models.zoo.bert.bert_utils import restore_model_ckpt
 from models.abstract_model import *
 from models.zoo.bert.metrics import MaskedSparseCategoricalCrossentropy
 from seqeval.metrics import classification_report
 
-import data.ner.clients_data as cd
+from data.ner.dataset_loader import CoNLLProcessor, FewNERDProcessor
+from models.zoo.bert.bert_model import new_bert, restore_pretrained_weights
+
+ner_processors = {
+    'conll': CoNLLProcessor('data/ner/conll'),
+    'few': FewNERDProcessor('data/ner/few_nerd')
+}
+COUNT = 0
 
 
 class ValidationLayer(keras.layers.Layer):
@@ -28,52 +32,39 @@ class ValidationLayer(keras.layers.Layer):
         return n_vo
 
 
-def build_BertNer(bert_model, num_labels, max_seq_length):
-    float_type = tf.float32
-    input_word_ids = tf.keras.layers.Input(shape=(max_seq_length,), dtype=tf.int32, name='input_word_ids')
-    input_mask = tf.keras.layers.Input(shape=(max_seq_length,), dtype=tf.int32, name='input_mask')
-    input_type_ids = tf.keras.layers.Input(shape=(max_seq_length,), dtype=tf.int32, name='input_type_ids')
-    valid_ids = tf.keras.layers.Input(shape=(max_seq_length,), dtype=tf.int32, name='valid_ids')
-
-    if type(bert_model) == str:
-        bert_config = BertConfig.from_json_file(os.path.join(bert_model, "bert_config.json"))
-    elif type(bert_model) == dict:
-        bert_config = BertConfig.from_dict(bert_model)
-
-    bert_layer = BertModel(config=bert_config, float_type=float_type)
-    pooled_output, sequence_output = bert_layer(input_word_ids, input_mask, input_type_ids)
+def build_bert_ner(bert_model, num_labels, max_seq_length):
+    (input_word_ids, input_mask, input_type_ids, valid_ids), (pooled_output, sequence_output), bert_config = new_bert(bert_model, max_seq_length)
 
     val_layer = ValidationLayer()(sequence_output, valid_ids)
-
-    dropout = tf.keras.layers.Dropout(rate=bert_config.hidden_dropout_prob)(val_layer)
-
+    # dropout = tf.keras.layers.Dropout(rate=bert_config.hidden_dropout_prob)(val_layer)
     initializer = tf.keras.initializers.TruncatedNormal(stddev=bert_config.initializer_range)
 
     classifier = tf.keras.layers.Dense(
-        num_labels, kernel_initializer=initializer, activation='softmax', name='output', dtype=float_type)(dropout)
+        num_labels, kernel_initializer=initializer, activation='softmax', name='output', dtype=tf.float32)(val_layer)
 
     bert = tf.keras.Model(inputs=[input_word_ids, input_mask, input_type_ids, valid_ids], outputs=[classifier])
 
     return bert
 
 
-def create_model(bert_config, seq_len=128, lr=0.001, decay=0, do_compile=True, default_weights=True):
-    processor = cd.PROCESSOR
+def create_model(bert_config, processor_name='conll', seq_len=128, lr=5e-4, decay=0, do_compile=True, default_weights=True):
     bert_path = 'models/zoo/bert/models/' + bert_config
-    model = build_BertNer(bert_path, processor.label_len(), seq_len)
+    processor = ner_processors[processor_name]
+    model = build_bert_ner(bert_path, processor.label_len(), seq_len)
+    global COUNT
+    model._name = "{}_{}".format(processor_name, COUNT)
+    COUNT += 1
 
     if do_compile:
         compile_model(model, lr, decay)
 
-    if default_weights == 'pretrained':
-        model = restore_model_ckpt(model, bert_path)
-    elif default_weights == 'pretrained-frozen':
-        model = restore_model_ckpt(model, bert_path)
-        for layer in model.layers:
-            if isinstance(layer, BertModel):
-                layer.trainable = False
+    if type(default_weights) == str:
+        if default_weights == 'global':
+            assign_default_weights(model, 'global-bert' + str(bert_config))
+        else:
+            model = restore_pretrained_weights(model, bert_path, 'frozen' in default_weights)
     elif default_weights is True:
-        assign_default_weights(model, 'bert' + str(bert_config))
+        assign_default_weights(model, 'bert-ner-{}-{}'.format(processor_name, str(bert_config)))
 
     return model
 
@@ -109,7 +100,7 @@ def evaluate(model, batched_eval_data, label_map, out_ind, sep_ind, pad_ind, do_
 
 
 def eval_model_metrics(m, dataset):
-    processor = cd.PROCESSOR
+    processor = ner_processors[m.name.split('_')[0]]
     return evaluate(m, dataset,
                     processor.get_label_map(),
                     processor.token_ind('O'),
@@ -120,7 +111,8 @@ def eval_model_metrics(m, dataset):
 def eval_ensemble_metrics(models, dataset, metrics, weights=None):
     if weights is None:
         weights = len(models) * [1 / len(models)]
-    processor = cd.PROCESSOR
+    # TODO: it is possible that different models have different processors
+    processor = ner_processors[models[0].name.split('_')[0]]
     return evaluate_models(models, weights, dataset,
                            processor.get_label_map(),
                            processor.token_ind('O'),
