@@ -7,6 +7,8 @@ from models.zoo.bert.bert_model import new_bert, restore_pretrained_weights
 from models.zoo.bert.metrics import MaskedSparseCategoricalCrossentropy, \
     MaskedSparseCategoricalAccuracy, MaskedF1Score, MaskedPrecision, MaskedRecall
 
+COUNT = 0
+
 
 def build_bert_nwp(bert_model, num_labels, max_seq_length):
     (input_word_ids, input_mask, input_type_ids, valid_ids), (pooled_output, sequence_output), bert_config = new_bert(bert_model, max_seq_length)
@@ -22,6 +24,9 @@ def create_model(bert_config, seq_len=12, lr=5e-4, decay=0, do_compile=True, def
     bert_path = 'models/zoo/bert/models/' + bert_config
     tokenizer = FullTokenizer(os.path.join(bert_path, "vocab.txt"), True)
     model = build_bert_nwp(bert_path, len(list(tokenizer.vocab.keys())), seq_len)
+    global COUNT
+    model._name = "bert-nwp_{}".format(COUNT)
+    COUNT += 1
 
     if do_compile:
         compile_model(model, lr, decay)

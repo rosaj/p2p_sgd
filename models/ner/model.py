@@ -52,7 +52,7 @@ def create_model(bert_config, processor_name='conll', seq_len=128, lr=5e-4, deca
     processor = ner_processors[processor_name]
     model = build_bert_ner(bert_path, processor.label_len(), seq_len)
     global COUNT
-    model._name = "{}_{}".format(processor_name, COUNT)
+    model._name = "ner_{}_{}".format(processor_name, COUNT)
     COUNT += 1
 
     if do_compile:
@@ -100,7 +100,7 @@ def evaluate(model, batched_eval_data, label_map, out_ind, sep_ind, pad_ind, do_
 
 
 def eval_model_metrics(m, dataset):
-    processor = ner_processors[m.name.split('_')[0]]
+    processor = ner_processors[m.name.split('_')[1]]
     return evaluate(m, dataset,
                     processor.get_label_map(),
                     processor.token_ind('O'),
@@ -112,7 +112,7 @@ def eval_ensemble_metrics(models, dataset, metrics, weights=None):
     if weights is None:
         weights = len(models) * [1 / len(models)]
     # TODO: it is possible that different models have different processors
-    processor = ner_processors[models[0].name.split('_')[0]]
+    processor = ner_processors[models[0].name.split('_')[1]]
     return evaluate_models(models, weights, dataset,
                            processor.get_label_map(),
                            processor.token_ind('O'),

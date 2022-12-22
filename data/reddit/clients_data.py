@@ -23,7 +23,8 @@ def load_clients_data(num_clients=100, starting_client=0):
         "train": tr[starting_client:num_clients + starting_client],
         "val": val[starting_client:num_clients + starting_client],
         "test": test[starting_client:num_clients + starting_client],
-        "metadata-subreddits": metadata[starting_client:num_clients + starting_client]
+        "metadata-subreddits": metadata[starting_client:num_clients + starting_client],
+        "dataset_name": 'reddit-nwp',
     }
     return data
 

@@ -119,6 +119,7 @@ def load_clients_data(num_clients=100, seq_len=10, seed=608361, max_train_exampl
         "train": [unpack_features(el) for el in train],
         "val": [unpack_features(el) for el in val],
         "test": [unpack_features(el) for el in test],
+        "dataset_name": 'stackoverflow-bert-nwp',
     }
     return data
 

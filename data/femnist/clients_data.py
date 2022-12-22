@@ -62,6 +62,7 @@ def load_clients_data(num_clients=100, seed=None):
         "train": c_train,
         "val": c_val,
         "test": c_test,
+        "dataset_name": 'femnist',
     }
     return data
 

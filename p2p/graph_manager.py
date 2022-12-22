@@ -14,6 +14,10 @@ def sample_neighbors(client_num, num_clients, self_ind):
     return np.array(c_list)[random_indices]
 
 
+def create_ring(n, create_using):
+    return nx.cycle_graph(n, create_using=create_using)
+
+
 def sparse_graph(n, num_neighbors, create_using):
     if create_using.is_directed():
         in_n = [num_neighbors] * n
@@ -27,6 +31,9 @@ def sparse_graph(n, num_neighbors, create_using):
         g = nx.from_numpy_matrix(np.asmatrix(m), create_using=create_using)
         """
     else:
+        if num_neighbors == 2 and not create_using.is_directed():
+            # create ring graph to prevent separations into groups
+            return create_ring(n, create_using)
         # undirected d-regular graph (sum row == sum column)
         g = nx.random_regular_graph(num_neighbors, n)
     return g
@@ -75,27 +82,74 @@ def create_grid(**kwargs):
         raise NotImplementedError()
 
 
+def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_conns=1, **kwargs):
+    # if 'cluster_directed' in kwargs:
+    #     create_using = nx.DiGraph() if kwargs['cluster_directed'] else nx.Graph()
+    # else:
+    #     create_using = kwargs['create_using']
+
+    if isinstance(clusters, list) or isinstance(clusters, tuple):
+        clusters_num = len(clusters)
+        cluster_inds = []
+        count = 0
+        for c in clusters:
+            cluster_inds.append(list(range(count, count + c)))
+            count += c
+    else:
+        clusters_num = clusters
+        nc = int(n / clusters_num)
+        cluster_inds = [list(range(i*nc, nc*(i+1))) for i in range(clusters_num)]
+
+    adj_mx = np.zeros((n, n))
+    # cluster_inds = []
+    for i, nc in enumerate(cluster_inds):
+        nc_l = len(nc)
+        g = sparse_graph(nc_l, num_neighbors, create_using)
+        m = nx.to_numpy_matrix(g)
+        adj_mx[i*nc_l:nc_l*(i+1), i*nc_l:nc_l*(i+1)] = m
+        # cluster_inds.append(list(range(i*nc, nc*(i+1))))
+
+    cluster_directed = 'cluster_directed' in kwargs and kwargs['cluster_directed']
+    for i in range(len(cluster_inds)):
+        for j in range(0 if cluster_directed else i+1, len(cluster_inds)):
+            if i == j:
+                continue
+            ci, cj = cluster_inds[i], cluster_inds[j]
+            conns = cluster_conns * len(ci)
+            rnd_cj = np.random.choice(cj, size=conns, replace=conns > len(cj))
+            adj_mx[ci, rnd_cj] = 1
+            if not cluster_directed:
+                adj_mx[rnd_cj, ci] = 1
+
+    if cluster_directed and not create_using.is_directed():
+        create_using = nx.DiGraph()
+    g = nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
+    nx.draw(g, node_color=[["blue", "green", "red", "yellow"][i] for i, c in enumerate(cluster_inds) for _ in c])
+    return g
+
+
 _graph_type_dict = {
     'complete': lambda **kwargs: nx.complete_graph(kwargs['n'], create_using=kwargs['create_using']),
-    'ring': lambda **kwargs: nx.cycle_graph(kwargs['n'], create_using=kwargs['create_using']),
+    'ring': lambda **kwargs: create_ring(kwargs['n'], create_using=kwargs['create_using']),
     'sparse': lambda **kwargs: sparse_graph(kwargs['n'], kwargs['num_neighbors'], create_using=kwargs['create_using']),
     'erdos_renyi': lambda **kwargs: nx.erdos_renyi_graph(kwargs['n'], kwargs['p'], directed=kwargs['directed']),
     'binomial': lambda **kwargs: nx.binomial_graph(kwargs['n'], kwargs['p'], directed=kwargs['directed']),
     'torus': create_torus,
-    'grid': create_grid
+    'grid': create_grid,
+    'sparse_clusters': lambda **kwargs: create_sparse_clusters(**kwargs)
 }
 
 
 class GraphManager:
 
-    def __init__(self, graph_type, nodes, directed=False, time_varying=-1, num_neighbors=1):
+    def __init__(self, graph_type, nodes, directed=False, time_varying=-1, num_neighbors=1, **kwargs):
         self.n = len(nodes)
         self.nodes = nodes
         self.directed = directed
         self.time_varying = time_varying
         self.num_neighbors = num_neighbors
         self.graph_type = graph_type
-        self._nx_graph = self._resolve_graph_type()
+        self._nx_graph = self._resolve_graph_type(**kwargs)
         self._resolve_weights_mixing()
 
     @property
@@ -108,15 +162,16 @@ class GraphManager:
             self._nx_graph = self._resolve_graph_type()
             self._resolve_weights_mixing()
 
-    def _resolve_graph_type(self):
+    def _resolve_graph_type(self,  **kwargs):
         assert self.graph_type in _graph_type_dict
         graph_fn = _graph_type_dict[self.graph_type]
-        kwargs = {'n': self.n,
+        params = {'n': self.n,
                   'create_using': nx.DiGraph() if self.directed else nx.Graph(),
                   'directed': self.directed,
                   'num_neighbors': self.num_neighbors,
                   'p': self.num_neighbors / self.n,
                   }
+        kwargs.update(params)
         graph = graph_fn(**kwargs)
         return graph
 
@@ -178,5 +233,9 @@ def nx_graph_from_saved_lists(np_array, directed=False):
 
 
 if __name__ == "__main__":
-    gm = GraphManager('grid', [DummyNode(_) for _ in range(15)], directed=True, num_neighbors=3)
-    gm.draw()
+    gm = GraphManager('sparse_clusters', [DummyNode(_) for _ in range(40)], directed=True, num_neighbors=2,
+                      **{'cluster_directed': True, 'clusters': [10, 10, 10, 10]})
+    # gm.draw()
+
+    for no in gm.nodes:
+        print(no.id, [p.id for p in gm.get_peers(no.id)])

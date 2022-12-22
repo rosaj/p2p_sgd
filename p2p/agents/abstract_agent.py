@@ -28,7 +28,10 @@ class Agent:
                      "train_len":     self.train_len,
                      "useful_msg":    [0],
                      "useless_msg":   [0],
+                     "model_name":    self.model.name,
                      }
+        if 'dataset_name' in self._data:
+            self.hist['dataset_name'] = self._data['dataset_name']
 
         self.device = None
         self.iter = None

@@ -9,8 +9,10 @@ global PROCESSOR
 def load_clients_data(num_clients, dataset='conll', seq_len=128, vocab_path='data/ner'):
     if dataset == 'conll':
         processor = CoNLLProcessor('data/ner/conll')
-    else:
+    elif dataset == 'few_nerd':
         processor = FewNERDProcessor('data/ner/few_nerd')
+    else:
+        raise ValueError("Invalid dataset name")
     global PROCESSOR
     PROCESSOR = processor
     tokenizer = FullTokenizer(os.path.join(vocab_path, "vocab.txt"), True)
@@ -23,6 +25,7 @@ def load_clients_data(num_clients, dataset='conll', seq_len=128, vocab_path='dat
         "train": split_features(train_features, num_clients),
         "val": split_features(val_features, num_clients),
         "test": split_features(test_features, num_clients),
+        "dataset_name": '{}-bert-ner'.format(dataset)
     }
     return data
 
