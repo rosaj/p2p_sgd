@@ -109,7 +109,7 @@ def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_c
         adj_mx[i*nc_l:nc_l*(i+1), i*nc_l:nc_l*(i+1)] = m
         # cluster_inds.append(list(range(i*nc, nc*(i+1))))
 
-    cluster_directed = 'cluster_directed' in kwargs and kwargs['cluster_directed']
+    cluster_directed = True if 'cluster_directed' in kwargs and kwargs['cluster_directed'] else create_using.is_directed()
     for i in range(len(cluster_inds)):
         for j in range(0 if cluster_directed else i+1, len(cluster_inds)):
             if i == j:
