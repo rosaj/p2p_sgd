@@ -135,7 +135,7 @@ class P2PAgent(AsyncAgent):
         checkpoints = len(self.hist['examples'])
         for _ in range(abs(checkpoints - self.hist_ind)):
             for _, v in self.hist.items():
-                if not hasattr(v, '__iter__'):
+                if not hasattr(v, '__iter__') or isinstance(v, str):
                     continue
                 if self.hist_ind < checkpoints:
                     del v[-2]
