@@ -124,7 +124,7 @@ def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_c
     if cluster_directed and not create_using.is_directed():
         create_using = nx.DiGraph()
     g = nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
-    nx.draw(g, node_color=[["blue", "green", "red", "yellow"][i] for i, c in enumerate(cluster_inds) for _ in c])
+    # nx.draw(g, node_color=[["blue", "green", "red", "yellow"][i] for i, c in enumerate(cluster_inds) for _ in c])
     return g
 
 
