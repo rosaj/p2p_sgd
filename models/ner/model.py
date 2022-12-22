@@ -12,7 +12,6 @@ ner_processors = {
     'conll': CoNLLProcessor('data/ner/conll'),
     'few': FewNERDProcessor('data/ner/few_nerd')
 }
-COUNT = 0
 
 
 class ValidationLayer(keras.layers.Layer):
@@ -51,18 +50,19 @@ def create_model(bert_config, processor_name='conll', seq_len=128, lr=5e-4, deca
     bert_path = 'models/zoo/bert/models/' + bert_config
     processor = ner_processors[processor_name]
     model = build_bert_ner(bert_path, processor.label_len(), seq_len)
-    global COUNT
-    model._name = "ner_{}_{}".format(processor_name, COUNT)
-    COUNT += 1
+
+    model._name = "ner_{}_{}".format(processor_name, next_model_id('ner_{}'.format(processor_name)))
 
     if do_compile:
         compile_model(model, lr, decay)
 
     if type(default_weights) == str:
         if default_weights == 'global':
-            assign_default_weights(model.layers[3], 'global-bert' + str(bert_config))
-        else:
+            assign_default_weights(model.layers[3], 'global-bert-' + str(bert_config))
+        elif 'pretrained' in default_weights:
             model = restore_pretrained_weights(model, bert_path, 'frozen' in default_weights)
+        else:
+            assign_default_weights(model.layers[3], "{}-{}".format(default_weights, str(bert_config)))
     elif default_weights is True:
         assign_default_weights(model, 'bert-ner-{}-{}'.format(processor_name, str(bert_config)))
 

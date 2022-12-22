@@ -9,7 +9,7 @@ def init_agents(agent_pars, agent_data_pars, model_pars=None):
     data_dict = agent_data_pars['agents_data'].load_clients_data(**client_pars)
     num_agents = len(data_dict["train"])
 
-    clear_def_weights_cache()
+    # clear_def_weights_cache()
 
     agent_class = agent_pars['agent_class']
     pbar = tqdm(total=num_agents, position=0, leave=False, desc='Init {} agents'.format(agent_class.__name__.split('.')[-1]))
