@@ -33,7 +33,7 @@ def create_model(bert_config, seq_len=12, lr=5e-4, decay=0, do_compile=True, def
 
     if type(default_weights) == str:
         if default_weights == 'global':
-            assign_default_weights(model, 'global-bert' + str(bert_config))
+            assign_default_weights(model.layers[3], 'global-bert' + str(bert_config))
         elif 'pretrained' in default_weights:
             model = restore_pretrained_weights(model, bert_path, 'frozen' in default_weights)
         else:
@@ -51,9 +51,6 @@ def compile_model(model, lr=0.001, decay=0):
         loss=MaskedSparseCategoricalCrossentropy(),
         metrics=[
             MaskedSparseCategoricalAccuracy(),
-            MaskedF1Score(),
-            MaskedPrecision(),
-            MaskedRecall()
         ]
     )
 

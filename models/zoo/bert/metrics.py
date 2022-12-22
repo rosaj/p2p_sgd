@@ -29,14 +29,13 @@ class MaskedF1Score(F1Score):
     def __init__(self, **kwargs):
         if 'name' not in kwargs:
             kwargs['name'] = 'masked_f1_score'
-        if 'num_classes' not in kwargs:
-            kwargs['num_classes'] = 30522
         super().__init__(**kwargs)
 
     def update_state(self, y_true, y_pred, **kwargs):
         label_ids, label_mask = y_true[0], y_true[1]
         label_ids_masked = tf.boolean_mask(label_ids, label_mask)
         logits_masked = tf.boolean_mask(y_pred, label_mask)
+        label_ids_masked = tf.keras.utils.to_categorical(label_ids_masked, num_classes=tf.shape(y_pred)[-1])
         super().update_state(label_ids_masked, logits_masked, **kwargs)
 
 
@@ -50,6 +49,7 @@ class MaskedPrecision(Precision):
         label_ids, label_mask = y_true[0], y_true[1]
         label_ids_masked = tf.boolean_mask(label_ids, label_mask)
         logits_masked = tf.boolean_mask(y_pred, label_mask)
+        label_ids_masked = tf.keras.utils.to_categorical(label_ids_masked, num_classes=tf.shape(y_pred)[-1])
         super().update_state(label_ids_masked, logits_masked, **kwargs)
 
 
@@ -63,4 +63,5 @@ class MaskedRecall(Recall):
         label_ids, label_mask = y_true[0], y_true[1]
         label_ids_masked = tf.boolean_mask(label_ids, label_mask)
         logits_masked = tf.boolean_mask(y_pred, label_mask)
+        label_ids_masked = tf.keras.utils.to_categorical(label_ids_masked, num_classes=tf.shape(y_pred)[-1])
         super().update_state(label_ids_masked, logits_masked, **kwargs)

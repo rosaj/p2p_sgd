@@ -3,7 +3,7 @@ import numpy as np
 
 from models.abstract_model import *
 from models.zoo.bert.metrics import MaskedSparseCategoricalCrossentropy
-from seqeval.metrics import classification_report
+from seqeval.metrics import classification_report, accuracy_score
 
 from data.ner.dataset_loader import CoNLLProcessor, FewNERDProcessor
 from models.zoo.bert.bert_model import new_bert, restore_pretrained_weights
@@ -60,7 +60,7 @@ def create_model(bert_config, processor_name='conll', seq_len=128, lr=5e-4, deca
 
     if type(default_weights) == str:
         if default_weights == 'global':
-            assign_default_weights(model, 'global-bert' + str(bert_config))
+            assign_default_weights(model.layers[3], 'global-bert' + str(bert_config))
         else:
             model = restore_pretrained_weights(model, bert_path, 'frozen' in default_weights)
     elif default_weights is True:
@@ -157,4 +157,5 @@ def _do_classification_report(y_true, y_pred, label_map, do_print=False):
     for k, v in class_dict.items():
         for dk, dv in v.items():
             out_dict[k.replace('-', '_').replace(' ', '_') + '_' + dk.replace('-', '_').replace(' ', '_')] = dv
+    out_dict['ner_accuracy'] = accuracy_score(y_true, y_pred)
     return out_dict
