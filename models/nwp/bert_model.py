@@ -4,8 +4,7 @@ from models.zoo.bert.tokenization import FullTokenizer
 from models.abstract_model import *
 
 from models.zoo.bert.bert_model import new_bert, restore_pretrained_weights
-from models.zoo.bert.metrics import MaskedSparseCategoricalCrossentropy, \
-    MaskedSparseCategoricalAccuracy, MaskedF1Score, MaskedPrecision, MaskedRecall
+from models.zoo.bert.metrics import MaskedSparseCategoricalCrossentropy, MaskedSparseCategoricalAccuracy, MaskedSparseTopKCategoricalAccuracy
 
 COUNT = 0
 
@@ -51,6 +50,7 @@ def compile_model(model, lr=0.001, decay=0):
         loss=MaskedSparseCategoricalCrossentropy(),
         metrics=[
             MaskedSparseCategoricalAccuracy(),
+            MaskedSparseTopKCategoricalAccuracy(k=3)
         ]
     )
 
