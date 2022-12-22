@@ -13,7 +13,7 @@ COUNT = 0
 def build_bert_nwp(bert_model, num_labels, max_seq_length):
     (input_word_ids, input_mask, input_type_ids, valid_ids), (pooled_output, sequence_output), bert_config = new_bert(bert_model, max_seq_length)
 
-    classifier = tf.keras.layers.Dense(num_labels, activation='softmax', dtype=tf.float32)(pooled_output)
+    classifier = tf.keras.layers.Dense(num_labels, activation='softmax', dtype=tf.float32)(sequence_output)
 
     bert = tf.keras.Model(inputs=[input_word_ids, input_mask, input_type_ids, valid_ids], outputs=[classifier])
 
