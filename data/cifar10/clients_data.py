@@ -137,6 +137,6 @@ def load_clients_data(num_clients=100, mode='IID'):
         "train": c_train,
         "val": c_val,
         "test": c_test,
-        "dataset_name": 'cifar10-{}'.format(mode),
+        "dataset_name": ['cifar10-{}'.format(mode)] * num_clients,
     }
     return data

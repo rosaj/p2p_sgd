@@ -25,7 +25,7 @@ def load_clients_data(num_clients, dataset='conll', seq_len=128, vocab_path='dat
         "train": split_features(train_features, num_clients),
         "val": split_features(val_features, num_clients),
         "test": split_features(test_features, num_clients),
-        "dataset_name": '{}-bert-ner'.format(dataset)
+        "dataset_name": ['{}-bert-ner'.format(dataset)] * num_clients
     }
     return data
 

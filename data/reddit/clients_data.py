@@ -24,7 +24,7 @@ def load_clients_data(num_clients=100, starting_client=0):
         "val": val[starting_client:num_clients + starting_client],
         "test": test[starting_client:num_clients + starting_client],
         "metadata-subreddits": metadata[starting_client:num_clients + starting_client],
-        "dataset_name": 'reddit-nwp',
+        "dataset_name": ['reddit-nwp'] * num_clients,
     }
     return data
 

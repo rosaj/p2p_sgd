@@ -26,6 +26,6 @@ def load_clients_data(num_clients=100, seed=608361, max_train_examples=20_000):
         "train": train,
         "val": val,
         "test": test,
-        "dataset_name": 'stackoverflow-nwp',
+        "dataset_name": ['stackoverflow-nwp'] * num_clients,
     }
     return data

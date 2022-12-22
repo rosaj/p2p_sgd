@@ -29,6 +29,8 @@ class MaskedF1Score(F1Score):
     def __init__(self, **kwargs):
         if 'name' not in kwargs:
             kwargs['name'] = 'masked_f1_score'
+        if 'num_classes' not in kwargs:
+            kwargs['num_classes'] = 30522
         super().__init__(**kwargs)
 
     def update_state(self, y_true, y_pred, **kwargs):
