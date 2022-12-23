@@ -58,6 +58,9 @@ def create_model(bert_config, processor_name='conll', seq_len=128, lr=5e-4, deca
 
     if type(default_weights) == str:
         if default_weights == 'global':
+            # Assign all weights as default
+            assign_default_weights(model, 'bert-ner-{}-{}'.format(processor_name, str(bert_config)))
+            # Match only bert layer with global weights
             assign_default_weights(model.layers[3], 'global-bert-' + str(bert_config))
         elif 'pretrained' in default_weights:
             model = restore_pretrained_weights(model, bert_path, 'frozen' in default_weights)
