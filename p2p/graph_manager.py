@@ -113,17 +113,18 @@ def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_c
         cluster_directed = kwargs['cluster_directed']
     else:
         cluster_directed = create_using.is_directed()
-    
-    for i in range(len(cluster_inds)):
-        for j in range(0 if cluster_directed else i+1, len(cluster_inds)):
-            if i == j:
-                continue
-            ci, cj = cluster_inds[i], cluster_inds[j]
-            conns = cluster_conns * len(ci)
-            rnd_cj = np.random.choice(cj, size=conns, replace=conns > len(cj))
-            adj_mx[ci, rnd_cj] = 1
-            if not cluster_directed:
-                adj_mx[rnd_cj, ci] = 1
+
+    if cluster_conns > 0:
+        for i in range(len(cluster_inds)):
+            for j in range(0 if cluster_directed else i+1, len(cluster_inds)):
+                if i == j:
+                    continue
+                ci, cj = cluster_inds[i], cluster_inds[j]
+                conns = cluster_conns * len(ci)
+                rnd_cj = np.random.choice(cj, size=conns, replace=conns > len(cj))
+                adj_mx[ci, rnd_cj] = 1
+                if not cluster_directed:
+                    adj_mx[rnd_cj, ci] = 1
 
     if cluster_directed and not create_using.is_directed():
         create_using = nx.DiGraph()
@@ -237,9 +238,10 @@ def nx_graph_from_saved_lists(np_array, directed=False):
 
 
 if __name__ == "__main__":
-    gm = GraphManager('sparse_clusters', [DummyNode(_) for _ in range(40)], directed=True, num_neighbors=2,
-                      **{'cluster_directed': True, 'clusters': [10, 10, 10, 10]})
-    # gm.draw()
+    gm = GraphManager('sparse_clusters', [DummyNode(_) for _ in range(40)], directed=True, num_neighbors=3,
+                      **{'cluster_conns': 0})
+                      # **{'cluster_directed': True, 'clusters': [10, 10, 10, 10]})
+    gm.draw()
 
     for no in gm.nodes:
         print(no.id, [p.id for p in gm.get_peers(no.id)])
