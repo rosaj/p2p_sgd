@@ -14,21 +14,33 @@ ner_processors = {
 }
 
 
+# Function that removes invalid tokens (such as #es) and adds padding to the end
+@tf.function
+def val_fn(x):
+    valid = tf.boolean_mask(x[0], x[1], axis=0)
+    v_shape = tf.shape(valid)
+    zeros = tf.cast(tf.fill((tf.math.subtract(tf.shape(x[0])[0], v_shape[0]), v_shape[1]), 0), dtype=tf.float32)
+    return tf.concat([valid, zeros], axis=0)
+
+
 class ValidationLayer(keras.layers.Layer):
     def call(self, sequence_output, valid_ids):
-        sq = sequence_output
-        vi = valid_ids
+        # sq = sequence_output
+        # vi = valid_ids
 
-        def val_fn(i):
-            cond = tf.equal(vi[i], tf.constant(1, dtype=tf.int32))
-            temp = tf.squeeze(tf.gather(sq[i], tf.where(cond)))
-            r = tf.tile(tf.zeros(tf.shape(sq[i])[1]), [tf.math.subtract(tf.shape(sq[i])[0], tf.shape(temp)[0])])
-            r = tf.reshape(r, [-1, tf.shape(sq[i])[1]])
-            n = tf.concat([temp, r], 0)
-            return n
+        # def val_fn(i):
+        #     cond = tf.equal(vi[i], tf.constant(1, dtype=tf.int32))
+        #     temp = tf.squeeze(tf.gather(sq[i], tf.where(cond)))
+        #     r = tf.tile(tf.zeros(tf.shape(sq[i])[1]), [tf.math.subtract(tf.shape(sq[i])[0], tf.shape(temp)[0])])
+        #     r = tf.reshape(r, [-1, tf.shape(sq[i])[1]])
+        #     n = tf.concat([temp, r], 0)
+        #    return n
 
-        n_vo = tf.map_fn(val_fn, tf.range(tf.shape(sq)[0]), dtype=tf.float32)
-        return n_vo
+        # n_vo = tf.map_fn(val_fn, tf.range(tf.shape(sq)[0]), dtype=tf.float32)
+        # return n_vo
+        valid_ids = tf.cast(valid_ids, tf.bool)
+        return tf.map_fn(lambda x: val_fn(x), (sequence_output, valid_ids),
+                         dtype=(tf.float32, tf.bool), fn_output_signature=tf.float32)
 
 
 def build_bert_ner(bert_model, num_labels, max_seq_length):
