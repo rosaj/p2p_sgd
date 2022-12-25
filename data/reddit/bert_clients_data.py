@@ -244,7 +244,7 @@ def load_clients(data_type, client_num, seq_len=128, max_client_num=1_000):
     return clients
 
 
-def unpack_features(features, sequenced=True):
+def unpack_features(features, sequenced=False):
     c_input_ids = [f.input_ids for f in features]
     c_input_mask = [f.input_mask for f in features]
     c_segment_ids = [f.segment_ids for f in features]
