@@ -45,6 +45,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
     # accuracy_step = parse_acc_step(accuracy_step, examples)
     epochs = sim_pars.get('epochs', 1)
     agent_class = agent_pars[0]['agent_class']
+    print_metrics = sim_pars.get('print_metrics', None)
     max_examples = epochs * examples
     total_examples, round_num = 0, 0
 
@@ -56,7 +57,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
         with tf.device(device or 'CPU'):
             n = a.start()
         update_pb(pbar, agents, n, start_time)
-    _, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples)
+    _, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples, print_metrics)
 
     while total_examples < max_examples:
         if issubclass(agent_class, SyncAgent):
@@ -78,7 +79,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
             with tf.device(device or 'CPU'):
                 pbar.update(agent.train_fn())
 
-        is_check, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples)
+        is_check, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples, print_metrics)
         if is_check:
             graph_manager.check_time_varying(round_num)
 
@@ -101,7 +102,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
                    'sim_pars': sim_pars})
 
 
-def checkpoint(pbar, agents, round_num, examples, total_examples):
+def checkpoint(pbar, agents, round_num, examples, total_examples, print_metrics=None):
     if pbar.n >= pbar.total:
         diff = pbar.n - pbar.total
         pbar.close()
@@ -110,7 +111,7 @@ def checkpoint(pbar, agents, round_num, examples, total_examples):
         round_num += 1
         msg_count = sum([a.hist_total_messages for a in agents])
         print("\nMsgs: {}\tRound: {}\t".format(msg_count, round_num), end='')
-        calc_agents_metrics(agents, round(total_examples / examples))
+        calc_agents_metrics(agents, round(total_examples / examples), print_metrics=print_metrics)
 
         pbar = new_progress_bar(examples, 'Training')
         pbar.update(diff)

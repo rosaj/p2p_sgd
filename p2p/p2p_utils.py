@@ -22,7 +22,7 @@ def calc_new_agent_metrics(agents):
     pbar.close()
 
 
-def calc_agents_metrics(agents, e=0):
+def calc_agents_metrics(agents, e=0, print_metrics=None):
     print("Epoch:", e)
     calc_new_agent_metrics(agents)
     h = {}
@@ -37,8 +37,9 @@ def calc_agents_metrics(agents, e=0):
     print(("\t{: <" + str(max_len) + "}\t\tMean\t\tMedian").format('Metric'))
     print('\t' + '-' * (max_len + 35))
     for hk, hv in h.items():
+        if print_metrics is not None and hk not in print_metrics:
+            continue
         print_acc(hv, ("\t{: <" + str(max_len) + "}").format(hk + ':'))
-
     print('', end='', flush=True)
 
 
