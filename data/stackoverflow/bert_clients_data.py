@@ -96,9 +96,9 @@ def load_clients(client_num, seq_len=12, max_client_num=1_000):
     return clients
 
 
-def load_clients_data(num_clients=100, seq_len=10, seed=608361, max_train_examples=20_000):
+def load_clients_data(num_clients=100, seq_len=12, seed=608361, train_examples_range=(700, 20_000)):
     clients = load_clients(num_clients, seq_len)
-    choices = [i for i, tr in enumerate(clients) if 10 < len(tr) <= max_train_examples]
+    choices = [i for i, tr in enumerate(clients) if train_examples_range[0] <= len(tr) <= train_examples_range[1]]
     if seed is not None:
         from numpy.random import MT19937
         from numpy.random import RandomState, SeedSequence
@@ -111,9 +111,9 @@ def load_clients_data(num_clients=100, seq_len=10, seed=608361, max_train_exampl
     for c_id in clients_ids:
         c = clients[c_id]
         c_len = len(c)
-        train.append([c[:int(c_len * 0.6)], c[:int(c_len * 0.6)]])
-        val.append([c[int(c_len * 0.6):int(c_len * 0.8)], c[int(c_len * 0.6):int(c_len * 0.8)]])
-        test.append([c[int(c_len * 0.8):], c[int(c_len * 0.8):]])
+        train.append(c[:int(c_len * 0.6)])
+        val.append(c[int(c_len * 0.6):int(c_len * 0.8)])
+        test.append(c[int(c_len * 0.8):])
 
     data = {
         "train": [unpack_features(el) for el in train],
@@ -125,4 +125,4 @@ def load_clients_data(num_clients=100, seq_len=10, seed=608361, max_train_exampl
 
 
 if __name__ == '__main__':
-    parse_and_save_so_file('stackoverflow_0.json', seq_len=12)
+    parse_and_save_so_file('stackoverflow_0.json', seq_len=128)
