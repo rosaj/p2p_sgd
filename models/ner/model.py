@@ -15,14 +15,13 @@ ner_processors = {
 
 
 class ValidationLayer(keras.layers.Layer):
-    # Function that removes invalid tokens (such as #es) and adds padding to the end
-    def val_fn(self, x):
-        valid = tf.boolean_mask(x[0], x[1], axis=0)
-        v_shape = tf.shape(valid)
-        zeros = tf.cast(tf.fill((tf.math.subtract(tf.shape(x[0])[0], v_shape[0]), v_shape[1]), 0), dtype=tf.float32)
-        return tf.concat([valid, zeros], axis=0)
-
     def call(self, sequence_output, valid_ids):
+        # Function that removes invalid tokens (such as #es) and adds padding to the end
+        def val_fn(x):
+            valid = tf.boolean_mask(x[0], x[1], axis=0)
+            v_shape = tf.shape(valid)
+            zeros = tf.cast(tf.fill((tf.math.subtract(tf.shape(x[0])[0], v_shape[0]), v_shape[1]), 0), dtype=tf.float32)
+            return tf.concat([valid, zeros], axis=0)
         # sq = sequence_output
         # vi = valid_ids
 
@@ -37,7 +36,7 @@ class ValidationLayer(keras.layers.Layer):
         # n_vo = tf.map_fn(val_fn, tf.range(tf.shape(sq)[0]), dtype=tf.float32)
         # return n_vo
         valid_ids = tf.cast(valid_ids, tf.bool)
-        return tf.map_fn(self.val_fn, (sequence_output, valid_ids),
+        return tf.map_fn(val_fn, (sequence_output, valid_ids),
                          dtype=(tf.float32, tf.bool), fn_output_signature=tf.float32)
 
 
