@@ -57,7 +57,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
         with tf.device(device or 'CPU'):
             n = a.start()
         update_pb(pbar, agents, n, start_time)
-    _, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples, print_args)
+    _, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples, **print_args)
 
     while total_examples < max_examples:
         if issubclass(agent_class, SyncAgent):
@@ -79,7 +79,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
             with tf.device(device or 'CPU'):
                 pbar.update(agent.train_fn())
 
-        is_check, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples, print_args)
+        is_check, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples, **print_args)
         if is_check:
             graph_manager.check_time_varying(round_num)
 
@@ -111,7 +111,7 @@ def checkpoint(pbar, agents, round_num, examples, total_examples, **print_args):
         round_num += 1
         msg_count = sum([a.hist_total_messages for a in agents])
         print("\nMsgs: {}\tRound: {}\t".format(msg_count, round_num), end='')
-        calc_agents_metrics(agents, round(total_examples / examples), print_args)
+        calc_agents_metrics(agents, round(total_examples / examples), **print_args)
 
         pbar = new_progress_bar(examples, 'Training')
         pbar.update(diff)
