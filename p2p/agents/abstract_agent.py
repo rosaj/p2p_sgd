@@ -66,6 +66,14 @@ class Agent:
         return None
 
     @property
+    def dataset_name(self):
+        return self._data.get('dataset_name', '')
+
+    @property
+    def model_name(self):
+        return self.model.name
+
+    @property
     def hist_train_model_metric(self, metric_name='acc'):
         return self._get_hist_metric("train_model", metric_name)
 

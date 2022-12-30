@@ -32,7 +32,7 @@ def create_model(bert_config, seq_len=12, lr=5e-4, decay=0, do_compile=True, def
     bert_path = 'models/zoo/bert/models/' + bert_config
     tokenizer = FullTokenizer(os.path.join(bert_path, "vocab.txt"), True)
     model = build_bert_nwp(bert_path, len(list(tokenizer.vocab.keys())), seq_len)
-    model._name = "bert-nwp_{}".format(next_model_id('bert-nwp'))
+    model._name = "nwp-bert_{}".format(next_model_id('bert-nwp'))
 
     if do_compile:
         compile_model(model, lr, decay)
@@ -40,7 +40,7 @@ def create_model(bert_config, seq_len=12, lr=5e-4, decay=0, do_compile=True, def
     if type(default_weights) == str:
         if default_weights == 'global':
             # Assign all weights as default
-            assign_default_weights(model, 'nwp-bert' + str(bert_config))
+            assign_default_weights(model, 'nwp-bert-' + str(bert_config))
             # Match only bert layer with global weights
             assign_default_weights(model.layers[3], 'global-bert-' + str(bert_config))
         elif 'pretrained' in default_weights:

@@ -22,13 +22,15 @@ def calc_new_agent_metrics(agents):
     pbar.close()
 
 
-def calc_agents_metrics(agents, e=0, print_metrics=None):
+def calc_agents_metrics(agents, e=0, print_metrics=None, group_by_dataset=False):
     print("Epoch:", e)
     calc_new_agent_metrics(agents)
     h = {}
     for a in agents:
         for hk, hv in a.hist.items():
             if '-' in hk:
+                if group_by_dataset:
+                    hk = "{}->{}".format(a.dataset_name, hk)
                 if hk not in h:
                     h[hk] = []
                 h[hk].append(hv[-1])
@@ -37,7 +39,7 @@ def calc_agents_metrics(agents, e=0, print_metrics=None):
     print(("\t{: <" + str(max_len) + "}\t\tMean\t\tMedian").format('Metric'))
     print('\t' + '-' * (max_len + 35))
     for hk, hv in h.items():
-        if print_metrics is not None and hk not in print_metrics:
+        if print_metrics is not None and hk.split('->')[-1] not in print_metrics:
             continue
         print_acc(hv, ("\t{: <" + str(max_len) + "}").format(hk + ':'))
     print('', end='', flush=True)

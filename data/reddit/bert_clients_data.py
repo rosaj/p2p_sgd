@@ -259,7 +259,7 @@ def unpack_features(features, sequenced=False):
         )
 
 
-def load_client_datasets(num_clients=1_000, seq_len=10):
+def load_client_datasets(num_clients=1_000, seq_len=12, seed=608361, train_examples_range=(700, 20_000)):
     train = load_clients('train', num_clients, seq_len)
     val = load_clients('val', num_clients, seq_len)
     test = load_clients('test', num_clients, seq_len)
@@ -268,19 +268,29 @@ def load_client_datasets(num_clients=1_000, seq_len=10):
         subreddits = [d.decode() for d in tr[1]] + [d.decode() for d in v[1]] + [d.decode() for d in ts[1]]
         metadata.append(np.unique(subreddits))
 
-    train = [unpack_features(el[0]) for el in train]
-    val = [unpack_features(el[0]) for el in val]
-    test = [unpack_features(el[0]) for el in test]
+    choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
+    if seed is not None:
+        from numpy.random import MT19937
+        from numpy.random import RandomState, SeedSequence
+        rs = RandomState(MT19937(SeedSequence(seed)))
+        clients_ids = rs.choice(choices, size=num_clients, replace=False)
+    else:
+        clients_ids = np.random.choice(choices, size=num_clients, replace=False)
+
+    train = [unpack_features(el[0]) for ei, el in enumerate(train) if ei in clients_ids]
+    val = [unpack_features(el[0]) for ei, el in enumerate(val) if ei in clients_ids]
+    test = [unpack_features(el[0]) for ei, el in enumerate(test) if ei in clients_ids]
+    metadata = [m for mi, m in enumerate(metadata) if mi in clients_ids]
     return train, val, test, metadata
 
 
-def load_clients_data(num_clients=100, starting_client=0, seq_len=10):
-    tr, val, test, metadata = load_client_datasets(num_clients + starting_client, seq_len)
+def load_clients_data(num_clients=100, seq_len=12, seed=608361, train_examples_range=(700, 20_000)):
+    tr, val, test, metadata = load_client_datasets(num_clients, seq_len, seed, train_examples_range)
     data = {
-        "train": tr[starting_client:num_clients + starting_client],
-        "val": val[starting_client:num_clients + starting_client],
-        "test": test[starting_client:num_clients + starting_client],
-        "metadata-subreddits": metadata[starting_client:num_clients + starting_client],
+        "train": tr,
+        "val": val,
+        "test": test,
+        "metadata-subreddits": metadata,
         "dataset_name": ['reddit-bert-nwp'] * num_clients,
     }
     return data
