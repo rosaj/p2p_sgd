@@ -45,7 +45,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
     # accuracy_step = parse_acc_step(accuracy_step, examples)
     epochs = sim_pars.get('epochs', 1)
     agent_class = agent_pars[0]['agent_class']
-    print_args = sim_pars.get('print_args', None)
+    print_args = sim_pars.get('print_args', {})
     max_examples = epochs * examples
     total_examples, round_num = 0, 0
 
