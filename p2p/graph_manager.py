@@ -116,6 +116,9 @@ def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_c
     else:
         cluster_directed = create_using.is_directed()
 
+    if int(cluster_conns) != cluster_conns and not cluster_directed:
+        raise ValueError("Undirected clustered connections not yet working properly with fractions")
+
     if cluster_conns > 0:
         for i in range(len(cluster_inds)):
             for j in range(0 if cluster_directed else i+1, len(cluster_inds)):
@@ -123,7 +126,13 @@ def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_c
                     continue
                 ci, cj = cluster_inds[i], cluster_inds[j]
                 conns = int(cluster_conns * len(ci))
-                rnd_ci = np.concatenate([np.tile(ci, int(cluster_conns)), ci[:int(len(ci) * (cluster_conns - int(cluster_conns)))]]).astype(np.int)
+                c_sorted = ci.copy()
+                c_sorted.sort(key=lambda x: sum(adj_mx[x] > 0))
+                rnd_ci = np.concatenate([np.tile(ci, int(cluster_conns)),
+                                         c_sorted[:int(len(ci) * abs(cluster_conns - int(cluster_conns)))]
+                                         # ci[:int(len(ci) * (cluster_conns - int(cluster_conns)))
+                                         # np.random.choice(ci, size=int(len(ci) * (cluster_conns - int(cluster_conns))), replace=False)
+                                         ]).astype(np.int)
                 while True:
                     rnd_cj = np.random.choice(cj, size=conns, replace=conns > len(cj))
                     if len(set(zip(rnd_ci, rnd_cj))) == conns:
@@ -135,7 +144,8 @@ def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_c
     if cluster_directed and not create_using.is_directed():
         create_using = nx.DiGraph()
     g = nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
-    # nx.draw(g, node_color=[["blue", "green", "red", "yellow"][i] for i, c in enumerate(cluster_inds) for _ in c])
+    # nx.draw(g, node_color=[["blue", "green", "red", "yellow"][i] for i, c in enumerate(cluster_inds) for _ in c], with_labels=True)
+
     return g
 
 
@@ -244,10 +254,10 @@ def nx_graph_from_saved_lists(np_array, directed=False):
 
 
 if __name__ == "__main__":
-    gm = GraphManager('sparse_clusters', [DummyNode(_) for _ in range(40)], directed=True, num_neighbors=3,
-                      **{'cluster_conns': 1.5, 'cluster_directed': True})
+    gm = GraphManager('sparse_clusters', [DummyNode(_) for _ in range(80)], directed=True, num_neighbors=2,
+                      **{'cluster_conns': 0.33, 'clusters': 4, 'cluster_directed': True})
                       # **{'cluster_directed': True, 'clusters': [10, 10, 10, 10]})
     gm.draw()
 
     for no in gm.nodes:
-        print(no.id, [p.id for p in gm.get_peers(no.id)])
+        print(no.id, len(gm.get_peers(no.id)), '\t', [p.id for p in gm.get_peers(no.id)])
