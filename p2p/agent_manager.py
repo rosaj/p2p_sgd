@@ -5,7 +5,7 @@ import time
 def init_agents(agent_pars, agent_data_pars, model_pars=None):
     start_time = time.time()
 
-    client_pars = {k: v for k, v in agent_data_pars.items() if k not in ['agents_data', 'batch_size']}
+    client_pars = {k: v for k, v in agent_data_pars.items() if k not in ['agents_data', 'batch_size', 'caching']}
     data_dict = agent_data_pars['agents_data'].load_clients_data(**client_pars)
     num_agents = len(data_dict["train"])
 

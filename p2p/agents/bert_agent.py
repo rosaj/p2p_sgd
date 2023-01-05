@@ -6,6 +6,7 @@ class BertAgent(P2PAgent):
         assert multi_task_differentiation in ['model', 'data']
         if 'early_stopping' not in kwargs:
             kwargs['early_stopping'] = False
+        kwargs['data_pars']['caching'] = True
         super(BertAgent, self).__init__(**kwargs)
         self.bert_layer = self.model.layers[3]
         self.multi_task_optimization = multi_task_optimization

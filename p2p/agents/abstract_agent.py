@@ -9,9 +9,9 @@ class Agent:
         self.batch_size = data_pars['batch_size']
         self.eval_batch_size = eval_batch_size
         train, val, test = data.pop('train'), data.pop('val'), data.pop('test')
-        self.train = self._create_dataset(train[0], train[1], self.batch_size)
-        self.val = self._create_dataset(val[0], val[1], self.eval_batch_size)
-        self.test = self._create_dataset(test[0], test[1], self.eval_batch_size)
+        self.train = self._create_dataset(train[0], train[1], self.batch_size, self.data_pars.get('caching', False))
+        self.val = self._create_dataset(val[0], val[1], self.eval_batch_size, True)
+        self.test = self._create_dataset(test[0], test[1], self.eval_batch_size, True)
 
         temp_train = train[1]
         while isinstance(temp_train, tuple):
@@ -43,11 +43,11 @@ class Agent:
         return m_pars['model_mod'].create_model(**{k: v for k, v in m_pars.items() if k not in ignored_keys})
 
     @staticmethod
-    def _create_dataset(x, y, batch_size):
-        return tf.data.Dataset.from_tensor_slices((x, y)) \
-            .shuffle(batch_size) \
-            .batch(batch_size) \
-            .prefetch(1)
+    def _create_dataset(x, y, batch_size, use_caching=False):
+        ds = tf.data.Dataset.from_tensor_slices((x, y)).shuffle(batch_size).batch(batch_size)
+        if use_caching:
+            ds = ds.cache()
+        return ds.prefetch(1)
 
     def next_train_batch(self):
         try:
