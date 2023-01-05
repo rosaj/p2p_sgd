@@ -42,8 +42,14 @@ def calc_agent_timeline(data, x_axis, agg_fn, metric='test_model-accuracy_no_oov
     rounds = list(range(len(data[list(data.keys())[0]]["examples"])))
     total_examples = sum([data[a_key]['train_len'] for a_key in list(data.keys())])
     x_time = [] if x_axis != 'Round' else rounds
+
+    dataset_name = None
+    if '->' in metric:
+        dataset_name = metric.split('->')[0]
+        metric = metric.split('->')[-1]
+
     for rind in rounds:
-        test = [data[a_id][metric][rind] for a_id in data.keys() if metric in data[a_id]]
+        test = [data[a_id][metric][rind] for a_id in data.keys() if metric in data[a_id] and (dataset_name is None or dataset_name == data[a_id]['dataset_name'])]
         t_acc.append(agg_fn(test) * 100)
 
         examples = sum([data[a_key]['examples'][rind] for a_key in list(data.keys())])
@@ -115,14 +121,14 @@ def calc_fill_between(accs):
     return min_vals, max_vals
 
 
-def plot_items(ax, x_axis, viz_dict, title=None, colors=None, agg_fn=np.average, metric='test_model-accuracy_no_oov'):
+def plot_items(ax, x_axis, viz_dict, title=None, y_label='Test UA (%)', colors=None, agg_fn=np.average, metric='test_model-accuracy_no_oov'):
     legend = []
     x_axis2 = None
     if isinstance(x_axis, list):
         x_axis, x_axis2 = x_axis
 
     for i, (k, v) in enumerate(viz_dict.items()):
-        x_time, t_acc, accs = parse_timeline(k, v, x_axis, agg_fn, metric)
+        x_time, t_acc, accs = parse_timeline(k, v, x_axis, agg_fn, metric[i] if isinstance(metric, list) else metric)
         # ax.plot(x_time, t_acc)
         args = {}
         if colors is not None:
@@ -133,7 +139,7 @@ def plot_items(ax, x_axis, viz_dict, title=None, colors=None, agg_fn=np.average,
             ax.fill_between(x_time, max_acc, min_acc, alpha=0.1, **args)
         legend.append(k)
         if x_axis2 is not None:
-            x_time2, t_acc2, accs2 = parse_timeline(k, v, x_axis2, agg_fn, metric)
+            x_time2, t_acc2, accs2 = parse_timeline(k, v, x_axis2, agg_fn,  metric[i] if isinstance(metric, list) else metric)
             xmin, xmax = x_time[0], x_time[-1]
 
             def x_lim_fn(x):
@@ -154,7 +160,7 @@ def plot_items(ax, x_axis, viz_dict, title=None, colors=None, agg_fn=np.average,
     else:
         ax.set_xlabel(LABELS[x_axis])
     ax.xaxis.set_major_formatter(FuncFormatter(human_format))
-    ax.set_ylabel('Test UA (%)')
+    ax.set_ylabel(y_label)
     ax.grid()
     ax.legend(legend, loc='lower right')
     ax.yaxis.set_major_locator(MultipleLocator())
@@ -168,7 +174,7 @@ def show(viz_dict, x_axises=tuple(['comms']), agg_fn=np.average, metric='test_mo
     if len(x_axises) < 2:
         axs = [axs]
     for ax, x_axis in zip(axs, x_axises):
-        plot_items(ax, x_axis, viz_dict, None, agg_fn, metric=metric)
+        plot_items(ax, x_axis, viz_dict, None, agg_fn=agg_fn, metric=metric)
     max_y = round(max([ax.get_ylim()[1] for ax in axs]))
     for ax in axs:
         ax.set_ylim([0, max_y])
@@ -183,16 +189,20 @@ def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5), n_rows=1, axis_l
         axs = np.array([axs])
     axs = axs.flatten()
     for ax, (plot_k, plot_v) in zip(axs, viz_dict.items()):
-        plot_items(ax, plot_v['x_axis'], plot_v['viz'], plot_k, plot_v.get('colors', None), agg_fn,
-                   plot_v.get('metric', 'test_model-accuracy_no_oov'))
+        plot_items(ax, plot_v['x_axis'], plot_v['viz'], title=plot_k, y_label=plot_v.get('y_label', 'Test UA (%)'),
+                   colors=plot_v.get('colors', None), agg_fn=agg_fn,
+                   metric=plot_v.get('metric', 'test_model-accuracy_no_oov'))
     max_y = round(max([ax.get_ylim()[1] for ax in axs]))
     min_y = 0
     if axis_lim is not None and 'y' in axis_lim:
         min_y, max_y = axis_lim['y']
+        stepsize = axis_lim['step'] if 'step' in axis_lim else 1
     for ai, ax in enumerate(axs):
         if axis_lim is not None and hasattr(axis_lim, '__iter__'):
             min_y, max_y = axis_lim[ai]['y']
+            stepsize = axis_lim[ai]['step'] if 'step' in axis_lim[ai] else 1
         ax.set_ylim([min_y, max_y])
+        ax.set_yticks(np.arange(min_y, max_y, stepsize))
         # print(ax.get_legend_handles_labels())
     # plt.savefig('/Users/robert/Desktop/test.svg', format='svg', dpi=300)
     fig.set_figwidth(fig_size[0])
