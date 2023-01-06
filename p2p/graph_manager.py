@@ -136,6 +136,8 @@ def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_c
                 # [sum(adj_mx[:, x]) for x in cj]
                 in_peers = [1/(sum(adj_mx[:, x])**100) for x in cj]
                 in_peers = [x/sum(in_peers) for x in in_peers]
+                if all([round(min(in_peers), 2) == round(x, 2) for x in in_peers]):
+                    in_peers = None
                 # in_peers
                 while True:
                     rnd_cj = np.random.choice(cj, size=conns, replace=conns > len(cj), p=in_peers)
@@ -268,6 +270,7 @@ if __name__ == "__main__":
 
     adj_mx = nx.to_numpy_array(gm._nx_graph)
     for no in gm.nodes:
+        adj_mx[no.id, no.id] = 0
         print(no.id,#  len(gm.get_peers(no.id)),
               "{}-{}".format(sum(adj_mx[no.id, :] > 0), sum(adj_mx[:, no.id] > 0)),
               '\t', [p.id for p in gm.get_peers(no.id)])
