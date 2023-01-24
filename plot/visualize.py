@@ -133,7 +133,7 @@ def plot_items(ax, x_axis, viz_dict, title=None, y_label='Test UA (%)', colors=N
         args = {}
         if colors is not None:
             args['color'] = colors[i]
-        ax.plot(x_time, t_acc, **args, label=k)
+        ax.plot(x_time, t_acc, **args, label=k, linewidth=1)
         if accs is not None:
             min_acc, max_acc = calc_fill_between(accs)
             ax.fill_between(x_time, max_acc, min_acc, alpha=0.1, **args)
@@ -194,6 +194,7 @@ def side_by_side(viz_dict, agg_fn=np.average, fig_size=(10, 5), n_rows=1, axis_l
                    metric=plot_v.get('metric', 'test_model-accuracy_no_oov'))
     max_y = round(max([ax.get_ylim()[1] for ax in axs]))
     min_y = 0
+    stepsize = 1
     if axis_lim is not None and 'y' in axis_lim:
         min_y, max_y = axis_lim['y']
         stepsize = axis_lim['step'] if 'step' in axis_lim else 1
