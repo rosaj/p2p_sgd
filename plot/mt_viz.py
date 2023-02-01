@@ -42,14 +42,22 @@ def plot_4_clustered(fig_size=(10, 5), nodes_num=12, node_size=300):
     fig, axs = plt.subplots(1, 1)
     # axs = axs.flatten()
 
+    nodes_num=12
     graph = GraphManager('sparse_clusters', [DummyNode(_) for _ in range(nodes_num)], directed=True, num_neighbors=2,
-                         **{'cluster_conns': 0.33, 'cluster_directed': True})
+                         **{'cluster_conns': 0.34, 'clusters': 4, 'cluster_directed': True})
 
     def remove_self(nx_graph):
         for i in range(nx_graph.number_of_nodes()):
             if nx_graph.has_edge(i, i):
                 nx_graph.remove_edge(i, i)
     remove_self(graph._nx_graph)
+    adj_mx = nx.to_numpy_array(graph._nx_graph)
+    for no in graph.nodes:
+        adj_mx[no.id, no.id] = 0
+        print(no.id,#  len(gm.get_peers(no.id)),
+              "{}-{}".format(sum(adj_mx[no.id, :] > 0), sum(adj_mx[:, no.id] > 0)),
+              '\t', [p.id for p in graph.get_peers(no.id)])
+
     colors = ["blue"] * int(nodes_num/4) + ["red"] * int(nodes_num/4) + ["green"] * int(nodes_num/4) + ["yellow"] * int(nodes_num/4)
     nx.draw(graph._nx_graph, node_size=node_size, ax=axs, node_color=colors)
     # axs.set_title('Clustered sparse with 4 agent clusters', fontsize=18)
@@ -322,8 +330,11 @@ def exp_1():
                 rel_inc = round((max_a - baseline_max_a) / baseline_max_a * 100, 2)
                 p_val = ttest_ind(baseline, t[40:])[1]
                 p_text = "{} {}".format("{:.2f}".format(max_a) + '\\%', '({}\\%)'.format('+' + "{:.2f}".format(rel_inc) if rel_inc > 0 else "{:.2f}".format(rel_inc)))
-                if p_val > 0.05:
-                    p_text = "\\emph{" + p_text + "}"
+                if rel_inc > 0:
+                    p_text = "\\textbf{" + p_text + "}"
+                if p_val < 0.05:
+                    p_text += " \\textbf{**}"
+                    # p_text = "\\emph{" + p_text + "}"
                 print('\t', k, p_text)
                 # print('\t\t\tp-value:', ttest_ind(baseline, t[40:])[1])
     # """
@@ -583,8 +594,12 @@ def exp_2():
                     p_val = ">" + str(p_val)[:4]
                 """
                 p_text = "{} {}".format("{:.2f}".format(max_a) + '\\%', '({}\\%)'.format('+' + "{:.2f}".format(rel_inc) if rel_inc > 0 else "{:.2f}".format(rel_inc)))
-                if p_val > 0.05:
-                    p_text = "\\emph{" + p_text + "}"
+                if rel_inc > 0:
+                    p_text = "\\textbf{" + p_text + "}"
+                if p_val < 0.05:
+                    p_text += " \\textbf{**}"
+                # if p_val > 0.05:
+                    # p_text = "\\emph{" + p_text + "}"
                 print('\t', k, p_text)
                 # print('({}\\%, $p{}$)'.format('+' + "{:.2f}".format(rel_inc) if rel_inc > 0 else "{:.2f}".format(rel_inc), p_val))
                 # print('\t\tp-value:', ttest_ind(baseline, t[40:])[:])
@@ -603,9 +618,9 @@ def exp_4x():
                            'mt/ind/BertAgent_20A_300E_50B_sparse(directed-3)_07-01-2023_20_31',
                            'mt/ind/BertAgent_20A_300E_50B_sparse(directed-3)_07-01-2023_18_01'],
 
-                'MT': ['mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_08-01-2023_05_46',
-                       'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_09-01-2023_17_52',
-                       'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_11-01-2023_03_45']
+                'Reddit+StackOverflow+CoNNL+Few-NERD': ['mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_08-01-2023_05_46',
+                                                        'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_09-01-2023_17_52',
+                                                        'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_11-01-2023_03_45']
             },
         },
         'StackOverflow (NWP)': {
@@ -617,9 +632,9 @@ def exp_4x():
                                   'mt/ind/BertAgent_20A_300E_50B_sparse(directed-3)_07-01-2023_13_13',
                                   'mt/ind/BertAgent_20A_300E_50B_sparse(directed-3)_07-01-2023_12_11'],
 
-                'MT': ['mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_08-01-2023_05_46',
-                       'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_09-01-2023_17_52',
-                       'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_11-01-2023_03_45']
+                'StackOverflow+Reddit+CoNNL+Few-NERD': ['mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_08-01-2023_05_46',
+                                                        'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_09-01-2023_17_52',
+                                                        'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_11-01-2023_03_45']
             },
         },
         'CoNNL (NER)': {
@@ -631,9 +646,9 @@ def exp_4x():
                           'mt/ind/BertAgent_20A_300E_50B_sparse(directed-3)_08-01-2023_18_07',
                           'mt/ind/BertAgent_20A_300E_50B_sparse(directed-3)_08-01-2023_02_27'],
 
-                'MT': ['mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_08-01-2023_05_46',
-                       'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_09-01-2023_17_52',
-                       'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_11-01-2023_03_45']
+                'CoNNL+Reddit+StackOverflow+Few-NERD': ['mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_08-01-2023_05_46',
+                                                        'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_09-01-2023_17_52',
+                                                        'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_11-01-2023_03_45']
             },
         },
         'Few-NERD (NER)': {
@@ -645,9 +660,9 @@ def exp_4x():
                              'mt/ind/BertAgent_20A_300E_50B_sparse(directed-3)_07-01-2023_16_32',
                              'mt/ind/BertAgent_20A_300E_50B_sparse(directed-3)_07-01-2023_16_28'],
 
-                'MT': ['mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_08-01-2023_05_46',
-                       'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_09-01-2023_17_52',
-                       'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_11-01-2023_03_45']
+                'Few-NERD+Reddit+StackOverflow+CoNNL': ['mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_08-01-2023_05_46',
+                                                        'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_09-01-2023_17_52',
+                                                        'mt/4x/BertAgent_80A_300E_50B_sparse_clusters(directed-2)_11-01-2023_03_45']
             },
         }
     }
@@ -665,9 +680,26 @@ def exp_4x():
             t = parse_timeline(None, v, x_axis='examples', metric=vv['metric'])[1]
             print('\t', k, round(max(t), 2))
 
+
+def fixer():
+    # f = ['mt/sparse/avg/BertAgent_40A_300E_50B_sparse(directed-3)_12-01-2023_19_22']
+    # parse_timeline(None, f, metric='reddit-bert-nwp->test_model-sparse_categorical_accuracy')
+    from plot.visualize import read_json
+    f_path = 'mt/sparse/avg/BertAgent_40A_300E_50B_sparse(directed-3)_12-01-2023_22_37'
+    data = read_json(f_path)
+    for i in range(40):
+        for k, v in data['agents'][str(i)].items():
+            if isinstance(v, list):
+                if len(v) > 301:
+                    print(k, len(v))
+                    data['agents'][str(i)][k] = v[:301]
+    from p2p.p2p_utils import save_json
+    save_json('log/' + f_path + '.json', data)
+
+
 if __name__ == '__main__':
-    exp_1()
+    # exp_1()
     # exp_2()
     # exp_4x()
-    # plot_4_clustered()
+    plot_4_clustered()
     # plot_sparse_v_clustered()
