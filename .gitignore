@@ -127,6 +127,7 @@ data/stackoverflow/clients/*
 data/stackoverflow/users/*
 data/stackoverflow/stackoverflow_tokenizer.pkl
 data/femnist/femnist/data/*
+data/sent140/sent140/data/*
 # *.json
 *.md5
 *.h5
