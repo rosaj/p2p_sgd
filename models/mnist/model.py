@@ -38,6 +38,48 @@ def create_model(model_v=1, lr=0.001, decay=0, num_classes=10, input_shape=(28, 
                 BatchNormalization(momentum=momentum, scale=scale, center=center),
                 Dense(num_classes, activation="softmax"),
             ], "model_{}_{}".format(model_v, next_model_id('mnist')))
+    elif model_v == 3:
+        model = Sequential(
+            [
+                # InputLayer(input_shape=input_shape[1:]),
+                LSTM(128, input_shape=(28, 28), activation='relu', return_sequences=True),
+                Dropout(0.2),
+                LSTM(128, activation='relu'),
+                Dropout(0.2),
+                Dense(32, activation='relu'),
+                Dropout(0.2),
+                Dense(10, activation='softmax')
+            ], "model_{}_{}".format(model_v, next_model_id('mnist')))
+    elif model_v == 4:
+        model = Sequential(
+            [
+                # InputLayer(input_shape=input_shape[1:]),
+                LSTM(128, input_shape=(28, 28), activation='relu', return_sequences=True),
+                BatchNormalization(momentum=momentum, scale=scale, center=center),
+                Dropout(0.2),
+                LSTM(128, activation='relu'),
+                BatchNormalization(momentum=momentum, scale=scale, center=center),
+                Dropout(0.2),
+                Dense(32, activation='relu'),
+                BatchNormalization(momentum=momentum, scale=scale, center=center),
+                Dropout(0.2),
+                Dense(10, activation='softmax')
+            ], "model_{}_{}".format(model_v, next_model_id('mnist')))
+    elif model_v == 30:
+        model = Sequential(
+            [
+                # InputLayer(input_shape=input_shape[1:]),
+                LSTM(128, input_shape=(28, 28)),
+                Dense(10, activation='softmax')
+            ], "model_{}_{}".format(model_v, next_model_id('mnist')))
+    elif model_v == 40:
+        model = Sequential(
+            [
+                # InputLayer(input_shape=input_shape[1:]),
+                LSTM(128, input_shape=(28, 28)),
+                BatchNormalization(momentum=momentum, scale=scale, center=center),
+                Dense(10, activation='softmax')
+            ], "model_{}_{}".format(model_v, next_model_id('mnist')))
     else:
         raise ValueError("Invalid model version")
 
