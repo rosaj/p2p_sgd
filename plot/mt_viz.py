@@ -673,12 +673,46 @@ def exp_4x():
         {'y': [20, 36], 'step': 2},
     ], n_rows=2, fig_size=(9, 9))
 
-    print("Top accuracy")
+    print("Statistic")
     for vk, vv in viz.items():
         print(vk)
+        baseline = None
+        baseline_max_a = None
         for k, v in vv['viz'].items():
-            t = parse_timeline(None, v, x_axis='examples', metric=vv['metric'])[1]
-            print('\t', k, round(max(t), 2))
+            t, accs = parse_timeline(None, v, x_axis='examples', metric=vv['metric'])[1:]
+            max_a = round(max(t), 2)
+            # print('\t', k, "{:.2f}".format(max_a) + '\\%', end=' ')
+            # max_accs_points = [np.max(a) for a in accs]
+            if baseline is None:
+                baseline_max_a = max_a
+                # baseline = max_accs_points
+                baseline = t[40:]
+                print('\t', k, "{:.2f}".format(max_a) + '\\%')
+            else:
+                # print('p-value:', ttest_ind(baseline, max_accs_points)[:])
+                rel_inc = round((max_a - baseline_max_a) / baseline_max_a * 100, 2)
+                p_val = ttest_ind(baseline, t[40:])[1]
+                """
+                if p_val < 10e-5:
+                    p_val = "<10^{-5}"
+                elif p_val < 10e-3:
+                    p_val = "<10^{-3}"
+                elif p_val < 5 * 10e-3:
+                    p_val = "<5\\times 10^{-3}"
+                else:
+                    p_val = ">" + str(p_val)[:4]
+                """
+                p_text = "{} {}".format("{:.2f}".format(max_a) + '\\%', '({}\\%)'.format('+' + "{:.2f}".format(rel_inc) if rel_inc > 0 else "{:.2f}".format(rel_inc)))
+                if rel_inc > 0:
+                    p_text = "\\textbf{" + p_text + "}"
+                if p_val < 0.05:
+                    p_text += " \\textbf{**}"
+                # if p_val > 0.05:
+                    # p_text = "\\emph{" + p_text + "}"
+                print('\t', k, p_text)
+                # print('({}\\%, $p{}$)'.format('+' + "{:.2f}".format(rel_inc) if rel_inc > 0 else "{:.2f}".format(rel_inc), p_val))
+                # print('\t\tp-value:', ttest_ind(baseline, t[40:])[:])
+    # """
 
 
 def fixer():
@@ -700,6 +734,10 @@ def fixer():
 if __name__ == '__main__':
     # exp_1()
     # exp_2()
-    # exp_4x()
-    plot_4_clustered()
+    exp_4x()
+    # plot_4_clustered()
     # plot_sparse_v_clustered()
+    # import  numpy as np
+    # np.mean([3.96, -2.64, 1.1, 9.76, 0.89, 2.22, 0.51, 0.56, 6.42, -4.58, -2.24, -0.25])
+    # np.mean([])
+
