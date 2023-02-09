@@ -101,12 +101,15 @@ def parse_json_agents(json_data):
     return j_agents_x, j_agents_y
 
 
-def parse_clients(json_data, text_tokenizer, words_backwards, vocab_size, max_client_num, pre_filename):
-
+def parse_clients(json_data, text_tokenizer, seq_len, vocab_size, max_client_num, pre_filename, directory='clients'):
     j_agents_x, j_agents_y = parse_json_agents(json_data)
+    process_agent_data(j_agents_x, j_agents_y, text_tokenizer, seq_len, vocab_size, max_client_num, pre_filename, directory)
+
+
+def process_agent_data(j_agents_x, j_agents_y, text_tokenizer, seq_len, vocab_size, max_client_num, pre_filename, directory='clients'):
     j_clients = []
     for ax, ay in tqdm(zip(j_agents_x, j_agents_y), total=len(j_agents_y)):
-        a_seq = text_to_sequence(ax, text_tokenizer, words_backwards)
+        a_seq = text_to_sequence(ax, text_tokenizer, seq_len)
         # a_x, a_y = a_seq[:, :-1], a_seq[:, -1]
         a_x, a_y = [], []
         for i in range(len(a_seq)):
@@ -120,8 +123,8 @@ def parse_clients(json_data, text_tokenizer, words_backwards, vocab_size, max_cl
     part = 0
     while True:
         save_cli = j_clients[prev_ind:min(cur_ind, len(j_clients))]
-        save_to_file(save_cli, 'data/reddit/clients/{}_{}WB_{}VS_{}CN_{}PT.h5'
-                     .format(pre_filename, words_backwards, vocab_size, max_client_num, part))
+        save_to_file(save_cli, 'data/reddit/{}/{}_{}WB_{}VS_{}CN_{}PT.h5'
+                     .format(directory, pre_filename, seq_len, vocab_size, max_client_num, part))
         if len(j_clients) <= cur_ind:
             break
         prev_ind = cur_ind
@@ -149,13 +152,13 @@ def load_tokenizer():
     return tokenizer
 
 
-def load_clients(data_type, client_num, word_backwards=10, vocab_size=10_002, max_client_num=1_000):
+def load_clients(data_type, client_num, seq_len=10, vocab_size=10_002, max_client_num=1_000, directory='clients'):
     reddit_index, part = 0, 0
     clients = []
 
     def parsed_name():
-        return DATA_PATH + 'clients/clients_reddit_{}_{}_{}WB_{}VS_{}CN_{}PT.h5'\
-            .format(reddit_index, data_type, word_backwards, vocab_size, max_client_num, part)
+        return DATA_PATH + '{}/clients_reddit_{}_{}_{}WB_{}VS_{}CN_{}PT.h5'\
+            .format(directory, reddit_index, data_type, seq_len, vocab_size, max_client_num, part)
 
     while len(clients) < client_num:
         # print("Loading", parsed_name())
@@ -168,7 +171,7 @@ def load_clients(data_type, client_num, word_backwards=10, vocab_size=10_002, ma
     return clients
 
 
-def parse_reddit_file(reddit_index=0, word_backwards=10, max_client_num=1_000):
+def parse_reddit_file(reddit_index=0, seq_len=10, max_client_num=1_000):
     tokenizer = load_tokenizer()
     vocab_size = len(tokenizer.word_index) + 1
     # print(vocab_size)
@@ -178,7 +181,7 @@ def parse_reddit_file(reddit_index=0, word_backwards=10, max_client_num=1_000):
         print("Parsing", filename)
         json_data = load_reddit_json('data/reddit/source/data/reddit_leaf/{}/{}'.format(data_type, filename))
         parse_clients(json_data, tokenizer,
-                      words_backwards=word_backwards,
+                      seq_len=seq_len,
                       vocab_size=vocab_size,
                       max_client_num=max_client_num,
                       pre_filename='clients_' + filename.split('.')[0])

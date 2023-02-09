@@ -2,15 +2,21 @@ from data.reddit.preparation import load_clients
 import numpy as np
 
 
-def load_client_datasets(num_clients=1_000):
-    train = load_clients('train', num_clients)
-    val = load_clients('val', num_clients)
-    test = load_clients('test', num_clients)
+def load_client_datasets(num_clients=1_000, directory='clients'):
+    train = load_clients('train', num_clients, directory=directory)
+    val = load_clients('val', num_clients, directory=directory)
+    test = load_clients('test', num_clients, directory=directory)
     metadata = []
     for tr, v, ts in zip(train, val, test):
         subreddits = [d.decode() for d in tr[2]] + [d.decode() for d in v[2]] + [d.decode() for d in ts[2]]
         metadata.append(np.unique(subreddits))
-
+        """
+        metadata.append({
+            'train': np.unique([d.decode() for d in tr[2]]),
+            'val': np.unique([d.decode() for d in v[2]]),
+            'test': np.unique([d.decode() for d in ts[2]])
+        })
+        """
     train = [el[:2] for el in train]
     val = [el[:2] for el in val]
     test = [el[:2] for el in test]
