@@ -1,6 +1,25 @@
-# P2P-BN
+This is a repository of for papers:
+ - [Peer-to-peer Deep Learning With Non-IID Data](https://www.sciencedirect.com/science/article/abs/pii/S0957417422021777)
+ - [Multi-task peer-to-peer learning using the BERT transformer model](https://) -> Under review
 
-This is a repository of a paper [Peer-to-peer Deep Learning With Non-IID Data](https://). This paper proposes using Batch Normalization (BN) layers as an aid in normalizing non-IID data across decentralized agents. A variant of early stopping technique is developed that, in combination with BN layers, acts as a tool for fine-tuning the agent’s local model. Other decentralized algorithms used in the paper experiments are also a part of this project. 
+# Multi-task peer-to-peer learning using the BERT transformer model
+
+This paper presents and evaluates a novel approach that utilizes the popular BERT transformer model to enable collaboration between agents learning two different learning tasks: next- word prediction and named-entity recognition. The evaluation of the studied approach revealed that collaboration among agents, even when working towards separate objectives, can result in mutual benefits, mainly when the communication between agents is carefully considered. The multi-task collaboration led to a statistically significant increase of 11.6% in the mean relative accuracy compared to the baseline results for individual tasks.
+The code can be run through [notebooks](/notebooks) with names starting with **MT-**.
+Before running, prepared datasets need to be downloaded from [google drive](https://drive.google.com/drive/folders/1p1RqD0eeTMxXgyFB7WxVgSXEmkHMqPdV?usp=share_link).
+The datasets should be unzipped in the following directories:
+- CoNNL-2003 (conll.zip) at directory `data/ner/conll/`
+- Few-NERD (few_nerd.zip) at directory `data/ner/few_nerd/`
+- Reddit (bert-reddit.zip) at directory 'data/reddit/bert_clients'
+- StackOverflow (bert-stackoverflow.zip) at directory 'data/stackoverflow/bert_clients'
+
+<br>
+<br>
+
+
+# Peer-to-peer Deep Learning With Non-IID Data (P2P-BN)
+
+This paper proposes using Batch Normalization (BN) layers as an aid in normalizing non-IID data across decentralized agents. A variant of early stopping technique is developed that, in combination with BN layers, acts as a tool for fine-tuning the agent’s local model. Other decentralized algorithms used in the paper experiments are also a part of this project. 
 
 ---
 
@@ -33,7 +52,7 @@ All result files of the experiments can be found on a shared [google drive](http
 
 #### Dataset preparation
 
-Preprocessed dataset can be downloaded from a shared [google drive](https://drive.google.com/drive/folders/1p1RqD0eeTMxXgyFB7WxVgSXEmkHMqPdV?usp=sharing). Unpack the zip into the `data` directory. When completed, folder `data/reddit/clients/` must contain all `.h5` files containing the training, validation and test data. Tokenizer must be placed in `data/reddit/`
+Preprocessed dataset can be downloaded from a shared [google drive](https://drive.google.com/drive/folders/1p1RqD0eeTMxXgyFB7WxVgSXEmkHMqPdV?usp=sharing). Unpack the zip into the `data` directory. When completed, folder `data/reddit/reddit/clients/` must contain all `.h5` files containing the training, validation and test data. Tokenizer must be placed in `data/reddit/reddit/`
 
 Alternatively, you can recreate this dataset by following the info in [Reddit.md](data/reddit/Reddit.md).
 
@@ -45,7 +64,7 @@ Alternatively, you can recreate this dataset by following the info in [Reddit.md
 #### Running agent simulation
 ```
 $ test_p2p.py -h
-usage: test_p2p.py [-h] --agent AGENT --clients CLIENTS
+usage: test_p2p.py [-h] --agent AGENT --clients CLIENTS [--dataset DATASET]
                    [--batch_size BATCH_SIZE] [--epochs EPOCHS] [--seed SEED]
                    [--model_v MODEL_V] [--lr LR] [--agent_pars AGENT_PARS]
                    [--graph_type GRAPH_TYPE] [--neighbors NEIGHBORS]
@@ -55,6 +74,7 @@ optional arguments:
   -h, --help              show this help message and exit
   --agent AGENT           Agent class to be used in simulations
   --clients CLIENTS       Number of clients to be used in simulation
+  --dataset DATASET       Dataset to use in simulations
   --batch_size BATCH_SIZE Batch size (default 50)
   --epochs EPOCHS         Number of cumulative epoch to train (default 30)
   --seed SEED             Seed (default None)
@@ -70,7 +90,7 @@ optional arguments:
 Example:
 
 ```
-$ python test_p2p.py --agent P2PAgent --clients 100 --epochs 100
+$ python test_p2p.py --agent P2PAgent --clients 100 --epochs 100 --dataset reddit
 ```
 
 Parameter `agent_pars` expects a dictionary of name-values forwarded to the agent class. Surround dictionary with single quotes and values within dict with double-quotes.
