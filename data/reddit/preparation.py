@@ -171,11 +171,11 @@ def load_clients(data_type, client_num, seq_len=10, vocab_size=10_002, max_clien
     return clients
 
 
-def parse_reddit_file(reddit_index=0, seq_len=10, max_client_num=1_000):
+def parse_reddit_file(reddit_index=0, seq_len=10, max_client_num=1_000, directory='clients'):
     tokenizer = load_tokenizer()
     vocab_size = len(tokenizer.word_index) + 1
     # print(vocab_size)
-    os.makedirs('data/reddit/clients/', exist_ok=True)
+    os.makedirs('data/reddit/{}/'.format(directory), exist_ok=True)
     for data_type in ['train', 'val', 'test']:
         filename = 'reddit_{}_{}.json'.format(reddit_index, data_type)
         print("Parsing", filename)
@@ -184,7 +184,8 @@ def parse_reddit_file(reddit_index=0, seq_len=10, max_client_num=1_000):
                       seq_len=seq_len,
                       vocab_size=vocab_size,
                       max_client_num=max_client_num,
-                      pre_filename='clients_' + filename.split('.')[0])
+                      pre_filename='clients_' + filename.split('.')[0],
+                      directory=directory)
 
 
 if __name__ == '__main__':

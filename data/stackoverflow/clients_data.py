@@ -2,8 +2,8 @@ from data.stackoverflow.preparation import load_clients
 import numpy as np
 
 
-def load_clients_data(num_clients=100, seed=608361, max_train_examples=20_000):
-    clients = load_clients(25_000)
+def load_clients_data(num_clients=100, seed=608361, max_train_examples=20_000, directory='clients'):
+    clients = load_clients(25_000, directory=directory)
     choices = [i for i, tr in enumerate(clients) if 10 < len(tr[1]) <= max_train_examples]
     if seed is not None:
         from numpy.random import MT19937

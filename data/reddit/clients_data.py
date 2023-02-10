@@ -23,8 +23,8 @@ def load_client_datasets(num_clients=1_000, directory='clients'):
     return train, val, test, metadata
 
 
-def load_clients_data(num_clients=100, starting_client=0):
-    tr, val, test, metadata = load_client_datasets(num_clients + starting_client)
+def load_clients_data(num_clients=100, starting_client=0, directory='clients'):
+    tr, val, test, metadata = load_client_datasets(num_clients + starting_client, directory=directory)
     data = {
         "train": tr[starting_client:num_clients + starting_client],
         "val": val[starting_client:num_clients + starting_client],

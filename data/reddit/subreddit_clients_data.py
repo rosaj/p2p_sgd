@@ -56,21 +56,42 @@ def parse_per_subreddit(seq_len=10, max_client_num=1_000, vocab_size=10_002, cat
 
 
 def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 20_000), categories=['gaming', 'politics']):
-    num_clients = int(num_clients / len(categories))
+    if not isinstance(num_clients, list) and not isinstance(num_clients, tuple):
+        num_clients = int(num_clients / len(categories))
+        num_clients = [num_clients] * len(categories)
+
     train, val, test, metadata = load_client_datasets(num_clients=3_500, directory='clients_category/' + '_'.join(categories))
     indices = []
-    for cat in categories:
+    for cat, n_cli in zip(categories, num_clients):
         choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]
                    and cat in metadata[i]]
         if seed is not None:
             from numpy.random import MT19937
             from numpy.random import RandomState, SeedSequence
             rs = RandomState(MT19937(SeedSequence(seed)))
-            clients_ids = rs.choice(choices, size=num_clients, replace=False)
+            clients_ids = rs.choice(choices, size=n_cli, replace=False)
         else:
-            clients_ids = np.random.choice(choices, size=num_clients, replace=False)
-        indices.extend(clients_ids)
+            clients_ids = np.random.choice(choices, size=n_cli, replace=False)
+        indices.append(clients_ids)
 
+    data = {
+        "train": [],
+        "val": [],
+        "test": [],
+        "metadata-subreddits": [],
+        "dataset_name": []
+    }
+
+    for cli_ind in indices:
+        data["train"].extend([el for ei, el in enumerate(train) if ei in cli_ind])
+        data["val"].extend([el for ei, el in enumerate(val) if ei in cli_ind])
+        data["test"].extend([el for ei, el in enumerate(test) if ei in cli_ind])
+        metadata_subreddits = [el for ei, el in enumerate(metadata) if ei in cli_ind]
+        data["metadata-subreddits"].extend(metadata_subreddits)
+        dataset_names = ['reddit-nwp-{}'.format(np.array(categories)[np.array([cat in mt_sr for cat in categories])][0]) for mt_sr in metadata_subreddits]
+        data["dataset_name"].extend(dataset_names)
+
+    """
     metadata_subreddits = [el for ei, el in enumerate(metadata) if ei in indices]
     data = {
         "train": [el for ei, el in enumerate(train) if ei in indices],
@@ -80,6 +101,7 @@ def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 2
         "dataset_name": ['reddit-nwp-{}'.format(np.array(categories)[np.array([cat in mt_sr for cat in categories])][0]) for mt_sr in metadata_subreddits]
         # "dataset_name": ['reddit-nwp'] * len(indices)
     }
+    """
     return data
 
 

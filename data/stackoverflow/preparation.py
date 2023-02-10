@@ -91,7 +91,7 @@ def text_to_sequence(text_lines, text_tokenizer, max_len):
     return np.array(pad_sequences(np.array(seqs), maxlen=max_len + 1, padding='post', value=0))
 
 
-def parse_clients(json_data, text_tokenizer, words_backwards, vocab_size, max_client_num, pre_filename):
+def parse_clients(json_data, text_tokenizer, words_backwards, vocab_size, max_client_num, pre_filename, directory='clients'):
 
     j_agents = parse_json_agents(json_data)
     j_clients = []
@@ -110,8 +110,8 @@ def parse_clients(json_data, text_tokenizer, words_backwards, vocab_size, max_cl
     part = 0
     while True:
         save_cli = j_clients[prev_ind:min(cur_ind, len(j_clients))]
-        save_to_file(save_cli, DATA_PATH + 'clients/{}_{}WB_{}VS_{}CN_{}PT.h5'
-                     .format(pre_filename, words_backwards, vocab_size, max_client_num, part))
+        save_to_file(save_cli, DATA_PATH + '{}/{}_{}WB_{}VS_{}CN_{}PT.h5'
+                     .format(directory, pre_filename, words_backwards, vocab_size, max_client_num, part))
         if len(j_clients) <= cur_ind:
             break
         prev_ind = cur_ind
@@ -140,13 +140,13 @@ def load_tokenizer():
     return tokenizer
 
 
-def load_clients(client_num, word_backwards=10, vocab_size=10_002, max_client_num=10_000):
+def load_clients(client_num, word_backwards=10, vocab_size=10_002, max_client_num=10_000, directory='clients'):
     stackoverflow_index, part = 0, 0
     clients = []
 
     def parsed_name():
-        return DATA_PATH + 'clients/clients_stackoverflow_{}_{}WB_{}VS_{}CN_{}PT.h5'\
-            .format(stackoverflow_index, word_backwards, vocab_size, max_client_num, part)
+        return DATA_PATH + '{}/clients_stackoverflow_{}_{}WB_{}VS_{}CN_{}PT.h5'\
+            .format(directory, stackoverflow_index, word_backwards, vocab_size, max_client_num, part)
 
     while len(clients) < client_num:
         # print("Loading", parsed_name())
@@ -159,10 +159,11 @@ def load_clients(client_num, word_backwards=10, vocab_size=10_002, max_client_nu
     return clients
 
 
-def parse_stackoverflow_file(stackoverflow_index=0, word_backwards=10, max_client_num=1_000):
+def parse_stackoverflow_file(stackoverflow_index=0, word_backwards=10, max_client_num=1_000, directory='clients'):
     tokenizer = load_tokenizer()
     vocab_size = len(tokenizer.word_index) + 1
     # print(vocab_size)
+    os.makedirs('data/stackoverflow/{}/'.format(directory), exist_ok=True)
     filename = 'stackoverflow_{}.json'.format(stackoverflow_index)
     print("Parsing", filename)
     json_data = load_stackoverflow_json('{}users/{}'.format(DATA_PATH, filename))
@@ -170,7 +171,8 @@ def parse_stackoverflow_file(stackoverflow_index=0, word_backwards=10, max_clien
                   words_backwards=word_backwards,
                   vocab_size=vocab_size,
                   max_client_num=max_client_num,
-                  pre_filename='clients_' + filename.split('.')[0])
+                  pre_filename='clients_' + filename.split('.')[0],
+                  directory=directory)
 
 
 if __name__ == '__main__':
