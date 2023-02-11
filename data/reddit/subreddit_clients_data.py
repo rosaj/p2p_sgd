@@ -2,9 +2,12 @@ from data.reddit.preparation import process_agent_data, load_reddit_json, parse_
 from data.reddit.clients_data import load_client_datasets
 from collections import Counter
 import numpy as np
+import os
 
 
-def parse_per_subreddit(seq_len=10, max_client_num=1_000, vocab_size=10_002, categories=['gaming', 'politics']):
+def parse_per_subreddit(seq_len=10, max_client_num=1_000, vocab_size=10_000, categories=['gaming', 'politics']):
+    for d in categories + ['_'.join(categories)]:
+        os.makedirs('data/reddit/clients_category/{}/'.format(d), exist_ok=True)
     train_json_data = load_reddit_json('data/reddit/source/data/reddit_leaf/train/reddit_0_train.json')
     val_json_data = load_reddit_json('data/reddit/source/data/reddit_leaf/val/reddit_0_val.json')
     test_json_data = load_reddit_json('data/reddit/source/data/reddit_leaf/test/reddit_0_test.json')
@@ -34,9 +37,9 @@ def parse_per_subreddit(seq_len=10, max_client_num=1_000, vocab_size=10_002, cat
     tokenizer = Tokenizer(oov_token='UNK')
     tokenizer.fit_on_texts(words)
 
-    process_agent_data(train_agents_x, train_agents_y, tokenizer, seq_len, vocab_size, max_client_num, pre_filename='clients_reddit_0_train', directory='clients_category/' + '_'.join(categories))
-    process_agent_data(val_agents_x, val_agents_y, tokenizer, seq_len, vocab_size, max_client_num, pre_filename='clients_reddit_0_val', directory='clients_category/' + '_'.join(categories))
-    process_agent_data(test_agents_x, test_agents_y, tokenizer, seq_len, vocab_size, max_client_num, pre_filename='clients_reddit_0_test', directory='clients_category/' + '_'.join(categories))
+    process_agent_data(train_agents_x, train_agents_y, tokenizer, seq_len, len(tokenizer.word_index) + 1, max_client_num, pre_filename='clients_reddit_0_train', directory='clients_category/' + '_'.join(categories))
+    process_agent_data(val_agents_x, val_agents_y, tokenizer, seq_len, len(tokenizer.word_index) + 1, max_client_num, pre_filename='clients_reddit_0_val', directory='clients_category/' + '_'.join(categories))
+    process_agent_data(test_agents_x, test_agents_y, tokenizer, seq_len, len(tokenizer.word_index) + 1, max_client_num, pre_filename='clients_reddit_0_test', directory='clients_category/' + '_'.join(categories))
 
     for cat in categories:
         indices = [i for i in range(len(train_agents_y)) if cat in train_agents_y[i]]
@@ -48,11 +51,11 @@ def parse_per_subreddit(seq_len=10, max_client_num=1_000, vocab_size=10_002, cat
         tokenizer = Tokenizer(oov_token='UNK')
         tokenizer.fit_on_texts(words)
 
-        process_agent_data(train_x, train_y, tokenizer, seq_len, vocab_size, max_client_num, pre_filename='clients_reddit_0_train', directory='clients_category/{}'.format(cat))
+        process_agent_data(train_x, train_y, tokenizer, seq_len, len(tokenizer.word_index) + 1, max_client_num, pre_filename='clients_reddit_0_train', directory='clients_category/{}'.format(cat))
         val_x, val_y = [val_agents_x[i] for i in indices], [val_agents_y[i] for i in indices]
-        process_agent_data(val_x, val_y, tokenizer, seq_len, vocab_size, max_client_num, pre_filename='clients_reddit_0_val', directory='clients_category/{}'.format(cat))
+        process_agent_data(val_x, val_y, tokenizer, seq_len, len(tokenizer.word_index) + 1, max_client_num, pre_filename='clients_reddit_0_val', directory='clients_category/{}'.format(cat))
         test_x, test_y = [test_agents_x[i] for i in indices], [test_agents_y[i] for i in indices]
-        process_agent_data(test_x, test_y, tokenizer, seq_len, vocab_size, max_client_num, pre_filename='clients_reddit_0_test', directory='clients_category/{}'.format(cat))
+        process_agent_data(test_x, test_y, tokenizer, seq_len, len(tokenizer.word_index) + 1, max_client_num, pre_filename='clients_reddit_0_test', directory='clients_category/{}'.format(cat))
 
 
 def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 20_000), categories=['gaming', 'politics']):

@@ -7,7 +7,7 @@ import numpy as np
 import pickle
 
 
-def create_tokenizer(vocab_size=10_002):
+def create_tokenizer(vocab_size=10_000):
     c = Counter()
     j_data = load_reddit_json('data/reddit/source/data/reddit_leaf/train/reddit_0_train.json')
     agents, _ = parse_reddit_json_agents(j_data)
@@ -24,3 +24,6 @@ def create_tokenizer(vocab_size=10_002):
     pickle.dump(tokenizer, open('data/reddit/reddit_stackoverflow_tokenizer.pkl', 'wb'))
     return tokenizer
 
+
+if __name__ == '__main__':
+    create_tokenizer()
