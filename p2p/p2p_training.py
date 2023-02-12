@@ -59,6 +59,8 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
         update_pb(pbar, agents, n, start_time)
     _, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples, **print_args)
 
+    graph_manager.start()
+
     while total_examples < max_examples:
         if issubclass(agent_class, SyncAgent):
             for agent in agents:

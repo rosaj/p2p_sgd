@@ -158,6 +158,91 @@ def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_c
     return g
 
 
+def create_acc_conns(n, create_using, **kwargs):
+    return nx.empty_graph(n, create_using=create_using)
+
+
+def start_acc_conns(gm):
+    nodes = gm.nodes
+    num_neighbors = gm.num_neighbors
+    adj_mx = np.zeros((len(nodes), len(nodes)))
+
+    for i, ni in enumerate(nodes):
+        neigh_i = []
+        for j, nj in enumerate(nodes):
+            if i == j:
+                continue
+            acc_i = list(ni.eval_model(ni.model, nj.train).values())[0]
+            neigh_i.append(acc_i)
+            # acc_j = list(ni.eval_model(nj.model, nj.train).values())[0]
+            # print(i, j, acc_i >= acc_j, acc_i, acc_j)
+            # if acc_i >= acc_j:
+            #     adj_mx[i, j] = 1
+        neigh_indices = np.argsort(neigh_i)[-num_neighbors:]
+        adj_mx[i, neigh_indices] = np.array(neigh_i)[neigh_indices]
+
+    print(adj_mx)
+
+    print("Send-Receive")
+    for i in range(len(adj_mx)):
+        print(i, "{}-{}".format(sum(adj_mx[i, :] > 0), sum(adj_mx[:, i] > 0)))
+    # """
+    mx = [[0, 0, 0, 0, 0.05882353, 0.04365904, 0, 0.03630515, 0, 0],
+             [0.0060698,  0.00478469, 0, 0, 0, 0, 0, 0, 0.01333333, 0],
+             [0.02731411, 0.07272727, 0.03941909, 0, 0, 0, 0, 0, 0, 0],
+             [0, 0.05454545, 0.03827751, 0, 0, 0.03118503, 0, 0, 0, 0],
+             [0.01669196, 0.03636364, 0, 0.01452282, 0, 0, 0, 0, 0, 0],
+             [0.01820941, 0, 0, 0, 0, 0.01039501, 0, 0.01286765, 0, 0],
+             [0, 0, 0.02392345, 0.02074689, 0, 0, 0.01863354, 0, 0, 0],
+             [0, 0, 0, 0, 0, 0.05882353, 0.03118503, 0.03170956, 0, 0],
+             [0, 0.03636364, 0, 0, 0.03271028, 0, 0.03118503, 0, 0, 0],
+             [0.0030349,  0, 0, 0, 0.0046729,  0, 0, 0, 0.00045956, 0]]
+    adj_mx = np.zeros((len(mx), len(mx)))
+    for i, m in enumerate(mx):
+        adj_mx[i, np.array(m) > 0] = np.array(m)[np.array(m) > 0]
+    # """
+
+    for i in range(len(adj_mx)):
+        if sum(adj_mx[:, i] > 0) > num_neighbors:
+            indices = np.where(adj_mx[:, i] > 0)[0][np.argsort(adj_mx[np.where(adj_mx[:, i] > 0)[0], i])]
+            adj_mx[indices[:-num_neighbors], i] = 0
+            other_ind = list(indices[:-num_neighbors])
+            print(i, other_ind)
+            while len(other_ind) > 0:
+                neigh_num_summary = np.sum(adj_mx > 0, axis=0)
+                min_ind = np.argmin(neigh_num_summary)
+                num_n = int(neigh_num_summary[min_ind])
+                n_diff = num_neighbors - num_n
+                print('- Selected', min_ind, num_n)
+                if n_diff > 0:
+                    adj_mx[other_ind[:n_diff], min_ind] = 1
+                    other_ind = other_ind[n_diff:]
+
+    print("Final Send-Receive")
+    for i in range(len(adj_mx)):
+        print(i, "{}-{}".format(sum(adj_mx[i, :] > 0), sum(adj_mx[:, i] > 0)))
+    g = nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=nx.DiGraph() if gm._nx_graph.is_directed() else nx.Graph())
+    gm._nx_graph = g
+    # nx.draw(g, with_labels=True)
+
+
+"""
+import numpy as np
+mx =  [[1, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+ [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
+ [0, 1, 1, 0, 0, 1, 0, 0, 0, 0],
+ [1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
+ [1, 0, 0, 0, 0, 1, 0, 1, 0, 0],
+ [0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
+ [0, 0, 0, 0, 0, 1, 1, 1, 0, 0],
+ [0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
+ [1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
+ [0, 0, 1, 1, 0, 0, 1, 0, 0, 0]]
+adj_mx = np.zeros((len(mx), len(mx)))
+for i, m in enumerate(mx):
+    adj_mx[i, np.array(m) > 0] = 1
+ """
+
 _graph_type_dict = {
     'complete': lambda **kwargs: nx.complete_graph(kwargs['n'], create_using=kwargs['create_using']),
     'ring': lambda **kwargs: create_ring(kwargs['n'], create_using=kwargs['create_using']),
@@ -166,7 +251,8 @@ _graph_type_dict = {
     'binomial': lambda **kwargs: nx.binomial_graph(kwargs['n'], kwargs['p'], directed=kwargs['directed']),
     'torus': create_torus,
     'grid': create_grid,
-    'sparse_clusters': lambda **kwargs: create_sparse_clusters(**kwargs)
+    'sparse_clusters': lambda **kwargs: create_sparse_clusters(**kwargs),
+    'acc_conns': lambda **kwargs: create_acc_conns(**kwargs),
 }
 
 
@@ -179,6 +265,7 @@ class GraphManager:
         self.time_varying = time_varying
         self.num_neighbors = num_neighbors
         self.graph_type = graph_type
+        self.kwargs = kwargs
         self._nx_graph = self._resolve_graph_type(**kwargs)
         self._resolve_weights_mixing()
 
@@ -238,6 +325,10 @@ class GraphManager:
 
     def get_node(self, node_id):
         return self.nodes[node_id]
+
+    def start(self):
+        if self.graph_type == 'acc_conns':
+            start_acc_conns(self)
 
     def draw(self):
         nx.draw(self._nx_graph, pos=nx.spring_layout(self._nx_graph), with_labels=True)
