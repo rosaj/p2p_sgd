@@ -186,7 +186,7 @@ def start_acc_conns(gm):
     print("Send-Receive")
     for i in range(len(adj_mx)):
         print(i, "{}-{}".format(sum(adj_mx[i, :] > 0), sum(adj_mx[:, i] > 0)))
-    # """
+    """
     mx = [[0, 0, 0, 0, 0.05882353, 0.04365904, 0, 0.03630515, 0, 0],
              [0.0060698,  0.00478469, 0, 0, 0, 0, 0, 0, 0.01333333, 0],
              [0.02731411, 0.07272727, 0.03941909, 0, 0, 0, 0, 0, 0, 0],
@@ -225,23 +225,6 @@ def start_acc_conns(gm):
     gm._nx_graph = g
     # nx.draw(g, with_labels=True)
 
-
-"""
-import numpy as np
-mx =  [[1, 1, 0, 0, 0, 0, 0, 0, 1, 0],
- [1, 1, 1, 0, 0, 0, 0, 0, 0, 0],
- [0, 1, 1, 0, 0, 1, 0, 0, 0, 0],
- [1, 1, 0, 1, 0, 0, 0, 0, 0, 0],
- [1, 0, 0, 0, 0, 1, 0, 1, 0, 0],
- [0, 0, 1, 1, 0, 0, 1, 0, 0, 0],
- [0, 0, 0, 0, 0, 1, 1, 1, 0, 0],
- [0, 1, 0, 0, 1, 0, 1, 0, 0, 0],
- [1, 0, 0, 0, 1, 0, 0, 0, 1, 0],
- [0, 0, 1, 1, 0, 0, 1, 0, 0, 0]]
-adj_mx = np.zeros((len(mx), len(mx)))
-for i, m in enumerate(mx):
-    adj_mx[i, np.array(m) > 0] = 1
- """
 
 _graph_type_dict = {
     'complete': lambda **kwargs: nx.complete_graph(kwargs['n'], create_using=kwargs['create_using']),
