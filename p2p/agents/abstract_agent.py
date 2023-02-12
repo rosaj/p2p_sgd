@@ -169,6 +169,12 @@ class Agent:
     def _eval_test_metrics(self, m):
         return self.model_pars['model_mod'].eval_model_metrics(m, self.test)
 
+    def eval_model(self, model, dataset, metrics=None):
+        res_dict = self.model_pars['model_mod'].eval_model_metrics(model, dataset)
+        if metrics is not None and len(metrics) > 0:
+            res_dict = {k: v for k, v in res_dict.items() if k in metrics}
+        return res_dict
+
     def calc_new_metrics(self, metrics_names=None):
         self.hist["examples"].append(self.trained_examples)
         self.hist["useful_msg"].append(0)
