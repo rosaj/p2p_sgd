@@ -133,12 +133,12 @@ def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 2
     for cat, n_cli in zip(categories, num_clients):
         if not is_bert:
             train, val, test, metadata = load_client_datasets(num_clients=2001, directory='clients_category/{}'.format(cat))
+            choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
         else:
-            train, val, test, metadata = load_bert_client_datasets(num_clients=2001, directory='clients_category/{}'.format(cat))
+            train, val, test, metadata = load_bert_client_datasets(num_clients=2001, train_examples_range=train_examples_range, seed=-1, directory='bert_clients_category/{}'.format(cat))
+            choices = list(range(len(train)))
 
         indices = []
-        choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]
-                   and cat in metadata[i]]
         if n_cli < 1:
             clients_ids = choices
         else:

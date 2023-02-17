@@ -162,7 +162,7 @@ def parse_and_save_reddit_file(reddit_filename='reddit_0_train.json', seq_len=12
 
 
 def process_bert_agents(j_agents_x, j_agents_y, seq_len=128, tokenizer=None, max_client_num=1_000, directory='bert_clients', pre_filename='clients_'):
-    agents_x, agents_y = [], []
+    agents_x, agents_y, part = [], [], 0
 
     def save_part():
         save_agents = [(x, y) for x, y in zip(agents_x, agents_y)]
@@ -174,7 +174,7 @@ def process_bert_agents(j_agents_x, j_agents_y, seq_len=128, tokenizer=None, max
         for sx, sy in zip(ax, ay):
             features = convert_nwp_examples_to_features(sx.split('.'), seq_len=seq_len, tokenizer=tokenizer)
             agent_data_x.extend(features)
-            agent_data_y.append(sy['subreddit'])
+            agent_data_y.append(sy)
 
         agents_x.append(agent_data_x)
         agents_y.append(agent_data_y)
@@ -303,7 +303,7 @@ def load_client_datasets(num_clients=1_000, seq_len=12, seed=608361, train_examp
     metadata = []
     for tr, v, ts in zip(train, val, test):
         subreddits = [d.decode() for d in tr[1]] + [d.decode() for d in v[1]] + [d.decode() for d in ts[1]]
-        metadata.append(np.unique(subreddits))
+        metadata.append(subreddits)
 
     choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
     if seed == -1:
