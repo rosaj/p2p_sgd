@@ -9,7 +9,8 @@ def load_client_datasets(num_clients=1_000, directory='clients'):
     metadata = []
     for tr, v, ts in zip(train, val, test):
         subreddits = [d.decode() for d in tr[2]] + [d.decode() for d in v[2]] + [d.decode() for d in ts[2]]
-        metadata.append(np.unique(subreddits))
+        metadata.append(subreddits)
+        # metadata.append(np.unique(subreddits))
         """
         metadata.append({
             'train': np.unique([d.decode() for d in tr[2]]),

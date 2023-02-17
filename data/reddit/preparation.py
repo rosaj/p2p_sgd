@@ -137,7 +137,9 @@ def create_tokenizer(vocab_size, train_filenames_list):
     for filename in train_filenames_list:
         j_data = load_reddit_json('data/reddit/source/data/reddit_leaf/train/{}'.format(filename))
         agents, _ = parse_json_agents(j_data)
+        del j_data
         c.update(' '.join([' '.join(a) for a in agents]).split())
+        del agents, _
 
     words = np.array(c.most_common(vocab_size))[:, 0]
     tokenizer = Tokenizer(oov_token='UNK')
@@ -189,5 +191,6 @@ def parse_reddit_file(reddit_index=0, seq_len=10, max_client_num=1_000, director
 
 
 if __name__ == '__main__':
-    # create_tokenizer(10_000, ['reddit_0_train.json'])
-    parse_reddit_file(0)
+    # create_tokenizer(10_000, [f'reddit_{i}_train.json' for i in range(21)])
+    for ri in range(21):
+        parse_reddit_file(ri, directory='red_so_vocab_clients')
