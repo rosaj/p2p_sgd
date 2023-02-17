@@ -174,7 +174,7 @@ def process_bert_agents(j_agents_x, j_agents_y, seq_len=128, tokenizer=None, max
         for sx, sy in zip(ax, ay):
             features = convert_nwp_examples_to_features(sx.split('.'), seq_len=seq_len, tokenizer=tokenizer)
             agent_data_x.extend(features)
-            agent_data_y.extend(sy['subreddit'])
+            agent_data_y.append(sy['subreddit'])
 
         agents_x.append(agent_data_x)
         agents_y.append(agent_data_y)

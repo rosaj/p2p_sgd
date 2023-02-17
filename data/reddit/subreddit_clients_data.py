@@ -18,11 +18,11 @@ def parse_bert_per_subreddit(reddit_indexes=range(21), seq_len=12, max_client_nu
         train_agents_x, train_agents_y = parse_bert_agents(train_json_data)
         del train_json_data
 
-        val_json_data = load_reddit_json(f'data/reddit/source/data/reddit_leaf/train/reddit_{ri}_train.json')
+        val_json_data = load_reddit_json(f'data/reddit/source/data/reddit_leaf/val/reddit_{ri}_val.json')
         val_agents_x, val_agents_y = parse_bert_agents(val_json_data)
         del val_json_data
 
-        test_json_data = load_reddit_json(f'data/reddit/source/data/reddit_leaf/train/reddit_{ri}_train.json')
+        test_json_data = load_reddit_json(f'data/reddit/source/data/reddit_leaf/test/reddit_{ri}_test.json')
         test_agents_x, test_agents_y = parse_bert_agents(test_json_data)
         del test_json_data
 
