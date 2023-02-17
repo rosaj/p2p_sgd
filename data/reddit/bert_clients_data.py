@@ -262,13 +262,13 @@ def load_from_file(filename):
     return data_clients
 
 
-def load_clients(data_type, client_num, seq_len=128, max_client_num=1_000):
+def load_clients(data_type, client_num, seq_len=128, max_client_num=1_000, directory='bert_clients'):
     reddit_index, part = 0, 0
     clients = []
 
     def parsed_name():
-        return 'data/reddit/bert_clients/clients_reddit_{}_{}_{}SL_{}CN_{}PT.h5'\
-            .format(reddit_index, data_type, seq_len, max_client_num, part)
+        return 'data/reddit/{}/clients_reddit_{}_{}_{}SL_{}CN_{}PT.h5'\
+            .format(directory, reddit_index, data_type, seq_len, max_client_num, part)
 
     while len(clients) < client_num:
         # print("Loading", parsed_name())
@@ -296,17 +296,19 @@ def unpack_features(features, sequenced=False):
         )
 
 
-def load_client_datasets(num_clients=1_000, seq_len=12, seed=608361, train_examples_range=(700, 20_000)):
-    train = load_clients('train', num_clients, seq_len)
-    val = load_clients('val', num_clients, seq_len)
-    test = load_clients('test', num_clients, seq_len)
+def load_client_datasets(num_clients=1_000, seq_len=12, seed=608361, train_examples_range=(700, 20_000), directory='bert_clients'):
+    train = load_clients('train', num_clients, seq_len, directory=directory)
+    val = load_clients('val', num_clients, seq_len, directory=directory)
+    test = load_clients('test', num_clients, seq_len, directory=directory)
     metadata = []
     for tr, v, ts in zip(train, val, test):
         subreddits = [d.decode() for d in tr[1]] + [d.decode() for d in v[1]] + [d.decode() for d in ts[1]]
         metadata.append(np.unique(subreddits))
 
     choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
-    if seed is not None:
+    if seed == -1:
+        clients_ids = choices
+    elif seed is not None:
         from numpy.random import MT19937
         from numpy.random import RandomState, SeedSequence
         rs = RandomState(MT19937(SeedSequence(seed)))

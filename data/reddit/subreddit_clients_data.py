@@ -1,5 +1,6 @@
 from data.reddit.preparation import process_agent_data, load_reddit_json, parse_json_agents, load_tokenizer
 from data.reddit.clients_data import load_client_datasets
+from data.reddit.bert_clients_data import load_client_datasets as load_bert_client_datasets
 from data.reddit.bert_clients_data import parse_bert_agents, process_bert_agents, FullTokenizer
 # from collections import Counter
 import numpy as np
@@ -117,7 +118,7 @@ def parse_per_subreddit(reddit_indexes=range(21), seq_len=10, max_client_num=1_0
         """
 
 
-def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 20_000), categories=['leagueoflegends', 'politics']):
+def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 20_000), categories=['leagueoflegends', 'politics'], is_bert=False):
     if not isinstance(num_clients, list) and not isinstance(num_clients, tuple):
         num_clients = int(num_clients / len(categories))
         num_clients = [num_clients] * len(categories)
@@ -130,7 +131,11 @@ def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 2
         "dataset_name": []
     }
     for cat, n_cli in zip(categories, num_clients):
-        train, val, test, metadata = load_client_datasets(num_clients=100, directory='clients_category/{}'.format(cat))
+        if not is_bert:
+            train, val, test, metadata = load_client_datasets(num_clients=2001, directory='clients_category/{}'.format(cat))
+        else:
+            train, val, test, metadata = load_bert_client_datasets(num_clients=2001, directory='clients_category/{}'.format(cat))
+
         indices = []
         choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]
                    and cat in metadata[i]]
