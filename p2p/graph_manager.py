@@ -297,23 +297,53 @@ def build_from_classes(pred, num_neighbors, create_using):
     return graph
 
 
-def k_means_clusters(nodes, create_using, num_neighbors, n_clusters=2, use_data='data points', **kwargs):
-    from sklearn.cluster import KMeans
-    labels = prepare_for_clustering(nodes, use_data)
-    pred = KMeans(n_clusters=n_clusters, random_state=0).fit_predict(labels)
-    return build_from_classes(pred, num_neighbors, create_using)
+def build_from_clusters(clusters, num_neighbors, create_using):
+    num_nodes = sum([len(c) for c in clusters])
+    adj_mx = np.zeros((num_nodes, num_nodes))
+    for cl in clusters:
+        g = sparse_graph(n=len(cl), num_neighbors=num_neighbors, create_using=create_using)
+        g_mx = nx.to_numpy_array(g)
+        for i in range(len(cl)):
+            adj_mx[cl[i]][np.array(cl)[g_mx[i].astype(np.int) > 0]] = 1
 
-
-def aucccr_clusters(nodes, create_using, num_neighbors, n_clusters=2, use_data='data points', **kwargs):
-    labels = prepare_for_clustering(nodes, use_data)
-    from data.metrics.aucccr import recommend_clusters, scf, thd
-    clusters = recommend_clusters(labels, v=lambda x: np.sqrt(scf*thd) if x > thd else np.sqrt(scf*x))
-    pred = np.zeros(len(labels))
+    graph = nx.from_numpy_matrix(adj_mx, create_using=create_using)
+    """
+    pred = np.zeros(num_nodes)
     for ci, c in enumerate(clusters):
         for cl in c:
             pred[cl] = ci
-    print("AUCCCR produced", len(clusters), "clusters with cluster lenghts:", [len(c) for c in clusters])
-    return build_from_classes(pred, num_neighbors, create_using)
+    pred = pred.astype(np.int)
+    nx.draw(graph, node_color=[["blue", "green", "red", "yellow", "black"][c] for c in pred], with_labels=True)
+    # """
+    return graph
+
+
+def k_means_clusters(nodes, create_using, num_neighbors, n_clusters=2, use_data='data points', form_clusters=False, **kwargs):
+    from sklearn.cluster import KMeans
+    labels = prepare_for_clustering(nodes, use_data)
+    pred = KMeans(n_clusters=n_clusters, random_state=0).fit_predict(labels)
+    if not form_clusters:
+        return build_from_classes(pred, num_neighbors, create_using)
+    else:
+        clusters = [[] for _ in range(len(np.unique(pred)))]
+        for i, p in enumerate(pred):
+            clusters[p].append(i)
+        return build_from_clusters(clusters, num_neighbors, create_using)
+
+
+def aucccr_clusters(nodes, create_using, num_neighbors, use_data='data points', form_clusters=False, **kwargs):
+    labels = prepare_for_clustering(nodes, use_data)
+    from data.metrics.aucccr import recommend_clusters, scf, thd
+    clusters = recommend_clusters(labels, v=lambda x: np.sqrt(scf*thd) if x > thd else np.sqrt(scf*x))
+    if not form_clusters:
+        pred = np.zeros(len(labels))
+        for ci, c in enumerate(clusters):
+            for cl in c:
+                pred[cl] = ci
+        print("AUCCCR produced", len(clusters), "clusters with cluster lenghts:", [len(c) for c in clusters])
+        return build_from_classes(pred, num_neighbors, create_using)
+    else:
+        return build_from_clusters(clusters, num_neighbors, create_using)
 
 
 _graph_type_dict = {
