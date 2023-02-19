@@ -1,6 +1,7 @@
 from typing import List, Tuple, Callable
 import random
 import numpy as np
+np.seterr(divide='ignore', invalid='ignore')
 
 scf = 1
 thd = 20
@@ -136,6 +137,7 @@ def recommend_clusters(testr, d: Callable = lambda x, y: np.linalg.norm(x - y), 
             pmm -= 1
         if pmm == 0:
             break
+    ans = [an for an in ans if len(an) > 0]
     return ans
 
 
