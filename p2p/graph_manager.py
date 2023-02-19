@@ -226,6 +226,96 @@ def start_acc_conns(gm):
     # nx.draw(g, with_labels=True)
 
 
+def prepare_for_clustering(nodes, use_data='data points'):
+    from data.metrics import convert_to_global_vector
+    if use_data == 'data points':
+        train = []
+        for a in nodes:
+            a_t = []
+            for dsi in list(a.train):
+                a_t.extend(dsi[1])
+            train.append(np.array(a_t))
+
+        train_ds = [t[t != 1] for t in train]  # 1-> OOV token, 0-> padding
+        labels = np.asarray(convert_to_global_vector([a - 2 for a in train_ds], 10_000))
+    else:
+        v_space = []
+        for a in nodes:
+            v_space.extend(a._data['metadata-subreddits'])
+        v_space = np.unique(v_space)
+        labels = np.asarray(convert_to_global_vector([list(map(lambda x: list(v_space).index(x), a._data['metadata-subreddits'])) for a in nodes], len(v_space)))
+
+    for i in range(len(labels)):
+        labels[i] /= labels[i].sum()
+    return labels
+
+
+def build_from_classes(pred, num_neighbors, create_using):
+
+    prob = np.zeros((len(pred), len(pred)))
+    for i in range(prob.shape[0]):
+        for j in range(prob.shape[1]):
+            if i == j:
+                continue
+            diff = abs(pred[i]-pred[j]) + 1
+            prob[i, j] = 1 / diff**2
+
+    searches = 0
+    while True:
+        adj_mx = np.zeros(prob.shape)
+        for i in range(adj_mx.shape[0]):
+            p = np.copy(prob[i])
+
+            # remove all nodes that already have enough receiving neighbors
+            for j in range(p.shape[0]):
+                if p[j] > 0 and sum(adj_mx[:, j] > 0) >= num_neighbors:
+                    p[j] = 0
+
+            if sum(p > 0) < num_neighbors:
+                for j in range(p.shape[0]):
+                    if p[j] == 0 and sum(adj_mx[:, j] > 0) < num_neighbors:
+                        p[j] = 1e-10
+
+            p /= p.sum()  # Normalize
+            choices = np.random.choice(np.arange(0, prob[i].shape[0]), size=min(num_neighbors, sum(p > 0)), p=p, replace=False)
+            adj_mx[i, choices] = prob[i, choices]
+            # print(i, [prob[i, ki] for ki, k in enumerate(adj_mx[i]) if k])
+            searches += 1
+        if all([sum(adj_mx[a, :] > 0) == num_neighbors for a in range(adj_mx.shape[0])]) and all([sum(adj_mx[:, a] > 0) == num_neighbors for a in range(adj_mx.shape[0])])\
+                or searches > 10_000:
+            print(searches, "searches")
+            if searches > 10_000:
+                print("Suboptimal solution found")
+                for i in range(len(adj_mx)):
+                    print(i, "{}-{}".format(sum(adj_mx[i, :] > 0), sum(adj_mx[:, i] > 0)))
+            break
+
+    # for i in range(len(adj_mx)):
+    #     print(i, "{}-{}".format(sum(adj_mx[i, :] > 0), sum(adj_mx[:, i] > 0)))
+    graph = nx.from_numpy_matrix(adj_mx, create_using=create_using)
+    # nx.draw(graph, node_color=[["blue", "green", "red", "yellow", "black"][c] for c in pred], with_labels=True)
+    return graph
+
+
+def k_means_clusters(nodes, create_using, num_neighbors, n_clusters=2, use_data='data points', **kwargs):
+    from sklearn.cluster import KMeans
+    labels = prepare_for_clustering(nodes, use_data)
+    pred = KMeans(n_clusters=n_clusters, random_state=0).fit_predict(labels)
+    return build_from_classes(pred, num_neighbors, create_using)
+
+
+def aucccr_clusters(nodes, create_using, num_neighbors, n_clusters=2, use_data='data points', **kwargs):
+    labels = prepare_for_clustering(nodes, use_data)
+    from data.metrics.aucccr import recommend_clusters, scf, thd
+    clusters = recommend_clusters(labels, v=lambda x: np.sqrt(scf*thd) if x > thd else np.sqrt(scf*x))
+    pred = np.zeros(len(labels))
+    for ci, c in enumerate(clusters):
+        for cl in c:
+            pred[cl] = ci
+    print("AUCCCR produced", len(clusters), "clusters with cluster lenghts:", [len(c) for c in clusters])
+    return build_from_classes(pred, num_neighbors, create_using)
+
+
 _graph_type_dict = {
     'complete': lambda **kwargs: nx.complete_graph(kwargs['n'], create_using=kwargs['create_using']),
     'ring': lambda **kwargs: create_ring(kwargs['n'], create_using=kwargs['create_using']),
@@ -236,6 +326,8 @@ _graph_type_dict = {
     'grid': create_grid,
     'sparse_clusters': lambda **kwargs: create_sparse_clusters(**kwargs),
     'acc_conns': lambda **kwargs: create_acc_conns(**kwargs),
+    'kmeans': lambda **kwargs: k_means_clusters(**kwargs),
+    'aucccr': lambda **kwargs: aucccr_clusters(**kwargs),
 }
 
 
@@ -270,6 +362,7 @@ class GraphManager:
                   'directed': self.directed,
                   'num_neighbors': self.num_neighbors,
                   'p': self.num_neighbors / self.n,
+                  'nodes': self.nodes
                   }
         kwargs.update(params)
         graph = graph_fn(**kwargs)
