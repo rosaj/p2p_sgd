@@ -238,11 +238,10 @@ def prepare_for_clustering(nodes, use_data='data points'):
 
         v_space = nodes[0].model.layers[-1].units
         if v_space == 10_002:
-            train_ds = [t[1][t[1] > 1] for t in train]  # 1-> OOV token, 0-> padding
+            train_ds = [t[t > 1] for t in train]  # 1-> OOV token, 0-> padding
             labels = np.asarray(convert_to_global_vector([a - 2 for a in train_ds], 10_000))
         else:
-            train_ds = [t[1] for t in train]  # 1-> OOV token, 0-> padding
-            labels = np.asarray(convert_to_global_vector(train_ds, v_space))
+            labels = np.asarray(convert_to_global_vector(train, v_space))
     else:
         v_space = []
         for a in nodes:
@@ -350,8 +349,7 @@ def aucccr_clusters(nodes, create_using, num_neighbors, use_data='data points', 
     else:
         return build_from_clusters(clusters, num_neighbors, create_using)
 
-
-
+    
 _graph_type_dict = {
     'complete': lambda **kwargs: nx.complete_graph(kwargs['n'], create_using=kwargs['create_using']),
     'ring': lambda **kwargs: create_ring(kwargs['n'], create_using=kwargs['create_using']),
