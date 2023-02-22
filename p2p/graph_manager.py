@@ -236,8 +236,12 @@ def prepare_for_clustering(nodes, use_data='data points'):
                 a_t.extend(dsi[1])
             train.append(np.array(a_t))
 
-        train_ds = [t[t != 1] for t in train]  # 1-> OOV token, 0-> padding
-        labels = np.asarray(convert_to_global_vector([a - 2 for a in train_ds], 10_000))
+        v_space = nodes[0].model.layers[-1].units
+        if v_space == 10_002:
+            train_ds = [t[t != 1] for t in train]  # 1-> OOV token, 0-> padding
+            labels = np.asarray(convert_to_global_vector([a - 2 for a in train_ds], 10_000))
+        else:
+            labels = np.asarray(convert_to_global_vector(train, v_space))
     else:
         v_space = []
         for a in nodes:
@@ -335,12 +339,12 @@ def aucccr_clusters(nodes, create_using, num_neighbors, use_data='data points', 
     labels = prepare_for_clustering(nodes, use_data)
     from data.metrics.aucccr import recommend_clusters, scf, thd
     clusters = recommend_clusters(labels, v=lambda x: np.sqrt(scf*thd) if x > thd else np.sqrt(scf*x))
+    print("AUCCCR produced", len(clusters), "clusters with cluster lenghts:", [len(c) for c in clusters])
     if not form_clusters:
         pred = np.zeros(len(labels))
         for ci, c in enumerate(clusters):
             for cl in c:
                 pred[cl] = ci
-        print("AUCCCR produced", len(clusters), "clusters with cluster lenghts:", [len(c) for c in clusters])
         return build_from_classes(pred, num_neighbors, create_using)
     else:
         return build_from_clusters(clusters, num_neighbors, create_using)
