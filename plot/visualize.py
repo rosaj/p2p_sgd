@@ -136,7 +136,7 @@ def plot_items(ax, x_axis, viz_dict, title=None, y_label='Test UA (%)', colors=N
         ax.plot(x_time, t_acc, **args, label=k, linewidth=1)
         if accs is not None:
             min_acc, max_acc = calc_fill_between(accs)
-            ax.fill_between(x_time, max_acc, min_acc, alpha=0.1, **args)
+            ax.fill_between(x_time, max_acc, min_acc, alpha=0.05, **args)
         legend.append(k)
         if x_axis2 is not None:
             x_time2, t_acc2, accs2 = parse_timeline(k, v, x_axis2, agg_fn,  metric[i] if isinstance(metric, list) else metric)
