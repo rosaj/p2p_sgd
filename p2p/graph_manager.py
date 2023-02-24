@@ -166,11 +166,13 @@ def start_acc_conns(gm):
     nodes = gm.nodes
     num_neighbors = gm.num_neighbors
     adj_mx = np.zeros((len(nodes), len(nodes)))
+    prob = np.zeros(adj_mx.shape)
 
     for i, ni in enumerate(nodes):
         neigh_i = []
         for j, nj in enumerate(nodes):
             if i == j:
+                neigh_i.append(0)
                 continue
             acc_i = list(ni.eval_model(ni.model, nj.train).values())[0]
             neigh_i.append(acc_i)
@@ -181,7 +183,15 @@ def start_acc_conns(gm):
         neigh_indices = np.argsort(neigh_i)[-num_neighbors:]
         adj_mx[i, neigh_indices] = np.array(neigh_i)[neigh_indices]
 
-    print(adj_mx)
+        prob[i] = np.array(neigh_i)
+    # print(adj_mx)
+    from_prob = gm.kwargs.get('from_prob', True)
+    if from_prob:
+        print("Prob: Send-Receive")
+        for i in range(len(prob)):
+            print(i, "{}-{}".format(sum(prob[i, :] > 0), sum(prob[:, i] > 0)))
+        gm._nx_graph = build_from_probabilities(prob, num_neighbors, create_using=nx.DiGraph() if gm._nx_graph.is_directed() else nx.Graph())
+        return
 
     print("Send-Receive")
     for i in range(len(adj_mx)):
@@ -263,7 +273,10 @@ def build_from_classes(pred, num_neighbors, create_using):
                 continue
             diff = abs(pred[i]-pred[j]) + 1
             prob[i, j] = 1 / diff**2
+    return build_from_probabilities(prob, num_neighbors, create_using)
 
+
+def build_from_probabilities(prob, num_neighbors, create_using):
     searches = 0
     while True:
         adj_mx = np.zeros(prob.shape)
@@ -285,6 +298,8 @@ def build_from_classes(pred, num_neighbors, create_using):
             adj_mx[i, choices] = prob[i, choices]
             # print(i, [prob[i, ki] for ki, k in enumerate(adj_mx[i]) if k])
             searches += 1
+
+        np.fill_diagonal(adj_mx, 0)
         if all([sum(adj_mx[a, :] > 0) == num_neighbors for a in range(adj_mx.shape[0])]) and all([sum(adj_mx[:, a] > 0) == num_neighbors for a in range(adj_mx.shape[0])])\
                 or searches > 10_000:
             print(searches, "searches")
@@ -349,7 +364,33 @@ def aucccr_clusters(nodes, create_using, num_neighbors, use_data='data points', 
     else:
         return build_from_clusters(clusters, num_neighbors, create_using)
 
-    
+
+def jensen_shannon(num_neighbors, create_using, filepath='reddit_50_stackoverflow_50_clients', **kwargs):
+    # from plot.visualize import read_json
+    from plot.data import read_symmetric_matrix
+    data = read_symmetric_matrix(filepath)
+    # data = np.array(data)[0:10, 0:10]
+
+    adj_mx = np.zeros(data.shape)
+    for i in range(data.shape[0]):
+        # Node i sending to peers in p
+        p = np.copy(data[i])
+        p_s = np.argsort(p)
+
+        # remove all nodes that already have enough receiving neighbors
+        for j in range(p_s.shape[0]):
+            if sum(adj_mx[:, p_s[j]] > 0) >= num_neighbors or i == p_s[j]:
+                p_s[j] = -1
+
+        p_s = p_s[p_s != -1]
+        adj_mx[i, p_s[:num_neighbors]] = p[p_s[:num_neighbors]] + 0.01
+
+    # for am in range(len(adj_mx)):
+    #     print(am, "{}-{}".format(sum(adj_mx[am, :] > 0), sum(adj_mx[:, am] > 0)))
+    graph = nx.from_numpy_matrix(adj_mx, create_using=create_using)
+    return graph
+
+
 _graph_type_dict = {
     'complete': lambda **kwargs: nx.complete_graph(kwargs['n'], create_using=kwargs['create_using']),
     'ring': lambda **kwargs: create_ring(kwargs['n'], create_using=kwargs['create_using']),
@@ -362,6 +403,7 @@ _graph_type_dict = {
     'acc_conns': lambda **kwargs: create_acc_conns(**kwargs),
     'kmeans': lambda **kwargs: k_means_clusters(**kwargs),
     'aucccr': lambda **kwargs: aucccr_clusters(**kwargs),
+    'jensen_shannon': lambda **kwargs: jensen_shannon(**kwargs),
 }
 
 
