@@ -1,9 +1,28 @@
 from data.stackoverflow.preparation import load_stackoverflow_json, parse_json_agents, parse_clients, load_tokenizer, process_agent_data
 from data.stackoverflow.clients_data import load_client_datasets
-from data.stackoverflow.bert_clients_data import load_client_datasets as load_bert_client_datasets
+from data.stackoverflow.bert_clients_data import load_client_datasets as load_bert_client_datasets, process_bert_agents
 import numpy as np
 import os
 from data.util import random_choice_with_seed
+
+
+def parse_bert_per_tag(file_indexes=range(44), seq_len=12, max_client_num=1_000, pct=.9, tags=['java', 'javascript']):
+    for d in tags:
+        os.makedirs('data/reddit/bert_clients_tag/{}/'.format(d), exist_ok=True)
+
+    tokenizer = load_tokenizer()
+
+    agents = {cat: [] for cat in tags}
+    for fi in file_indexes:
+        json_data = load_stackoverflow_json(f'data/stackoverflow/users/stackoverflow_{fi}.json')
+        agent_texts, agents_tags = parse_json_agents(json_data)
+        del json_data
+
+        filter_per_tag(agents, agent_texts, agents_tags, pct, tags)
+
+    for tag_name, tag_agents in agents.items():
+        process_bert_agents([el[0] for el in tag_agents], [el[1] for el in tag_agents], tokenizer, seq_len,
+                            len(tokenizer.word_index) + 1, max_client_num, directory=f'clients_tag/{tag_name}')
 
 
 def filter_per_tag(agents, agent_texts, agents_tags, pct=.9, tags=['java', 'javascript']):

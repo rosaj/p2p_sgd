@@ -20,7 +20,10 @@ def parse_and_save_so_file(filename='stackoverflow_0.json', seq_len=12, tokenize
     tokenizer = FullTokenizer(tokenizer_path, True)
 
     j_agents, j_tags = parse_json_agents(json_data)
+    process_bert_agents(j_agents, j_tags, seq_len, tokenizer, max_client_num, directory, pre_filename)
 
+
+def process_bert_agents(j_agents, j_tags, seq_len=128, tokenizer=None, max_client_num=1_000, directory='bert_clients', pre_filename='stackoverflow_0'):
     j_agents_x, part = [], 0
 
     def save_part():
