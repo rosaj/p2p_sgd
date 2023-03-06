@@ -15,7 +15,6 @@ from data.util import random_choice_with_seed
 # Joined code from two functions to save data as parsing to reduce memory footprint
 def parse_and_save_so_file(filename='stackoverflow_0.json', seq_len=12, tokenizer_path='data/ner/vocab.txt', max_client_num=1_000, directory='bert_clients'):
     json_data = load_stackoverflow_json('{}users/{}'.format(DATA_PATH, filename))
-    os.makedirs('data/stackoverflow/{}/'.format(directory), exist_ok=True)
     pre_filename = filename.split('.')[0]
     tokenizer = FullTokenizer(tokenizer_path, True)
 
@@ -24,6 +23,8 @@ def parse_and_save_so_file(filename='stackoverflow_0.json', seq_len=12, tokenize
 
 
 def process_bert_agents(j_agents, j_tags, seq_len=128, tokenizer=None, max_client_num=1_000, directory='bert_clients', pre_filename='stackoverflow_0'):
+    os.makedirs('data/stackoverflow/{}/'.format(directory), exist_ok=True)
+    
     j_agents_x, part = [], 0
 
     def save_part():
