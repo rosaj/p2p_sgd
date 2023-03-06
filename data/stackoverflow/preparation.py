@@ -14,8 +14,8 @@ import string
 from collections import Counter
 
 translator = str.maketrans(string.punctuation, ' ' * len(string.punctuation))  # map punctuation to space
-# TOKENIZER_PATH = 'data/stackoverflow/stackoverflow_tokenizer.pkl'
-TOKENIZER_PATH = 'data/reddit/reddit_stackoverflow_tokenizer.pkl'
+TOKENIZER_PATH = 'data/stackoverflow/stackoverflow_tokenizer.pkl'
+# TOKENIZER_PATH = 'data/reddit/reddit_stackoverflow_tokenizer.pkl'
 DATA_PATH = 'data/stackoverflow/'
 
 # CLEANR = re.compile('<.*?>')
@@ -104,11 +104,15 @@ def text_to_sequence(text_lines, text_tokenizer, max_len):
 
 
 def parse_clients(json_data, text_tokenizer, words_backwards, vocab_size, max_client_num, pre_filename, directory='clients'):
-
     j_agents, agents_tags = parse_json_agents(json_data)
+    process_agent_data(j_agents, agents_tags, text_tokenizer, words_backwards, vocab_size, max_client_num, pre_filename, directory)
+
+
+def process_agent_data(j_agents, agents_tags, text_tokenizer, seq_len, vocab_size, max_client_num, pre_filename, directory='clients'):
+
     j_clients = []
     for a_text, a_tags in tqdm(zip(j_agents, agents_tags)):
-        a_seq = text_to_sequence(a_text, text_tokenizer, words_backwards)
+        a_seq = text_to_sequence(a_text, text_tokenizer, seq_len)
         # a_x, a_y = a_seq[:, :-1], a_seq[:, -1]
         a_x, a_y = [], []
         for i in range(len(a_seq)):
@@ -123,7 +127,7 @@ def parse_clients(json_data, text_tokenizer, words_backwards, vocab_size, max_cl
     while True:
         save_cli = j_clients[prev_ind:min(cur_ind, len(j_clients))]
         save_to_file(save_cli, DATA_PATH + '{}/{}_{}WB_{}VS_{}CN_{}PT.h5'
-                     .format(directory, pre_filename, words_backwards, vocab_size, max_client_num, part))
+                     .format(directory, pre_filename, seq_len, vocab_size, max_client_num, part))
         if len(j_clients) <= cur_ind:
             break
         prev_ind = cur_ind
@@ -190,5 +194,5 @@ def parse_stackoverflow_file(stackoverflow_index=0, word_backwards=10, max_clien
 
 
 if __name__ == '__main__':
-    # create_tokenizer(10_000, ['stackoverflow_0.json'])
+    # create_tokenizer(10_000, [f'stackoverflow_{si}.json' for si in range(44)])
     parse_stackoverflow_file(0, max_client_num=10_000, directory='red_so_vocab_clients')
