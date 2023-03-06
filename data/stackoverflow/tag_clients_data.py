@@ -1,6 +1,6 @@
 from data.stackoverflow.preparation import load_stackoverflow_json, parse_json_agents, parse_clients, load_tokenizer, process_agent_data
 from data.stackoverflow.clients_data import load_client_datasets
-from data.stackoverflow.bert_clients_data import load_client_datasets as load_bert_client_datasets, process_bert_agents
+from data.stackoverflow.bert_clients_data import load_client_datasets as load_bert_client_datasets, process_bert_agents, FullTokenizer
 import numpy as np
 import os
 from data.util import random_choice_with_seed
@@ -10,7 +10,7 @@ def parse_bert_per_tag(file_indexes=range(44), seq_len=12, max_client_num=1_000,
     for d in tags:
         os.makedirs('data/stackoverflow/bert_clients_tag/{}/'.format(d), exist_ok=True)
 
-    tokenizer = load_tokenizer()
+    tokenizer = FullTokenizer('data/ner/vocab.txt', True)
 
     agents = {cat: [] for cat in tags}
     for fi in file_indexes:
