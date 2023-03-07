@@ -24,7 +24,7 @@ def parse_and_save_so_file(filename='stackoverflow_0.json', seq_len=12, tokenize
 
 def process_bert_agents(j_agents, j_tags, seq_len=128, tokenizer=None, max_client_num=1_000, directory='bert_clients', pre_filename='stackoverflow_0'):
     os.makedirs('data/stackoverflow/{}/'.format(directory), exist_ok=True)
-    
+
     j_agents_x, part = [], 0
 
     def save_part():
@@ -55,7 +55,7 @@ def save_to_file(data_clients, filename):
         hf.create_dataset('{}-label_id'.format(i), data=[f.label_id for f in c], dtype=np.int32)
         hf.create_dataset('{}-valid_ids'.format(i), data=[f.valid_ids for f in c], dtype=np.uint8)
         hf.create_dataset('{}-label_mask'.format(i), data=[f.label_mask for f in c], dtype=np.uint8)
-        hf.create_dataset('{}-tags'.format(i), data=agent[1], dtype=str)
+        hf.create_dataset('{}-tags'.format(i), data=agent[1])
     hf.close()
 
 
