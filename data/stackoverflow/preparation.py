@@ -166,8 +166,10 @@ def load_clients(client_num, word_backwards=10, vocab_size=10_002, max_client_nu
         return DATA_PATH + '{}/clients_stackoverflow_{}_{}WB_{}VS_{}CN_{}PT.h5'\
             .format(directory, stackoverflow_index, word_backwards, vocab_size, max_client_num, part)
 
-    while len(clients) < client_num:
+    while len(clients) < client_num or client_num < 0:
         # print("Loading", parsed_name())
+        if client_num < 0 and not os.path.exists(parsed_name()):
+            return clients
         file_clients = load_from_file(parsed_name())
         part += 1
         if not os.path.exists(parsed_name()):

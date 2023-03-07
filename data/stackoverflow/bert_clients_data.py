@@ -93,8 +93,10 @@ def load_clients(client_num, seq_len=12, max_client_num=1_000, directory='bert_c
         return 'data/stackoverflow/{}/clients_stackoverflow_{}_{}SL_{}CN_{}PT.h5'\
             .format(directory, file_index, seq_len, max_client_num, part)
 
-    while len(clients) < client_num:
+    while len(clients) < client_num or client_num < 0:
         # print("Loading", parsed_name())
+        if client_num < 0 and not os.path.exists(parsed_name()):
+            return clients
         file_clients = load_from_file(parsed_name())
         part += 1
         if not os.path.exists(parsed_name()):
