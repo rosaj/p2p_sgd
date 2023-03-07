@@ -29,11 +29,11 @@ def exp_1():
                                      'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_22-02-2023_12_30',
                                      'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_22-02-2023_14_31'],
 
-                'Acc': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-02-2023_23_11',
-                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_21-02-2023_15_59',
-                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_21-02-2023_18_00',
-                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_21-02-2023_20_13',
-                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_21-02-2023_22_23'],
+                'Acc': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_08_46',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_10_55',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_12_58',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_15_07',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_17_17'],
 
                 # 'KMeans': ['conns/exp1/small/P2PAgent_100A_100E_50B_kmeans(directed-3)_19-02-2023_00_32'],
 
@@ -70,13 +70,11 @@ def exp_1():
                                      'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_22-02-2023_12_30',
                                      'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_22-02-2023_14_31'],
 
-                'Acc': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-02-2023_23_11',
-                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_21-02-2023_15_59',
-                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_21-02-2023_18_00',
-                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_21-02-2023_20_13',
-                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_21-02-2023_22_23'],
-
-                # 'KMeans': ['conns/exp1/small/P2PAgent_100A_100E_50B_kmeans(directed-3)_19-02-2023_00_32'],
+                'Acc': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_08_46',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_10_55',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_12_58',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_15_07',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_17_17'],
 
                 'AUCCCR': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_16_10',
                            'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_21-02-2023_07_59',
@@ -98,16 +96,29 @@ def exp_1():
                          'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_20-02-2023_19_50',
                          'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_20-02-2023_22_32'],
 
-                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_19-02-2023_06_27'],
-                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_19-02-2023_06_27'],
-                'Acc': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_19-02-2023_07_37'],
-                # 'KMeans': ['conns/exp1/big/P2PAgent_100A_100E_50B_kmeans(directed-3)_19-02-2023_06_40'],
+                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_19-02-2023_06_27',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_27-02-2023_22_53',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_28-02-2023_11_11',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_28-02-2023_16_32',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_01-03-2023_03_29'],
+
+                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_19-02-2023_06_27',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_18_14',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_23_29',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_03-03-2023_05_02',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_03-03-2023_10_56'],
+
+                'Acc': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_08_46',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_20_20',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_02_51',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_17_39',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_00_51'],
+
                 'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_19_14',
-                          #  'conns/exp1/big/',
-                          #  'conns/exp1/big',
-                          #  'conns/exp1/big',
-                          #  'conns/exp1/big',]
-                           ],
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_12_01',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_17_49',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_23_35',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_24-02-2023_05_40'],
 
                 # 'AUCCCR-clusters': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_20-02-2023_02_58'],
             }
@@ -123,17 +134,30 @@ def exp_1():
                          'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_20-02-2023_22_30',
                          'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_21-02-2023_01_28'],
 
-                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_19-02-2023_06_27'],
-                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_19-02-2023_06_27'],
-                'Acc': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_19-02-2023_07_37'],
-                # 'KMeans': ['conns/exp1/big/P2PAgent_100A_100E_50B_kmeans(directed-3)_19-02-2023_06_40'],
+                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_19-02-2023_06_27',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_27-02-2023_22_53',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_28-02-2023_11_11',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_28-02-2023_16_32',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_01-03-2023_03_29'],
+
+                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_19-02-2023_06_27',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_18_14',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_23_29',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_03-03-2023_05_02',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_03-03-2023_10_56'],
+
+                'Acc': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_08_46',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_20_20',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_02_51',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_17_39',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_00_51'],
 
                 'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_19_14',
-                          #  'conns/exp1/big/',
-                          #  'conns/exp1/big',
-                          #  'conns/exp1/big',
-                          #  'conns/exp1/big',]
-                           ],
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_12_01',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_17_49',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_23_35',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_24-02-2023_05_40'],
+
                 # 'AUCCCR-clusters': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_20-02-2023_02_58'],
             }
         },
@@ -143,11 +167,35 @@ def exp_1():
             'colors': colors,
             'metric': 'reddit-nwp-leagueoflegends->test_model-sparse_categorical_accuracy',
             'viz': {
-                'Solo': ['conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_20-02-2023_07_46'],
-                'Sparse': ['conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_20-02-2023_11_40'],
-                'Sparse-clustered': ['conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_20-02-2023_16_21'],
-                'Acc': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_20-02-2023_21_58'],
-                'AUCCCR': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_09_42'],
+                'Solo': ['conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_20-02-2023_07_46',
+                         'conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_23-02-2023_11_37',
+                         'conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_23-02-2023_13_06',
+                         'conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_23-02-2023_14_39',
+                         'conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_23-02-2023_16_07'],
+
+                'Sparse': ['conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_20-02-2023_11_40',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_23-02-2023_20_14',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_23-02-2023_23_43',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_24-02-2023_03_27',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_24-02-2023_07_08'],
+
+                'Sparse-clustered': ['conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_20-02-2023_16_21',
+                                     'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_24-02-2023_10_43',
+                                     'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_24-02-2023_14_46',
+                                     'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_24-02-2023_18_18',
+                                     'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_24-02-2023_22_49'],
+
+                'Acc': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_01_10',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_06_25',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_11_43',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_17_19',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_15_16'],
+
+                'AUCCCR': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_09_42',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_25-02-2023_18_02',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_25-02-2023_21_36',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_26-02-2023_01_32',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_26-02-2023_05_25'],
             }
         },
         'BERT - Reddit small (politics)': {
@@ -155,11 +203,35 @@ def exp_1():
             'colors': colors,
             'metric': 'reddit-nwp-politics->test_model-sparse_categorical_accuracy',
             'viz': {
-                'Solo': ['conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_20-02-2023_07_49'],
-                'Sparse': ['conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_20-02-2023_11_40'],
-                'Sparse-clustered': ['conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_20-02-2023_16_21'],
-                'Acc': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_20-02-2023_21_58'],
-                'AUCCCR': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_09_42'],
+                'Solo': ['conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_20-02-2023_07_49',
+                         'conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_23-02-2023_11_43',
+                         'conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_23-02-2023_13_15',
+                         'conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_23-02-2023_14_50',
+                         'conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_23-02-2023_16_27'],
+
+                'Sparse': ['conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_20-02-2023_11_40',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_23-02-2023_20_14',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_23-02-2023_23_43',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_24-02-2023_03_27',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_sparse(directed-3)_24-02-2023_07_08'],
+
+                'Sparse-clustered': ['conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_20-02-2023_16_21',
+                                     'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_24-02-2023_10_43',
+                                     'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_24-02-2023_14_46',
+                                     'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_24-02-2023_18_18',
+                                     'conns/exp1/small/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_24-02-2023_22_49'],
+
+                'Acc': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_01_10',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_06_25',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_11_43',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_17_19',
+                        'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_15_16'],
+
+                'AUCCCR': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_09_42',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_25-02-2023_18_02',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_25-02-2023_21_36',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_26-02-2023_01_32',
+                           'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_26-02-2023_05_25'],
             }
         },
         'BERT - Reddit big (leagueoflegends)': {
@@ -167,10 +239,30 @@ def exp_1():
             'colors': colors,
             'metric': 'reddit-nwp-leagueoflegends->test_model-sparse_categorical_accuracy',
             'viz': {
-                'Solo': ['conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_19-02-2023_22_37'],
-                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_21-02-2023_07_43'],
-                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_21-02-2023_17_30'],
-                'Acc': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_22-02-2023_05_28'],
+                'Solo': ['conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_19-02-2023_22_37',
+                         'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_26-02-2023_21_47',
+                         'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_27-02-2023_02_14',
+                         'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_27-02-2023_06_29',
+                         'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_27-02-2023_10_59'],
+
+                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_21-02-2023_07_43',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_06-03-2023_07_29',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_06-03-2023_18_23',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_07-03-2023_04_37',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_07-03-2023_16_14'],
+
+                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_21-02-2023_17_30',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_28-02-2023_17_57',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_01_00',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_10_42',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_22_32'],
+
+                'Acc': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_05-03-2023_20_40',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_03-03-2023_13_19',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_04-03-2023_03_30',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_04-03-2023_16_28',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_05-03-2023_06_57'],
+
                 'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_00_25'],
             }
         },
@@ -179,10 +271,30 @@ def exp_1():
             'colors': colors,
             'metric': 'reddit-nwp-politics->test_model-sparse_categorical_accuracy',
             'viz': {
-                'Solo': ['conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_20-02-2023_03_04'],
-                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_21-02-2023_07_43'],
-                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_21-02-2023_17_30'],
-                'Acc': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_22-02-2023_05_28'],
+                'Solo': ['conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_20-02-2023_03_04',
+                         'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_26-02-2023_22_11',
+                         'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_27-02-2023_04_30',
+                         'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_27-02-2023_09_15',
+                         'conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_27-02-2023_15_27'],
+
+                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_21-02-2023_07_43',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_06-03-2023_07_29',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_06-03-2023_18_23',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_07-03-2023_04_37',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_07-03-2023_16_14'],
+
+                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_21-02-2023_17_30',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_28-02-2023_17_57',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_01_00',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_10_42',
+                                     'conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_02-03-2023_22_32'],
+
+                'Acc': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_05-03-2023_20_40',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_03-03-2023_13_19',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_04-03-2023_03_30',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_04-03-2023_16_28',
+                        'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_05-03-2023_06_57'],
+
                 'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_00_25'],
             }
         },
@@ -242,56 +354,11 @@ def neigh():
     plot_graph(GraphManager('sparse',  [DummyNode(_) for _ in range(100)], directed=True, num_neighbors=3))
     plot_graph(GraphManager('sparse_clusters',  [DummyNode(_) for _ in range(100)], directed=True, num_neighbors=2, cluster_conns=1))
 
-    plot_graph(mx=np.array(read_graph('conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_16_10')))
-    plot_graph(mx=np.array(read_graph('conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_20_34')))
+    plot_graph(mx=np.array(read_graph('conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_16_10')))  # AUCCCR
+    plot_graph(mx=np.array(read_graph('conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_20_34')))  # AUCCCR clusters
 
-    plot_graph(mx=np.array(read_graph('conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-02-2023_23_11')))
-
-    plot_graph(mx=np.array(read_graph('conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_22-02-2023_05_28')))
+    plot_graph(mx=np.array(read_graph('conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_08_46')))  # Accuracy connections
 
 
 if __name__ == '__main__':
     exp_1()
-
-
-# Single run
-# Reddit small (leagueoflegends)
-# 	- Solo 7.1 Avg-Agent-Max 10.5
-# 	- Sparse 7.37 Avg-Agent-Max 10.21
-# 	- Sparse-clustered 7.15 Avg-Agent-Max 10.13
-# 	- Acc 7.14 Avg-Agent-Max 10.09
-# Reddit small (politics)
-# 	- Solo 6.91 Avg-Agent-Max 10.03
-# 	- Sparse 7.23 Avg-Agent-Max 10.17
-# 	- Sparse-clustered 7.4 Avg-Agent-Max 10.28
-# 	- Acc 7.16 Avg-Agent-Max 10.44
-# Reddit big (leagueoflegends)
-# 	- Solo 8.8 Avg-Agent-Max 10.43
-# 	- Sparse 9.39 Avg-Agent-Max 10.93
-# 	- Sparse-clustered 9.09 Avg-Agent-Max 10.66
-# 	- Acc 9.43 Avg-Agent-Max 10.94
-# Reddit big (politics)
-# 	- Solo 10.22 Avg-Agent-Max 11.8
-# 	- Sparse 10.34 Avg-Agent-Max 11.85
-# 	- Sparse-clustered 10.14 Avg-Agent-Max 11.77
-# 	- Acc 10.28 Avg-Agent-Max 12.03
-# BERT - Reddit small (leagueoflegends)
-# 	- Solo 7.51 Avg-Agent-Max 9.35
-# 	- Sparse 7.98 Avg-Agent-Max 9.55
-# 	- Sparse-clustered 8.09 Avg-Agent-Max 9.79
-# 	- Acc 8.2 Avg-Agent-Max 9.81
-# BERT - Reddit small (politics)
-# 	- Solo 6.73 Avg-Agent-Max 9.19
-# 	- Sparse 7.24 Avg-Agent-Max 9.52
-# 	- Sparse-clustered 7.35 Avg-Agent-Max 9.51
-# 	- Acc 7.29 Avg-Agent-Max 9.43
-# BERT - Reddit big (leagueoflegends)
-# 	- Solo 10.01 Avg-Agent-Max 11.51
-# 	- Sparse 10.71 Avg-Agent-Max 11.97
-# 	- Sparse-clustered 10.66 Avg-Agent-Max 11.93
-# 	- Acc 10.8 Avg-Agent-Max 12.1
-# BERT - Reddit big (politics)
-# 	- Solo 12.13 Avg-Agent-Max 13.67
-# 	- Sparse 12.79 Avg-Agent-Max 13.98
-# 	- Sparse-clustered 12.46 Avg-Agent-Max 13.7
-# 	- Acc 12.71 Avg-Agent-Max 13.86
