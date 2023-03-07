@@ -6,7 +6,7 @@ import os
 from data.util import random_choice_with_seed
 
 
-def parse_bert_per_tag(file_indexes=range(44), seq_len=12, max_client_num=10_000, pct=.9, tags=['java', 'javascript']):
+def parse_bert_per_tag(file_indexes=range(44), seq_len=12, max_client_num=1_000, pct=.9, tags=['java', 'javascript']):
     for d in tags:
         os.makedirs('data/stackoverflow/bert_clients_tag/{}/'.format(d), exist_ok=True)
 
@@ -36,7 +36,7 @@ def filter_per_tag(agents, agent_texts, agents_tags, pct=.9, tags=['java', 'java
                 agents[tag].append([agent_texts[i].copy(), agents_tags[i].copy()])
 
 
-def parse_per_tag(file_indexes=range(44), seq_len=10, max_client_num=10_000, pct=.9, tags=['java', 'javascript']):
+def parse_per_tag(file_indexes=range(44), seq_len=10, max_client_num=1_000, pct=.9, tags=['java', 'javascript']):
     for d in tags:
         os.makedirs('data/stackoverflow/clients_tag/{}/'.format(d), exist_ok=True)
 
@@ -70,10 +70,10 @@ def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 2
     }
     for tag, n_cli in zip(tags, num_clients):
         if not is_bert:
-            train, val, test, metadata = load_client_datasets(num_clients=2001, directory='clients_tag/{}'.format(tag))
+            train, val, test, metadata = load_client_datasets(num_clients=2001, max_client_num=1_000, directory='clients_tag/{}'.format(tag))
             choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
         else:
-            train, val, test, metadata = load_bert_client_datasets(num_clients=2001, train_examples_range=train_examples_range, seed=-1, directory='bert_clients_tag/{}'.format(tag))
+            train, val, test, metadata = load_bert_client_datasets(num_clients=2001, max_client_num=1_000, train_examples_range=train_examples_range, seed=-1, directory='bert_clients_tag/{}'.format(tag))
             choices = list(range(len(train)))
 
         cli_ind = random_choice_with_seed(choices, n_cli, seed)

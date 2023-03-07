@@ -3,8 +3,8 @@ import numpy as np
 from data.util import random_choice_with_seed
 
 
-def load_client_datasets(num_clients, directory='clients'):
-    clients = load_clients(num_clients, directory=directory)
+def load_client_datasets(num_clients, max_client_num=10_000, directory='clients'):
+    clients = load_clients(num_clients, max_client_num=max_client_num, directory=directory)
     train, val, test, tags = [], [], [], []
     for c_id in range(len(clients)):
         c = clients[c_id]
@@ -16,8 +16,8 @@ def load_client_datasets(num_clients, directory='clients'):
     return train, val, test, tags
 
 
-def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 20_000), directory='clients'):
-    train, val, test, tags = load_client_datasets(25_000, directory=directory)
+def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 20_000), max_client_num=10_000, directory='clients'):
+    train, val, test, tags = load_client_datasets(25_000, max_client_num=max_client_num, directory=directory)
     choices = [i for i, tr in enumerate(train) if train_examples_range[0] < len(tr[1]) <= train_examples_range[1]]
     client_ids = random_choice_with_seed(choices, num_clients, seed)
     data = {

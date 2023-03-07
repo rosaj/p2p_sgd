@@ -104,8 +104,8 @@ def load_clients(client_num, seq_len=12, max_client_num=1_000, directory='bert_c
     return clients
 
 
-def load_client_datasets(num_clients=100, seq_len=12, seed=608361, train_examples_range=(700, 20_000), directory='bert_clients'):
-    clients = load_clients(num_clients, seq_len, directory=directory)
+def load_client_datasets(num_clients=100, seq_len=12, seed=608361, train_examples_range=(700, 20_000), max_client_num=1_000, directory='bert_clients'):
+    clients = load_clients(num_clients, seq_len, max_client_num=max_client_num, directory=directory)
     train, val, test, tags = [], [], [], []
     for c_id in range(len(clients)):
         c = clients[c_id][0]
