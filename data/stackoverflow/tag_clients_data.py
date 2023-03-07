@@ -6,7 +6,7 @@ import os
 from data.util import random_choice_with_seed
 
 
-def parse_bert_per_tag(file_indexes=range(44), seq_len=12, max_client_num=1_000, pct=.9, tags=['java', 'javascript']):
+def parse_bert_per_tag(file_indexes=range(44), seq_len=12, max_client_num=10_000, pct=.9, tags=['java', 'javascript']):
     for d in tags:
         os.makedirs('data/stackoverflow/bert_clients_tag/{}/'.format(d), exist_ok=True)
 
@@ -36,7 +36,7 @@ def filter_per_tag(agents, agent_texts, agents_tags, pct=.9, tags=['java', 'java
                 agents[tag].append([agent_texts[i].copy(), agents_tags[i].copy()])
 
 
-def parse_per_tag(file_indexes=range(44), seq_len=10, max_client_num=1_000, pct=.9, tags=['java', 'javascript']):
+def parse_per_tag(file_indexes=range(44), seq_len=10, max_client_num=10_000, pct=.9, tags=['java', 'javascript']):
     for d in tags:
         os.makedirs('data/stackoverflow/clients_tag/{}/'.format(d), exist_ok=True)
 
