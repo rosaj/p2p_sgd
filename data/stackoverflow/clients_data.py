@@ -12,7 +12,7 @@ def load_client_datasets(num_clients, directory='clients'):
         train.append([c[0][:int(c_len * 0.6)], c[1][:int(c_len * 0.6)]])
         val.append([c[0][int(c_len * 0.6):int(c_len * 0.8)], c[1][int(c_len * 0.6):int(c_len * 0.8)]])
         test.append([c[0][int(c_len * 0.8):], c[1][int(c_len * 0.8):]])
-        tags.append([d.decode() for d in c[2]])
+        tags.append([item.decode() for sublist in c[2] for item in sublist])
     return train, val, test, tags
 
 

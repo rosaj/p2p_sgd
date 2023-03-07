@@ -55,7 +55,7 @@ def save_to_file(data_clients, filename):
         hf.create_dataset('{}-label_id'.format(i), data=[f.label_id for f in c], dtype=np.int32)
         hf.create_dataset('{}-valid_ids'.format(i), data=[f.valid_ids for f in c], dtype=np.uint8)
         hf.create_dataset('{}-label_mask'.format(i), data=[f.label_mask for f in c], dtype=np.uint8)
-        hf.create_dataset('{}-tags'.format(i), data=agent[1])
+        hf.create_dataset('{}-tags'.format(i), data=[item for sublist in agent[1] for item in sublist])
     hf.close()
 
 
