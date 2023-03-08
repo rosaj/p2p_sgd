@@ -140,10 +140,14 @@ def create_tokenizer(vocab_size, train_filenames_list):
     for filename in train_filenames_list:
         j_data = load_stackoverflow_json('{}users/{}'.format(DATA_PATH, filename))
         agents, _ = parse_json_agents(j_data)
+        for a in agents:
+            c.update((' '.join(a)).split())
+        del j_data, agents, _
+        """
         del j_data
-        c.update(''.join([''.join(a) for a in agents]).split())
+        c.update(' '.join([' '.join(a) for a in agents]).split())
         del agents, _
-
+        """
     # print(c.most_common(vocab_size))
     words = np.array(c.most_common(vocab_size))[:, 0]
     tokenizer = Tokenizer(oov_token='UNK')

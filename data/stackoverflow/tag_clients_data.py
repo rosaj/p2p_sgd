@@ -6,7 +6,7 @@ import os
 from data.util import random_choice_with_seed
 
 
-def parse_bert_per_tag(file_indexes=range(44), seq_len=12, max_client_num=1_000, pct=.9, tags=['java', 'javascript']):
+def parse_bert_per_tag(file_indexes=range(6), seq_len=12, max_client_num=1_000, pct=.9, tags=['python', 'javascript']):
     for d in tags:
         os.makedirs('data/stackoverflow/bert_clients_tag/{}/'.format(d), exist_ok=True)
 
@@ -25,7 +25,7 @@ def parse_bert_per_tag(file_indexes=range(44), seq_len=12, max_client_num=1_000,
                             max_client_num, directory=f'bert_clients_tag/{tag_name}')
 
 
-def filter_per_tag(agents, agent_texts, agents_tags, pct=.9, tags=['java', 'javascript']):
+def filter_per_tag(agents, agent_texts, agents_tags, pct=.9, tags=['python', 'javascript']):
 
     for i, tags_y in enumerate(agents_tags):
         c_train = [tag in tags_y for tag in tags]
@@ -36,7 +36,7 @@ def filter_per_tag(agents, agent_texts, agents_tags, pct=.9, tags=['java', 'java
                 agents[tag].append([agent_texts[i].copy(), agents_tags[i].copy()])
 
 
-def parse_per_tag(file_indexes=range(44), seq_len=10, max_client_num=1_000, pct=.9, tags=['java', 'javascript']):
+def parse_per_tag(file_indexes=range(6), seq_len=10, max_client_num=1_000, pct=.9, tags=['python', 'javascript']):
     for d in tags:
         os.makedirs('data/stackoverflow/clients_tag/{}/'.format(d), exist_ok=True)
 
@@ -56,7 +56,7 @@ def parse_per_tag(file_indexes=range(44), seq_len=10, max_client_num=1_000, pct=
                            pre_filename=f'clients_stackoverflow_0', directory=f'clients_tag/{tag_name}')
 
 
-def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 20_000), tags=['java', 'javascript'], is_bert=False):
+def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 20_000), tags=['python', 'javascript'], is_bert=False):
     if not isinstance(num_clients, list) and not isinstance(num_clients, tuple):
         num_clients = int(num_clients / len(tags))
         num_clients = [num_clients] * len(tags)
