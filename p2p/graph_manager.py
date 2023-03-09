@@ -168,13 +168,14 @@ def start_acc_conns(gm):
     adj_mx = np.zeros((len(nodes), len(nodes)))
     prob = np.zeros(adj_mx.shape)
 
+    data = gm.kwargs.get('data', 'train')
     for i, ni in enumerate(nodes):
         neigh_i = []
         for j, nj in enumerate(nodes):
             if i == j:
                 neigh_i.append(0)
                 continue
-            acc_i = list(ni.eval_model(ni.model, nj.train).values())[0]
+            acc_i = list(ni.eval_model(ni.model, nj.train if data == 'train' else nj.val).values())[0]
             neigh_i.append(acc_i)
             # acc_j = list(ni.eval_model(nj.model, nj.train).values())[0]
             # print(i, j, acc_i >= acc_j, acc_i, acc_j)
