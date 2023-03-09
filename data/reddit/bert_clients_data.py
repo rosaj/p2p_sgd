@@ -6,6 +6,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 import tensorflow as tf
 from models.zoo.bert.tokenization import FullTokenizer
 import h5py
+from data.util import random_choice_with_seed
 
 
 class InputFeatures(object):
@@ -270,8 +271,10 @@ def load_clients(data_type, client_num, seq_len=128, max_client_num=1_000, direc
         return 'data/reddit/{}/clients_reddit_{}_{}_{}SL_{}CN_{}PT.h5'\
             .format(directory, reddit_index, data_type, seq_len, max_client_num, part)
 
-    while len(clients) < client_num:
+    while len(clients) < client_num or client_num < 0:
         # print("Loading", parsed_name())
+        if client_num < 0 and not os.path.exists(parsed_name()):
+            return clients
         file_clients = load_from_file(parsed_name())
         part += 1
         if not os.path.exists(parsed_name()):
@@ -306,15 +309,8 @@ def load_client_datasets(num_clients=1_000, seq_len=12, seed=608361, train_examp
         metadata.append(subreddits)
 
     choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
-    if seed == -1:
-        clients_ids = choices
-    elif seed is not None:
-        from numpy.random import MT19937
-        from numpy.random import RandomState, SeedSequence
-        rs = RandomState(MT19937(SeedSequence(seed)))
-        clients_ids = rs.choice(choices, size=num_clients, replace=False)
-    else:
-        clients_ids = np.random.choice(choices, size=num_clients, replace=False)
+
+    clients_ids = random_choice_with_seed(choices, num_clients, seed)
 
     train = [unpack_features(el[0]) for ei, el in enumerate(train) if ei in clients_ids]
     val = [unpack_features(el[0]) for ei, el in enumerate(val) if ei in clients_ids]

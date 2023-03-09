@@ -162,8 +162,10 @@ def load_clients(data_type, client_num, seq_len=10, vocab_size=10_002, max_clien
         return DATA_PATH + '{}/clients_reddit_{}_{}_{}WB_{}VS_{}CN_{}PT.h5'\
             .format(directory, reddit_index, data_type, seq_len, vocab_size, max_client_num, part)
 
-    while len(clients) < client_num:
+    while len(clients) < client_num or client_num < 0:
         # print("Loading", parsed_name())
+        if client_num < 0 and not os.path.exists(parsed_name()):
+            return clients
         file_clients = load_from_file(parsed_name())
         part += 1
         if not os.path.exists(parsed_name()):

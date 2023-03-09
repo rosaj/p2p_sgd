@@ -5,6 +5,7 @@ from data.reddit.bert_clients_data import parse_bert_agents, process_bert_agents
 # from collections import Counter
 import numpy as np
 import os
+from data.util import random_choice_with_seed
 
 
 def parse_bert_per_subreddit(reddit_indexes=range(21), seq_len=12, max_client_num=1_000, pct=.9, categories=['leagueoflegends', 'politics']):
@@ -132,46 +133,21 @@ def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 2
     }
     for cat, n_cli in zip(categories, num_clients):
         if not is_bert:
-            train, val, test, metadata = load_client_datasets(num_clients=2001, directory='clients_category/{}'.format(cat))
+            train, val, test, metadata = load_client_datasets(num_clients=-1, directory='clients_category/{}'.format(cat))
             choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
         else:
-            train, val, test, metadata = load_bert_client_datasets(num_clients=2001, train_examples_range=train_examples_range, seed=-1, directory='bert_clients_category/{}'.format(cat))
+            train, val, test, metadata = load_bert_client_datasets(num_clients=-1, train_examples_range=train_examples_range, seed=-1, directory='bert_clients_category/{}'.format(cat))
             choices = list(range(len(train)))
 
-        indices = []
-        if n_cli < 1:
-            clients_ids = choices
-        else:
-            if seed is not None:
-                from numpy.random import MT19937
-                from numpy.random import RandomState, SeedSequence
-                rs = RandomState(MT19937(SeedSequence(seed)))
-                clients_ids = rs.choice(choices, size=n_cli, replace=False)
-            else:
-                clients_ids = np.random.choice(choices, size=n_cli, replace=False)
-        indices.append(clients_ids)
-
-        for cli_ind in indices:
-            data["train"].extend([el for ei, el in enumerate(train) if ei in cli_ind])
-            data["val"].extend([el for ei, el in enumerate(val) if ei in cli_ind])
-            data["test"].extend([el for ei, el in enumerate(test) if ei in cli_ind])
-            metadata_subreddits = [el for ei, el in enumerate(metadata) if ei in cli_ind]
-            data["metadata-subreddits"].extend(metadata_subreddits)
-            dataset_names = ['reddit-nwp-{}'.format(np.array(categories)[np.array([cat in mt_sr for cat in categories])][0])
-                             for mt_sr in metadata_subreddits]
-            data["dataset_name"].extend(dataset_names)
-
-    """
-    metadata_subreddits = [el for ei, el in enumerate(metadata) if ei in indices]
-    data = {
-        "train": [el for ei, el in enumerate(train) if ei in indices],
-        "val": [el for ei, el in enumerate(val) if ei in indices],
-        "test": [el for ei, el in enumerate(test) if ei in indices],
-        "metadata-subreddits": metadata_subreddits,
-        "dataset_name": ['reddit-nwp-{}'.format(np.array(categories)[np.array([cat in mt_sr for cat in categories])][0]) for mt_sr in metadata_subreddits]
-        # "dataset_name": ['reddit-nwp'] * len(indices)
-    }
-    """
+        cli_ind = random_choice_with_seed(choices, n_cli, seed)
+        data["train"].extend([el for ei, el in enumerate(train) if ei in cli_ind])
+        data["val"].extend([el for ei, el in enumerate(val) if ei in cli_ind])
+        data["test"].extend([el for ei, el in enumerate(test) if ei in cli_ind])
+        metadata_subreddits = [el for ei, el in enumerate(metadata) if ei in cli_ind]
+        data["metadata-subreddits"].extend(metadata_subreddits)
+        dataset_names = ['reddit-nwp-{}'.format(np.array(categories)[np.array([cat in mt_sr for cat in categories])][0])
+                         for mt_sr in metadata_subreddits]
+        data["dataset_name"].extend(dataset_names)
     return data
 
 
