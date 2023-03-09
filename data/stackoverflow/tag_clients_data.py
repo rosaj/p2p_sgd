@@ -4,6 +4,7 @@ from data.stackoverflow.bert_clients_data import load_client_datasets as load_be
 import numpy as np
 import os
 from data.util import random_choice_with_seed
+from collections import Counter
 
 
 def parse_bert_per_tag(file_indexes=range(6), seq_len=12, max_client_num=1_000, pct=.9, tags=['python', 'javascript']):
@@ -20,6 +21,8 @@ def parse_bert_per_tag(file_indexes=range(6), seq_len=12, max_client_num=1_000, 
 
         filter_per_tag(agents, agent_texts, agents_tags, pct, tags)
 
+    limit_tag_count(agents)
+
     for tag_name, tag_agents in agents.items():
         process_bert_agents([el[0] for el in tag_agents], [el[1] for el in tag_agents], seq_len, tokenizer,
                             max_client_num, directory=f'bert_clients_tag/{tag_name}')
@@ -28,12 +31,30 @@ def parse_bert_per_tag(file_indexes=range(6), seq_len=12, max_client_num=1_000, 
 def filter_per_tag(agents, agent_texts, agents_tags, pct=.9, tags=['python', 'javascript']):
 
     for i, tags_y in enumerate(agents_tags):
+        m = [tag.split('|')[0] for tag in tags_y]
+        tag, count = Counter(m).most_common()[0]
+        if tag in tags:
+            a_txt, a_tag = agent_texts[i].copy(), agents_tags[i].copy()
+            a_txt = [txt for txt, m_tag in zip(a_txt, m) if m_tag == tag]
+            a_tag = [t for t, m_tag in zip(a_tag, m) if m_tag == tag]
+            agents[tag].append([a_txt, a_tag])
+    """
+    for i, tags_y in enumerate(agents_tags):
         c_train = [tag in tags_y for tag in tags]
         # exclusively can contain only one tag
         if sum(c_train) == 1:
             tag = np.array(tags)[np.array(c_train)][0]
             if tags_y.count(tag) / len(tags_y) >= pct:
                 agents[tag].append([agent_texts[i].copy(), agents_tags[i].copy()])
+    # """
+
+
+def limit_tag_count(agents, max_agents=10_000):
+    for k in agents.keys():
+        v = agents[k]
+        lens = [len(a[1]) for a in v]
+        ind = np.argsort(lens)[-max_agents:]
+        agents[k] = [el for ei, el in enumerate(v) if ei in ind]
 
 
 def parse_per_tag(file_indexes=range(6), seq_len=10, max_client_num=1_000, pct=.9, tags=['python', 'javascript']):
@@ -49,6 +70,8 @@ def parse_per_tag(file_indexes=range(6), seq_len=10, max_client_num=1_000, pct=.
         del json_data
 
         filter_per_tag(agents, agent_texts, agents_tags, pct, tags)
+
+    limit_tag_count(agents)
 
     for tag_name, tag_agents in agents.items():
         process_agent_data([el[0] for el in tag_agents], [el[1] for el in tag_agents], tokenizer, seq_len,
