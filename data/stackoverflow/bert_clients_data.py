@@ -106,6 +106,32 @@ def load_clients(client_num, seq_len=12, max_client_num=1_000, directory='bert_c
     return clients
 
 
+def load_json_client_datasets(num_clients=100, seq_len=12, seed=608361, train_examples_range=(700, 20_000), directory='bert_clients'):
+    tokenizer = FullTokenizer('data/ner/vocab.txt', True)
+
+    data = load_stackoverflow_json(f'data/stackoverflow/{directory}/stackoverflow_0.json')
+    agents = data['clients_data']
+
+    def train_len(agent):
+        return sum([len(at) for at in agent[0]]) * 0.6
+
+    choices = [i for i, a in enumerate(agents) if train_examples_range[0] <= train_len(a) <= train_examples_range[1]]
+    client_ids = random_choice_with_seed(choices, num_clients, seed)
+
+    agents = [a for i, a in enumerate(agents) if i in client_ids]
+    train, val, test, tags = [], [], [], []
+    for a, t in agents:
+        paragraphs = [clean_text(p) for p in a]
+        features = convert_nwp_examples_to_features(paragraphs, seq_len=seq_len, tokenizer=tokenizer)
+        f_len = len(features)
+        train.append(unpack_features(features[:int(f_len * 0.6)]))
+        val.append(unpack_features(features[int(f_len * 0.6): int(f_len * 0.8)]))
+        test.append(unpack_features(features[int(f_len * 0.8):]))
+        tags.append(t)
+
+    return train, val, test, tags
+
+
 def load_client_datasets(num_clients=100, seq_len=12, seed=608361, train_examples_range=(700, 20_000), max_client_num=1_000, directory='bert_clients'):
     clients = load_clients(num_clients, seq_len, max_client_num=max_client_num, directory=directory)
     train, val, test, tags = [], [], [], []
