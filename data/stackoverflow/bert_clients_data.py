@@ -109,7 +109,7 @@ def load_clients(client_num, seq_len=12, max_client_num=1_000, directory='bert_c
 def load_json_client_datasets(num_clients=100, seq_len=12, seed=608361, train_examples_range=(700, 20_000), directory='bert_clients'):
     tokenizer = FullTokenizer('data/ner/vocab.txt', True)
 
-    data = load_stackoverflow_json(f'data/stackoverflow/{directory}/stackoverflow_0.json')
+    data = load_stackoverflow_json(f'data/stackoverflow/{directory}/stackoverflow_0.json', verbose=False)
     agents = data['clients_data']
 
     def train_len(agent):

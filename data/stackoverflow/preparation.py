@@ -22,10 +22,11 @@ DATA_PATH = 'data/stackoverflow/'
 CLEANR = re.compile('<.*?>|&([a-z0-9]+|#[0-9]{1,6}|#x[0-9a-f]{1,6});')
 
 
-def load_stackoverflow_json(json_path):
+def load_stackoverflow_json(json_path, verbose=True):
     with open(json_path, 'r') as inf:
         cdata = json.load(inf)
-    print('load_stackoverflow_json', json_path)
+    if verbose:
+        print('load_stackoverflow_json', json_path)
     return cdata
 
 
