@@ -113,7 +113,7 @@ def load_json_client_datasets(num_clients=100, seq_len=12, seed=608361, train_ex
     agents = data['clients_data']
 
     def train_len(agent):
-        return sum([len(at) for at in agent[0]]) * 0.6
+        return int(sum([len(at.split())-1 for at in agent[0]]) * 0.6)
 
     choices = [i for i, a in enumerate(agents) if train_examples_range[0] <= train_len(a) <= train_examples_range[1]]
     client_ids = random_choice_with_seed(choices, num_clients, seed)

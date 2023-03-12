@@ -1,13 +1,13 @@
 from data.stackoverflow.preparation import load_stackoverflow_json, parse_json_agents, parse_clients, load_tokenizer, process_agent_data
-from data.stackoverflow.clients_data import load_client_datasets
+from data.stackoverflow.clients_data import load_client_datasets, load_json_client_datasets
 from data.stackoverflow.bert_clients_data import load_json_client_datasets as load_bert_json_client_datasets, process_bert_agents, FullTokenizer
 import numpy as np
 import os
 from data.util import random_choice_with_seed
 from collections import Counter
 
-
-def parse_bert_per_tag(file_indexes=range(6), seq_len=12, max_client_num=1_000, pct=.9, tags=['python', 'javascript'], save_as_json=True):
+"""
+def parse_bert_per_tag(file_indexes=range(6), seq_len=12, max_client_num=1_000, pct=.9, tags=['python', 'javascript']):
     for d in tags:
         os.makedirs('data/stackoverflow/bert_clients_tag/{}/'.format(d), exist_ok=True)
 
@@ -23,14 +23,10 @@ def parse_bert_per_tag(file_indexes=range(6), seq_len=12, max_client_num=1_000, 
 
     limit_tag_count(agents)
 
-    if save_as_json:
-        from models.util import save_json
-        for tag_name, tag_agents in agents.items():
-            save_json(f'data/stackoverflow/bert_clients_tag/{tag_name}/stackoverflow_0.json', {'clients_data': tag_agents})
-    else:
-        for tag_name, tag_agents in agents.items():
-            process_bert_agents([el[0] for el in tag_agents], [el[1] for el in tag_agents], seq_len, tokenizer,
-                                max_client_num, directory=f'bert_clients_tag/{tag_name}')
+    for tag_name, tag_agents in agents.items():
+        process_bert_agents([el[0] for el in tag_agents], [el[1] for el in tag_agents], seq_len, tokenizer,
+                            max_client_num, directory=f'bert_clients_tag/{tag_name}')
+"""
 
 
 def filter_per_tag(agents, agent_texts, agents_tags, pct=.9, tags=['python', 'javascript']):
@@ -62,6 +58,26 @@ def limit_tag_count(agents, max_agents=10_000):
         agents[k] = [el for ei, el in enumerate(v) if ei in ind]
 
 
+def save_clients_per_tag(file_indexes=range(6), tags=['python', 'javascript']):
+    for d in tags:
+        os.makedirs('data/stackoverflow/clients_tag/{}/'.format(d), exist_ok=True)
+
+    agents = {cat: [] for cat in tags}
+    for fi in file_indexes:
+        json_data = load_stackoverflow_json(f'data/stackoverflow/users/stackoverflow_{fi}.json')
+        agent_texts, agents_tags = parse_json_agents(json_data)
+        del json_data
+
+        filter_per_tag(agents, agent_texts, agents_tags, 1, tags)
+
+    limit_tag_count(agents)
+
+    from models.util import save_json
+    for tag_name, tag_agents in agents.items():
+        save_json(f'data/stackoverflow/clients_tag/{tag_name}/stackoverflow_0.json', {'clients_data': tag_agents})
+
+
+"""
 def parse_per_tag(file_indexes=range(6), seq_len=10, max_client_num=1_000, pct=.9, tags=['python', 'javascript']):
     for d in tags:
         os.makedirs('data/stackoverflow/clients_tag/{}/'.format(d), exist_ok=True)
@@ -82,6 +98,7 @@ def parse_per_tag(file_indexes=range(6), seq_len=10, max_client_num=1_000, pct=.
         process_agent_data([el[0] for el in tag_agents], [el[1] for el in tag_agents], tokenizer, seq_len,
                            len(tokenizer.word_index) + 1, max_client_num,
                            pre_filename=f'clients_stackoverflow_0', directory=f'clients_tag/{tag_name}')
+"""
 
 
 def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 20_000), tags=['python', 'javascript'], is_bert=False):
@@ -98,10 +115,12 @@ def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 2
     }
     for tag, n_cli in zip(tags, num_clients):
         if not is_bert:
-            train, val, test, metadata = load_client_datasets(num_clients=-1, max_client_num=1_000, directory='clients_tag/{}'.format(tag))
-            choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
+            train, val, test, metadata = load_json_client_datasets(num_clients=n_cli, train_examples_range=train_examples_range, seed=seed, directory='clients_tag/{}'.format(tag))
+            choices = list(range(len(train)))
+            # train, val, test, metadata = load_client_datasets(num_clients=-1, max_client_num=1_000, directory='clients_tag/{}'.format(tag))
+            # choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
         else:
-            train, val, test, metadata = load_bert_json_client_datasets(num_clients=n_cli, train_examples_range=train_examples_range, seed=seed, directory='bert_clients_tag/{}'.format(tag))
+            train, val, test, metadata = load_bert_json_client_datasets(num_clients=n_cli, train_examples_range=train_examples_range, seed=seed, directory='clients_tag/{}'.format(tag))
             choices = list(range(len(train)))
 
         cli_ind = random_choice_with_seed(choices, n_cli, seed)
@@ -119,4 +138,4 @@ def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 2
 
 
 if __name__ == '__main__':
-    parse_per_tag()
+    save_clients_per_tag()
