@@ -101,7 +101,7 @@ def load_clients_data(num_clients=100, seed=608361, train_examples_range=(700, 2
             train, val, test, metadata = load_client_datasets(num_clients=-1, max_client_num=1_000, directory='clients_tag/{}'.format(tag))
             choices = [i for i, tr in enumerate(train) if train_examples_range[0] <= len(tr[0]) <= train_examples_range[1]]
         else:
-            train, val, test, metadata = load_bert_json_client_datasets(num_clients=n_cli, train_examples_range=train_examples_range, seed=-1, directory='bert_clients_tag/{}'.format(tag))
+            train, val, test, metadata = load_bert_json_client_datasets(num_clients=n_cli, train_examples_range=train_examples_range, seed=seed, directory='bert_clients_tag/{}'.format(tag))
             choices = list(range(len(train)))
 
         cli_ind = random_choice_with_seed(choices, n_cli, seed)
