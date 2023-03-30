@@ -3,12 +3,17 @@ import numpy as np
 import tensorflow as tf
 
 
+def mode(arr):
+    vals, counts = np.unique([round(a) for a in arr], return_counts=True)
+    return vals[counts == max(counts)][0]
+
+
 def print_acc(accs, info):
     accs = np.array(accs or [0])
     if len(accs[accs > 1]):
-        print("{}\t\t{}\t\t{:.4}".format(info, sum(accs), np.mean(accs)))
+        print("{}\t\t{}\t\t{:.4}".format(info, sum(accs), np.mean(accs), mode(accs)))
     else:
-        print("{}\t\t{:.3%}\t\t{:.3%}".format(info, np.average(accs), np.median(accs)))
+        print("{}\t\t{:.3%}\t\t{:.3%}".format(info, np.average(accs), np.median(accs), mode(accs)))
 
 
 def calc_new_agent_metrics(agents):
@@ -36,7 +41,7 @@ def calc_agents_metrics(agents, e=0, print_metrics=None, group_by_dataset=False)
                 h[hk].append(hv[-1])
 
     max_len = max([len(k) for k in h.keys()]) + 1
-    print(("\t{: <" + str(max_len) + "}\t\tMean\t\tMedian").format('Metric'))
+    print(("\t{: <" + str(max_len) + "}\t\tMean\t\tMedian\t\tMode").format('Metric'))
     print('\t' + '-' * (max_len + 35))
     for hk, hv in h.items():
         if print_metrics is not None and hk.split('->')[-1] not in print_metrics:

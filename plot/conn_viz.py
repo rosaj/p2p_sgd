@@ -3,10 +3,10 @@ from scipy.stats import ttest_ind
 import numpy as np
 
 
-def exp_1():
-    colors = ['r', 'g', 'b', 'indigo', 'orange']
+def exp_1_reddit():
+    colors = ['r', 'g', 'b', 'indigo', 'orange', 'black']
     viz = {
-        'Reddit small (leagueoflegends)': {
+        'GRU - small (leagueoflegends)': {
             'x_axis': 'epoch',
             'colors': colors,
             'metric': 'reddit-nwp-leagueoflegends->test_model-accuracy_no_oov',
@@ -35,6 +35,12 @@ def exp_1():
                         'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_15_07',
                         'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_17_17'],
 
+                'Acc (val)': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_00_28',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_02_53',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_05_28',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_08_14',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_11_33'],
+
                 # 'KMeans': ['conns/exp1/small/P2PAgent_100A_100E_50B_kmeans(directed-3)_19-02-2023_00_32'],
 
                 'AUCCCR': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_16_10',
@@ -47,7 +53,7 @@ def exp_1():
 
             }
         },
-        'Reddit small (politics)': {
+        'GRU - small (politics)': {
             'x_axis': 'epoch',
             'colors': colors,
             'metric': 'reddit-nwp-politics->test_model-accuracy_no_oov',
@@ -76,6 +82,12 @@ def exp_1():
                         'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_15_07',
                         'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_17_17'],
 
+                'Acc (val)': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_00_28',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_02_53',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_05_28',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_08_14',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_11_33'],
+
                 'AUCCCR': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_16_10',
                            'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_21-02-2023_07_59',
                            'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_21-02-2023_09_54',
@@ -85,7 +97,7 @@ def exp_1():
                 # 'AUCCCR-clusters': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_20_34'],
             }
         },
-        'Reddit big (leagueoflegends)': {
+        'GRU - big (leagueoflegends)': {
             'x_axis': 'epoch',
             'colors': colors,
             'metric': 'reddit-nwp-leagueoflegends->test_model-accuracy_no_oov',
@@ -114,6 +126,12 @@ def exp_1():
                         'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_17_39',
                         'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_00_51'],
 
+                'Acc (val)': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_05_29',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_14_54',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_23_27',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_11-03-2023_07_31',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_11-03-2023_16_00'],
+
                 'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_19_14',
                            'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_12_01',
                            'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_17_49',
@@ -123,7 +141,7 @@ def exp_1():
                 # 'AUCCCR-clusters': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_20-02-2023_02_58'],
             }
         },
-        'Reddit big (politics)': {
+        'GRU - big (politics)': {
             'x_axis': 'epoch',
             'colors': colors,
             'metric': 'reddit-nwp-politics->test_model-accuracy_no_oov',
@@ -152,6 +170,12 @@ def exp_1():
                         'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_17_39',
                         'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_27-02-2023_00_51'],
 
+                'Acc (val)': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_05_29',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_14_54',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_10-03-2023_23_27',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_11-03-2023_07_31',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_11-03-2023_16_00'],
+
                 'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_19-02-2023_19_14',
                            'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_12_01',
                            'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_17_49',
@@ -162,7 +186,7 @@ def exp_1():
             }
         },
 
-        'BERT - Reddit small (leagueoflegends)': {
+        'BERT - small (leagueoflegends)': {
             'x_axis': 'epoch',
             'colors': colors,
             'metric': 'reddit-nwp-leagueoflegends->test_model-sparse_categorical_accuracy',
@@ -191,6 +215,12 @@ def exp_1():
                         'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_17_19',
                         'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_15_16'],
 
+                'Acc (val)': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-03-2023_10_13',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-03-2023_13_32',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-03-2023_17_01',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-03-2023_20_39',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_19-03-2023_00_18'],
+
                 'AUCCCR': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_09_42',
                            'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_25-02-2023_18_02',
                            'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_25-02-2023_21_36',
@@ -198,7 +228,7 @@ def exp_1():
                            'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_26-02-2023_05_25'],
             }
         },
-        'BERT - Reddit small (politics)': {
+        'BERT - small (politics)': {
             'x_axis': 'epoch',
             'colors': colors,
             'metric': 'reddit-nwp-politics->test_model-sparse_categorical_accuracy',
@@ -227,6 +257,12 @@ def exp_1():
                         'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_25-02-2023_17_19',
                         'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_26-02-2023_15_16'],
 
+                'Acc (val)': ['conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-03-2023_10_13',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-03-2023_13_32',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-03-2023_17_01',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_18-03-2023_20_39',
+                              'conns/exp1/small/P2PAgent_100A_100E_50B_acc_conns(directed-3)_19-03-2023_00_18'],
+
                 'AUCCCR': ['conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_09_42',
                            'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_25-02-2023_18_02',
                            'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_25-02-2023_21_36',
@@ -234,7 +270,7 @@ def exp_1():
                            'conns/exp1/small/P2PAgent_100A_100E_50B_aucccr(directed-3)_26-02-2023_05_25'],
             }
         },
-        'BERT - Reddit big (leagueoflegends)': {
+        'BERT - big (leagueoflegends)': {
             'x_axis': 'epoch',
             'colors': colors,
             'metric': 'reddit-nwp-leagueoflegends->test_model-sparse_categorical_accuracy',
@@ -263,10 +299,20 @@ def exp_1():
                         'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_04-03-2023_16_28',
                         'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_05-03-2023_06_57'],
 
-                'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_00_25'],
+                'Acc (val)': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_16-03-2023_00_36',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_16-03-2023_12_19',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_17-03-2023_00_47',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_17-03-2023_12_11',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_17-03-2023_23_32'],
+
+                'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_00_25',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_12-03-2023_07_25',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_12-03-2023_19_25',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_13-03-2023_04_54',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_13-03-2023_19_15'],
             }
         },
-        'BERT - Reddit big (politics)': {
+        'BERT - big (politics)': {
             'x_axis': 'epoch',
             'colors': colors,
             'metric': 'reddit-nwp-politics->test_model-sparse_categorical_accuracy',
@@ -295,7 +341,17 @@ def exp_1():
                         'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_04-03-2023_16_28',
                         'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_05-03-2023_06_57'],
 
-                'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_00_25'],
+                'Acc (val)': ['conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_16-03-2023_00_36',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_16-03-2023_12_19',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_17-03-2023_00_47',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_17-03-2023_12_11',
+                              'conns/exp1/big/P2PAgent_100A_100E_50B_acc_conns(directed-3)_17-03-2023_23_32'],
+
+                'AUCCCR': ['conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_23-02-2023_00_25',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_12-03-2023_07_25',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_12-03-2023_19_25',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_13-03-2023_04_54',
+                           'conns/exp1/big/P2PAgent_100A_100E_50B_aucccr(directed-3)_13-03-2023_19_15'],
             }
         },
     }
@@ -312,6 +368,9 @@ def exp_1():
                     {'y': [0, 13], 'step': 1},
                     {'y': [0, 13], 'step': 1},
                  ])
+    print_table(viz, metric='avg')
+    print_table(viz, metric='max agent acc')
+    """
     for vk, vv in viz.items():
         print(vk)
         for k, v in vv['viz'].items():
@@ -319,16 +378,158 @@ def exp_1():
             accs = parse_timeline(None, v, x_axis='examples', metric=vv['metric'], agg_fn=np.array)[2]
             avg_agents_max = np.mean(np.concatenate([np.max(np.array(sim), axis=0) for sim in accs]))
             print('\t-', k, round(max(t), 2), "Avg-Agent-Max", round(float(avg_agents_max), 2))
-
     """
-    vk = 'Reddit small (leagueoflegends)'
-    vv = viz[vk]
-    k = 'Solo'
-    v = vv['viz'][k]
-    accs = parse_timeline(None, v, x_axis='examples', metric=vv['metric'], agg_fn=np.array)[2]
-    sim = accs[0]
-    sim = np.array(sim)
-    np.max(sim, axis=0)"""
+
+
+def print_table(viz, start_epoch=20, metric='avg'):
+    print("----Table----")
+    print("\\begin{table*}[b]\n\\centering\n\\footnotesize\n\\begin{tabular}{l l c c c c}\n\\hline")
+    g1, g2 = np.unique([k[k.index('(')+1:-1] for k in viz.keys()])
+    print("\\textbf{Group} & \\textbf{Connections} &  \\textbf{GRU (small)} &  \\textbf{GRU (big)} & \\textbf{BERT (small)} &  \\textbf{BERT (big)}  \\\\\n\\hline")
+    # print("\\textbf{Model} & \\textbf{Collaboration} &  \\textbf{" + g1 + "} & \\textbf{"+g2+"}\n\\hline")
+
+    for g in [g1, g2]:
+        print(g + "  & & & & & \\\\\n\\hline")
+        baselines = {}
+        for col in ['Solo', 'Sparse', 'Sparse-clustered', 'Acc', 'Acc (val)', 'AUCCCR']:
+            print(f"& {col} & ", end='')
+            for model in ['GRU', 'BERT']:
+                for group in ['small', 'big']:
+                    k = f"{model} - {group} ({g})"
+                    v = viz[k]
+                    vv = v['viz'][col]
+                    if metric == 'avg':
+                        t, accs = parse_timeline(None, vv, x_axis='examples', metric=v['metric'])[1:]
+                        max_a = round(max(t), 2)
+                    else:
+                        agent_accs = parse_timeline(None, vv, x_axis='examples', metric=v['metric'], agg_fn=np.array)[2]
+                        avg_agents_max = np.mean(np.concatenate([np.max(np.array(sim), axis=0) for sim in agent_accs]))
+                        max_a = round(float(avg_agents_max), 2)
+                        t = np.mean([np.max(np.array(sim), axis=0) for sim in agent_accs], axis=-1)
+                        start_epoch = 0
+
+                    b_key = model + ' (' + group + ')'
+                    if b_key not in baselines:
+                        print(max_a, " & " if b_key != 'BERT (big)' else ' \\\\', end='')
+                        if col == 'Sparse':
+                            baselines[b_key] = [t[start_epoch:], max_a]
+                    else:
+                        baseline = baselines[b_key]
+                        rel_inc = round((max_a - baseline[1]) / baseline[1] * 100, 2)
+                        p_val = ttest_ind(baseline[0], t[start_epoch:])[1]
+                        p_text = "{} {}".format("{:.2f}".format(max_a) + '\\%', '({}\\%)'.format('+' + "{:.2f}".format(rel_inc) if rel_inc > 0 else "{:.2f}".format(rel_inc)))
+                        if rel_inc > 0:
+                            p_text = "\\textbf{" + p_text + "}"
+                        if p_val < 0.05:
+                            p_text += " \\textbf{**}"
+                        print(p_text, " & " if b_key != 'BERT (big)' else ' \\\\', end='')
+            print()
+        print('\\hline')
+
+    print("\\end{tabular}\n\\caption{\label{tbl:name} " + metric + ".}\n\\end{table*}")
+
+
+def exp_1_stackoverflow():
+    colors = ['r', 'g', 'b', 'indigo', 'orange', 'black']
+    viz = {
+        'GRU - small (python)': {
+            'x_axis': 'epoch',
+            'colors': colors[:1],
+            'metric': 'stackoverflow-nwp-python->test_model-accuracy_no_oov',
+            'viz': {
+                'Solo': ['conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_10-03-2023_21_15'],
+
+            }
+        },
+        'GRU - small (javascript)': {
+            'x_axis': 'epoch',
+            'colors': colors[:1],
+            'metric': 'stackoverflow-nwp-javascript->test_model-accuracy_no_oov',
+            'viz': {
+                'Solo': ['conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_10-03-2023_18_47'],
+            }
+        },
+        'GRU - big (python)': {
+            'x_axis': 'epoch',
+            'colors': colors[:3],
+            'metric': 'stackoverflow-nwp-python->test_model-accuracy_no_oov',
+            'viz': {
+                'Solo': ['conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_11-03-2023_21_07'],
+                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_28-03-2023_08_39'],
+                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_28-03-2023_14_52']
+            }
+        },
+        'GRU - big (javascript)': {
+            'x_axis': 'epoch',
+            'colors': colors[:3],
+            'metric': 'stackoverflow-nwp-javascript->test_model-accuracy_no_oov',
+            'viz': {
+                'Solo': ['conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_11-03-2023_20_14'],
+                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_28-03-2023_08_39'],
+                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_28-03-2023_14_52']
+            }
+        },
+        'BERT - small (python)': {
+            'x_axis': 'epoch',
+            'colors': colors[:1],
+            'metric': 'stackoverflow-nwp-python->test_model-sparse_categorical_accuracy',
+            'viz': {
+                'Solo': ['conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_21-03-2023_10_52'],
+            }
+        },
+        'BERT - small (javascript)': {
+            'x_axis': 'epoch',
+            'colors': colors[:1],
+            'metric': 'stackoverflow-nwp-javascript->test_model-sparse_categorical_accuracy',
+            'viz': {
+                'Solo': ['conns/exp1/small/P2PAgent_50A_100E_50B_sparse(directed-3)_21-03-2023_10_03'],
+            }
+        },
+        'BERT - big (python)': {
+            'x_axis': 'epoch',
+            'colors': colors[:2],
+            'metric': 'stackoverflow-nwp-python->test_model-sparse_categorical_accuracy',
+            'viz': {
+                'Solo': ['conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_22-03-2023_07_44'],
+
+                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_29-03-2023_18_40'],
+
+                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_26-03-2023_16_48'],
+            }
+        },
+        'BERT - big (javascript)': {
+            'x_axis': 'epoch',
+            'colors': colors[:2],
+            'metric': 'stackoverflow-nwp-javascript->test_model-sparse_categorical_accuracy',
+            'viz': {
+                'Solo': ['conns/exp1/big/P2PAgent_50A_100E_50B_sparse(directed-3)_22-03-2023_07_57'],
+
+                'Sparse': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse(directed-3)_29-03-2023_18_40'],
+
+                'Sparse-clustered': ['conns/exp1/big/P2PAgent_100A_100E_50B_sparse_clusters(directed-2)_26-03-2023_16_48'],
+            }
+        },
+    }
+    side_by_side(viz,
+                 fig_size=(10*2, 8),
+                 n_rows=2,
+                 axis_lim=[
+                    {'y': [0, 12], 'step': 1},
+                    {'y': [0, 13], 'step': 1},
+                    {'y': [0, 16], 'step': 1},
+                    {'y': [0, 17], 'step': 1},
+                    {'y': [0, 14], 'step': 1},
+                    {'y': [0, 14], 'step': 1},
+                    {'y': [0, 18], 'step': 1},
+                    {'y': [0, 18], 'step': 1},
+                 ])
+    for vk, vv in viz.items():
+        print(vk)
+        for k, v in vv['viz'].items():
+            t = parse_timeline(None, v, x_axis='examples', metric=vv['metric'])[1]
+            accs = parse_timeline(None, v, x_axis='examples', metric=vv['metric'], agg_fn=np.array)[2]
+            avg_agents_max = np.mean(np.concatenate([np.max(np.array(sim), axis=0) for sim in accs]))
+            print('\t-', k, round(max(t), 2), "Avg-Agent-Max", round(float(avg_agents_max), 2))
 
 
 def neigh():
@@ -361,4 +562,4 @@ def neigh():
 
 
 if __name__ == '__main__':
-    exp_1()
+    exp_1_stackoverflow()
