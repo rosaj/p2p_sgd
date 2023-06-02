@@ -26,11 +26,11 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
             train_cluster_cli = np.array_split(train_cluster, int(num_clients/cluster_num))
             test_cluster_cli = np.array_split(test_cluster, int(num_clients/cluster_num))
             for train_cli, test_cli in zip(train_cluster_cli, test_cluster_cli):
-                c_x_train.append(np.rot90(x_train[train_cli], int(rot/90)))
+                c_x_train.append([np.rot90(img, int(rot/90)) for img in x_train[train_cli]])
                 c_y_train.append(y_train[train_cli])
-                c_x_test.append(np.rot90(x_test[test_cli], int(rot/90)))
+                c_x_test.append([np.rot90(img, int(rot/90)) for img in x_test[test_cli]])
                 c_y_test.append(y_test[test_cli])
-                d_names.append('cifar10-{}-{}'.format(mode, rot))
+                d_names.append('cifar10-clusters-{}'.format(rot))
 
         c_train = list(zip(c_x_train, c_y_train))
         c_test = list(zip(c_x_test, c_y_test))
