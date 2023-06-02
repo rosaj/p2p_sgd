@@ -2,17 +2,48 @@ from tensorflow import keras
 import numpy as np
 
 
-def load_clients_data(num_clients=100, mode='IID'):
+def load_clients_data(num_clients=100, mode='clusters', **kwargs):
     # Mode: IID, pathological non-IID, practical non-IID
     (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
 
     # Scale images to the [0, 1] range
     x_train = x_train.astype("float32") / 255
     x_test = x_test.astype("float32") / 255
-    # Make sure images have shape (28, 28, 1)
-    # x_train = np.expand_dims(x_train, -1)
-    # x_test = np.expand_dims(x_test, -1)
-    if mode == 'IID':
+
+    if mode == 'clusters':
+        rotations = kwargs.get('rotations', [0, 180])
+        cluster_num = len(rotations)
+        assert num_clients/cluster_num == int(num_clients/cluster_num)
+        c_x_train, c_y_train = [], []
+        c_x_test, c_y_test = [], []
+        d_names = []
+        rand_ind_train = np.random.randint(len(x_train), size=len(x_train))
+        rand_ind_test = np.random.randint(len(x_test), size=len(x_test))
+
+        for rot, train_cluster, test_cluster in zip(rotations,
+                                                    np.array_split(rand_ind_train, cluster_num),
+                                                    np.array_split(rand_ind_test, cluster_num)):
+            train_cluster_cli = np.array_split(train_cluster, int(num_clients/cluster_num))
+            test_cluster_cli = np.array_split(test_cluster, int(num_clients/cluster_num))
+            for train_cli, test_cli in zip(train_cluster_cli, test_cluster_cli):
+                c_x_train.append(np.rot90(x_train[train_cli], int(rot/90)))
+                c_y_train.append(y_train[train_cli])
+                c_x_test.append(np.rot90(x_test[test_cli], int(rot/90)))
+                c_y_test.append(y_test[test_cli])
+                d_names.append('cifar10-{}-{}'.format(mode, rot))
+
+        c_train = list(zip(c_x_train, c_y_train))
+        c_test = list(zip(c_x_test, c_y_test))
+        c_val = list(zip(np.array_split(x_test, num_clients), np.array_split(y_test, num_clients)))
+        data = {
+            "train": c_train,
+            "val": c_val,
+            "test": c_test,
+            "dataset_name": d_names
+        }
+        return data
+
+    elif mode == 'IID':
         c_x_train = np.array_split(x_train, num_clients)
         c_y_train = np.array_split(y_train, num_clients)
         c_x_test = np.array_split(x_test, num_clients)
