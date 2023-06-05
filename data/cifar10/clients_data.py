@@ -1,5 +1,6 @@
 from tensorflow import keras
 import numpy as np
+from data.util import random_choice_with_seed
 
 
 def load_clients_data(num_clients=100, mode='clusters', **kwargs):
@@ -12,13 +13,16 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
 
     if mode == 'clusters':
         rotations = kwargs.get('rotations', [0, 180])
+        seed = kwargs.get('seed', 123)
         cluster_num = len(rotations)
         assert num_clients/cluster_num == int(num_clients/cluster_num)
         c_x_train, c_y_train = [], []
         c_x_test, c_y_test = [], []
         d_names = []
-        rand_ind_train = np.random.randint(len(x_train), size=len(x_train))
-        rand_ind_test = np.random.randint(len(x_test), size=len(x_test))
+        rand_ind_train = random_choice_with_seed(range(len(x_train)), len(x_train), seed)
+        rand_ind_test = random_choice_with_seed(range(len(x_test)), len(x_test), seed)
+        # rand_ind_train = np.random.randint(len(x_train), size=len(x_train))
+        # rand_ind_test = np.random.randint(len(x_test), size=len(x_test))
 
         for rot, train_cluster, test_cluster in zip(rotations,
                                                     np.array_split(rand_ind_train, cluster_num),

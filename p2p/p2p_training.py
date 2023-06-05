@@ -53,6 +53,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
 
     pbar = new_progress_bar(examples, 'Training')
     for a in agents:
+        clear_session()
         device = resolve_agent_device(agents, a, devices)
         with tf.device(device or 'CPU'):
             n = a.start()
