@@ -3,7 +3,7 @@ import tensorflow as tf
 
 class Agent:
     # noinspection PyDefaultArgument
-    def __init__(self, data, model, graph=None, data_pars=None, eval_batch_size=50):
+    def __init__(self, data, model, graph=None, data_pars=None, use_tf_function=True, eval_batch_size=50):
 
         self.data_pars = data_pars
         self.batch_size = data_pars['batch_size']
@@ -37,6 +37,10 @@ class Agent:
         self.iter = None
 
         self.id = 0
+
+        self.__tf_train_fn = None
+        if use_tf_function:
+            self.__tf_train_fn = tf.function(Agent._model_train_batch)
 
     @staticmethod
     def _create_model(m_pars, ignored_keys):
@@ -108,7 +112,10 @@ class Agent:
         return self.model.get_weights()
 
     def _train_on_batch(self, x, y):
-        Agent._model_train_batch(self.model, x, y)
+        if self.__tf_train_fn is not None:
+            self.__tf_train_fn(self.model, x, y)
+        else:
+            Agent._model_train_batch(self.model, x, y)
         self.trained_examples += len(y)
         return len(y)
 

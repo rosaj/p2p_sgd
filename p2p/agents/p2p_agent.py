@@ -8,7 +8,6 @@ class P2PAgent(AsyncAgent):
                  early_stopping=True,
                  increase_momentum=False,
                  private_model_pars=None,
-                 use_tf_function=True,
                  **kwargs):
         super(P2PAgent, self).__init__(**kwargs)
 
@@ -27,12 +26,9 @@ class P2PAgent(AsyncAgent):
         self.received_msg = False
         self.hist_ind = 1
 
-        self.__tf_train_fn = None
-        if use_tf_function:
+        if self.__tf_train_fn is not None:
             if self.has_private:
                 self.__tf_train_fn = tf.function(P2PAgent._model_train_dml)
-            else:
-                self.__tf_train_fn = tf.function(Agent._model_train_batch)
 
     @property
     def _has_bn_layers(self):
