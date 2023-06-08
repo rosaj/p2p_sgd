@@ -175,6 +175,9 @@ class Agent:
             res_dict = {k: v for k, v in res_dict.items() if k in metrics}
         return res_dict
 
+    def eval_model_loss(self, model, dataset):
+        return self.model_pars['model_mod'].eval_model_loss(model, dataset)
+
     def calc_new_metrics(self, metrics_names=None):
         self.hist["examples"].append(self.trained_examples)
         self.hist["useful_msg"].append(0)

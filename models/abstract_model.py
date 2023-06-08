@@ -54,6 +54,18 @@ def eval_model_metrics(m, dataset):
     return {metric.name: metric.result().numpy() for metric in metrics}
 
 
+def eval_model_loss(m, dataset):
+    total_loss = 0
+    num_batches = 0
+    for x, y in dataset:
+        logits = m(x, training=True)
+        loss = m.loss(y, logits)
+        total_loss += loss
+        num_batches += 1
+    average_loss = total_loss / num_batches
+    return average_loss.numpy()
+
+
 def eval_ensemble_metrics(models, dataset, metrics, weights=None):
     if weights is None:
         weights = len(models) * [1 / len(models)]

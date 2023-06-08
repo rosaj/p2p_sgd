@@ -6,3 +6,4 @@ from .abstract_agent import Agent
 from .sync_agent import SyncAgent
 from .async_agent import AsyncAgent
 from .bert_agent import BertAgent
+from .pens_agent import PENSAgent
