@@ -38,9 +38,9 @@ class Agent:
 
         self.id = 0
 
-        self.__tf_train_fn = None
+        self._tf_train_fn = None
         if use_tf_function:
-            self.__tf_train_fn = tf.function(Agent._model_train_batch)
+            self._tf_train_fn = tf.function(Agent._model_train_batch)
 
     @staticmethod
     def _create_model(m_pars, ignored_keys):
@@ -112,8 +112,8 @@ class Agent:
         return self.model.get_weights()
 
     def _train_on_batch(self, x, y):
-        if self.__tf_train_fn is not None:
-            self.__tf_train_fn(self.model, x, y)
+        if self._tf_train_fn is not None:
+            self._tf_train_fn(self.model, x, y)
         else:
             Agent._model_train_batch(self.model, x, y)
         self.trained_examples += len(y)

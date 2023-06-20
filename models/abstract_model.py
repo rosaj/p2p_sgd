@@ -2,6 +2,7 @@ import tensorflow as tf
 from tensorflow.keras.models import load_model
 from tensorflow.keras.models import save_model
 import gc
+import numpy as np
 
 _MODEL_COUNT = {}
 
@@ -125,3 +126,17 @@ def kl_loss_compute(logits1, logits2):
     loss = tf.math.reduce_mean(tf.math.reduce_sum(pred2 * tf.math.log(1e-8 + pred2 / (pred1 + 1e-8)), 1))
 
     return loss
+
+
+def weights_average(weights, alphas=None):
+    if alphas is None:
+        alphas = [1 / len(weights)] * len(weights)
+    else:
+        alphas = np.array(alphas)/np.sum(alphas)
+    new_weights = []
+
+    for l_i in range(len(weights[0])):
+        avg_layer = tf.convert_to_tensor(np.sum([w[l_i]*a for w, a in zip(weights, alphas)], axis=0))
+        new_weights.append(avg_layer)
+
+    return new_weights

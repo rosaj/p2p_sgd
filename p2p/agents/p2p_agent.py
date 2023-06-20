@@ -25,10 +25,10 @@ class P2PAgent(AsyncAgent):
         self.train_rounds = 1
         self.received_msg = False
         self.hist_ind = 1
-
-        if self.__tf_train_fn is not None:
+        
+        if self._tf_train_fn is not None:
             if self.has_private:
-                self.__tf_train_fn = tf.function(P2PAgent._model_train_dml)
+                self._tf_train_fn = tf.function(P2PAgent._model_train_dml)
 
     @property
     def _has_bn_layers(self):
@@ -51,11 +51,11 @@ class P2PAgent(AsyncAgent):
         return self.received_msg
 
     def _train_on_batch(self, x, y):
-        if self.__tf_train_fn is not None:
+        if self._tf_train_fn is not None:
             if self.has_private:
-                self.__tf_train_fn(self.model, self.private_model, x, y, self.kl_loss)
+                self._tf_train_fn(self.model, self.private_model, x, y, self.kl_loss)
             else:
-                self.__tf_train_fn(self.model, x, y)
+                self._tf_train_fn(self.model, x, y)
         else:
             if self.has_private:
                 P2PAgent._model_train_dml(self.model, self.private_model, x, y, self.kl_loss)
