@@ -25,7 +25,7 @@ class P2PAgent(AsyncAgent):
         self.train_rounds = 1
         self.received_msg = False
         self.hist_ind = 1
-        
+
         if self._tf_train_fn is not None:
             if self.has_private:
                 self._tf_train_fn = tf.function(P2PAgent._model_train_dml)

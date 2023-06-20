@@ -3,46 +3,57 @@ import numpy as np
 
 
 class PENSAgent(SyncAgent):
-    def __init__(self, pens_pars={"rounds": 100, "n_sampled": 6, "top_m": 3, "n_peers": 3}, **kwargs):
-        if 'early_stopping' not in kwargs:
-            kwargs['early_stopping'] = False
+    def __init__(self, pens_pars={"rounds": 100, "n_sampled": 6, "top_m": 3, "n_peers": 3, "oracle": False}, **kwargs):
         super(PENSAgent, self).__init__(**kwargs)
-        self.pens_pars = pens_pars
+        self.rounds = pens_pars.get("rounds", 100)
+        self.n_sampled = pens_pars.get("n_sampled", 6)
+        self.top_m = pens_pars.get("top_m", 3)
+        self.n_peers = pens_pars.get("n_peers", 3)
+        self.oracle = pens_pars.get("oracle", False)
         self.iteration = 0
         # self.saved_models = {}
         self.new_weights = None
         self.selected_peers = {}
 
     def train_fn(self):
-        self.fit()
-        self.pull_models()
+        if self.new_weights is not None:
+            self.set_model_weights(self.new_weights)
+            self.new_weights = None
+        self.fit(epochs=1)
+        # self.pull_models()
         self.iteration += 1
         return self.train_len
 
     def get_peers(self):
-        if self.iteration < self.pens_pars['rounds']:
-            return np.random.choice(self.graph.nodes, self.pens_pars['n_sampled'], replace=False), True
+        if self.oracle:
+            peers = [peer for peer in self.graph.nodes if peer.dataset_name == self.dataset_name]
+            return np.random.choice(peers, size=self.n_peers, replace=False), False
+        if self.iteration < self.rounds:
+            return np.random.choice(self.graph.nodes, self.n_sampled, replace=False), True
         else:
-            expected_samples = (self.pens_pars['top_m'] / self.graph.nodes_num) * self.pens_pars['rounds']
-            peers = [k for k, v in self.selected_peers if v > expected_samples]
-            return np.random.choice(peers, size=self.pens_pars['n_peers'], replace=False), False
+            expected_samples = (self.top_m / self.graph.nodes_num) * self.rounds
+            peers = [k for k, v in self.selected_peers.items() if v > expected_samples]
+            return np.random.choice(peers, size=self.n_peers, replace=False), False
 
     def pull_models(self):
         peers, is_pens_round = self.get_peers()
+        self.hist["useful_msg"][-1] += len(peers)
 
         if is_pens_round:
             saved_models = {}
             for peer in peers:
                 loss = self.eval_model_loss(peer.model, self.train)
-                saved_models[loss] = peer.id
-            top_m = list(dict(sorted(saved_models.items())).values())[:self.pens_pars['top_m']]
+                saved_models[loss] = peer
+
+            top_m = list(dict(sorted(saved_models.items())).values())[:self.top_m]
             weights = self.get_model_weights()
             for peer in top_m:
                 weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, weights, peer.get_model_weights())
-                if peer.id not in self.selected_peers:
-                    self.selected_peers[peer.id] = 0
-                self.selected_peers[peer.id] += 1
+                if peer not in self.selected_peers:
+                    self.selected_peers[peer] = 0
+                self.selected_peers[peer] += 1
 
+            # weights = weights_average([self.get_model_weights()] + [peer.get_model_weights() for peer in top_m])
             # self.set_model_weights(weights)
             self.new_weights = weights
             saved_models.clear()
@@ -52,11 +63,25 @@ class PENSAgent(SyncAgent):
             for peer in peers:
                 weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, weights, peer.get_model_weights())
             # self.set_model_weights(weights)
+            # weights = weights_average([self.get_model_weights()] + [peer.get_model_weights() for peer in peers])
             self.new_weights = weights
 
     def sync_parameters(self):
-        self.set_model_weights(self.new_weights)
+        self.pull_models()
 
+
+def weights_average(weights, alphas=None):
+    if alphas is None:
+        alphas = [1 / len(weights)] * len(weights)
+    else:
+        alphas = np.array(alphas)/np.sum(alphas)
+    new_weights = []
+
+    for l_i in range(len(weights[0])):
+        avg_layer = tf.convert_to_tensor(np.sum([w[l_i]*a for w, a in zip(weights, alphas)], axis=0))
+        new_weights.append(avg_layer)
+
+    return new_weights
 """
     def send_to_peers(self):
         if self.iteration < self.pens_pars['rounds']:
