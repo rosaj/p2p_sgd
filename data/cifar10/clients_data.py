@@ -11,30 +11,61 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
     x_train = x_train.astype("float32") / 255
     x_test = x_test.astype("float32") / 255
 
-    if mode == 'clusters':
-        rotations = kwargs.get('rotations', [0, 180])
-        seed = kwargs.get('seed', 123)
-        cluster_num = len(rotations)
-        assert num_clients/cluster_num == int(num_clients/cluster_num)
-        c_x_train, c_y_train = [], []
-        c_x_test, c_y_test = [], []
-        d_names = []
-        rand_ind_train = random_choice_with_seed(range(len(x_train)), len(x_train), seed)
-        rand_ind_test = random_choice_with_seed(range(len(x_test)), len(x_test), seed)
-        # rand_ind_train = np.random.randint(len(x_train), size=len(x_train))
-        # rand_ind_test = np.random.randint(len(x_test), size=len(x_test))
+    y_train = np.squeeze(y_train)
+    y_test = np.squeeze(y_test)
 
-        for rot, train_cluster, test_cluster in zip(rotations,
-                                                    np.array_split(rand_ind_train, cluster_num),
-                                                    np.array_split(rand_ind_test, cluster_num)):
-            train_cluster_cli = np.array_split(train_cluster, int(num_clients/cluster_num))
-            test_cluster_cli = np.array_split(test_cluster, int(num_clients/cluster_num))
-            for train_cli, test_cli in zip(train_cluster_cli, test_cluster_cli):
-                c_x_train.append([np.rot90(img, int(rot/90)) for img in x_train[train_cli]])
-                c_y_train.append(y_train[train_cli])
-                c_x_test.append([np.rot90(img, int(rot/90)) for img in x_test[test_cli]])
-                c_y_test.append(y_test[test_cli])
-                d_names.append('cifar10-clusters-{}'.format(rot))
+    if mode == 'clusters':
+        clusters = kwargs.get('clusters', [list(range(int(num_clients/2))), list(range(int(num_clients/2)))])
+        if isinstance(clusters, int):
+            clusters = [list(range(int(_/clusters))) for _ in clusters]
+
+        rotations = kwargs.get('rotations', [0, 180])
+        labels_swaps = kwargs.get('labels_swaps', [[], [[8, 9]]])
+        # seed = kwargs.get('seed', 123)
+        cluster_num = len(clusters)
+        assert num_clients/cluster_num == int(num_clients/cluster_num)
+        c_x_train, c_y_train = [[] for _ in range(num_clients)], [[] for _ in range(num_clients)]
+        c_x_test, c_y_test = [[] for _ in range(num_clients)], [[] for _ in range(num_clients)]
+
+        def do_split(x_ds, y_ds, c_x, c_y, lbl):
+            ds_label = x_ds[np.squeeze(np.argwhere(y_ds == lbl))]
+            dx_split = np.split(ds_label, num_clients)
+            for i, x in enumerate(dx_split):
+                c_x[i].extend(x)
+                c_y[i].extend([lbl] * len(x))
+
+        for label in set(y_train):
+            do_split(x_train, y_train, c_x_train, c_y_train, label)
+            do_split(x_test, y_test, c_x_test, c_y_test, label)
+
+        def shuffle(x, y):
+            ind = np.arange(len(y))
+            np.random.shuffle(ind)
+            return np.array(x)[ind], np.array(y)[ind]
+
+        for i in range(num_clients):
+            c_x_train[i], c_y_train[i] = shuffle(c_x_train[i], c_y_train[i])
+            c_x_test[i], c_y_test[i] = shuffle(c_x_test[i], c_y_test[i])
+
+        def swap_labels(y, sl):
+            pos_0 = np.argwhere(y == sl[0])
+            pos_1 = np.argwhere(y == sl[1])
+            lbls_0 = y[pos_0]
+            lbls_1 = y[pos_1]
+            pos = np.concatenate([pos_0, pos_1])
+            y[pos] = np.concatenate([lbls_0, lbls_1])
+
+
+        d_names = []
+        for c, (ci, rot, ls) in enumerate(zip(clusters, rotations, labels_swaps)):
+            d_names.extend([f'cifar10-c{c}'] * len(ci))
+
+            for i in ci:
+                c_x_train[i] = [np.rot90(img, 2) for img in c_x_train[i]]
+                c_x_test[i] = [np.rot90(img, 2) for img in c_x_test[i]]
+                for l_swap in ls:
+                    swap_labels(c_y_train[i], l_swap)
+                    swap_labels(c_y_test[i], l_swap)
 
         c_train = list(zip(c_x_train, c_y_train))
         c_test = list(zip(c_x_test, c_y_test))

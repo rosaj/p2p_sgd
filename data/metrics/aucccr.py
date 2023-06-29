@@ -1,24 +1,30 @@
 from typing import List, Tuple, Callable
 import random
 import numpy as np
+
 np.seterr(divide='ignore', invalid='ignore')
 
 scf = 1
 thd = 20
 
 
-def recommend_clusters(testr, d: Callable = lambda x, y: np.linalg.norm(x - y), n: Callable = lambda x: 1.0/(1.0+(scf*x)), v: Callable = lambda x: np.sqrt(scf*x), conv: bool = True, atom: bool = True, prc: int = 20, mmt: int = 5):
+def recommend_clusters(testr, d: Callable = lambda x, y: np.linalg.norm(x - y),
+                       n: Callable = lambda x: 1.0 / (1.0 + (scf * x)),
+                       v: Callable = lambda x: np.sqrt(scf * x),
+                       p_vector: Callable = lambda x: x,
+                       conv: bool = True, atom: bool = True,
+                       prc: int = 20, mmt: int = 5):
     """
-
     :param testr:
     :param d: distance between x and y
     :param n: distance between an agent and the group'y barycenter (as measured by a distance function d)
     :param v: the value of the group of size N
+    :param p_vector:
     :param conv:
     :param atom: agents are “atoms”, too small relatively to the whole system to have significant influence individually
     :param prc: the number of (random) initial values to try
     :param mmt: momentum effect
-    :return:
+    :return: lists of clusters, each cluster contains indexes of respectable data points belonging to that cluster
     """
     ans: List[List[int]] = []
     m: int = len(testr)
@@ -71,9 +77,9 @@ def recommend_clusters(testr, d: Callable = lambda x, y: np.linalg.norm(x - y), 
                 ngrp = [[] for _ in range(k)]
 
                 for i in range(k):
-                    ctr[i] = np.zeros(len(ctr[i]))
+                    ctr[i] = np.zeros(len(p_vector(ctr[i])))
                     for j in range(len(grp[i])):
-                        ctr[i] += testr[grp[i][j]]
+                        ctr[i] += p_vector(testr[grp[i][j]])
                     ctr[i] /= len(grp[i])
                 if conv:
                     vr = 0.0
@@ -141,7 +147,46 @@ def recommend_clusters(testr, d: Callable = lambda x, y: np.linalg.norm(x - y), 
     return ans
 
 
+def build_vector(model, dataset):
+    r = [np.empty((0, model.layers[-1].units)) for _ in range(model.layers[-1].units)]
+    for x, y in dataset:
+        logits = model(x, training=False)
+        for i in range(len(r)):
+            r[i] = np.concatenate([r[i], logits[np.squeeze(y) == i]], axis=0)
+
+    return np.concatenate([np.mean(ri, axis=0) for ri in r])
+
+
+def recommend_agent_clusters(agents, clusters=2, **kwargs):
+    data = []
+    for i in range(len(agents)):
+        a_data = []
+        for j in range(len(agents)):
+            vj = build_vector(agents[j].model, agents[i].test)
+            a_data.append(vj)
+        data.append(a_data)
+
+    def euc(i, j):
+        if isinstance(j, int):
+            return np.linalg.norm(data[i][j] - data[j][i])
+        return np.linalg.norm(data[i][i] - j)
+
+    def projection(i):
+        if isinstance(i, int):
+            return data[i][i]
+        return i
+
+    threshold = int(len(agents) / clusters)
+    return recommend_clusters(list(range(len(agents))),
+                              d=euc,
+                              p_vector=projection,
+                              v=lambda x: np.sqrt(threshold) if x > threshold else np.sqrt(x),
+                              **kwargs)
+
+
 if __name__ == '__main__':
+    # Alternative value of the group of size N (v)
+    # v=lambda x: np.sqrt(scf*thd) if x > thd else np.sqrt(scf*x)
     vv = np.asarray([
         [0, 0],
         [0, 1],
