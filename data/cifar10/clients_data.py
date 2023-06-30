@@ -20,7 +20,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
             clusters = [list(range(int(_/clusters))) for _ in clusters]
 
         rotations = kwargs.get('rotations', [0, 180])
-        labels_swaps = kwargs.get('labels_swaps', [[], [[8, 9]]])
+        labels_swaps = kwargs.get('labels_swaps', [[], []])
         # seed = kwargs.get('seed', 123)
         cluster_num = len(clusters)
         assert num_clients/cluster_num == int(num_clients/cluster_num)
@@ -55,14 +55,13 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
             pos = np.concatenate([pos_0, pos_1])
             y[pos] = np.concatenate([lbls_0, lbls_1])
 
-
         d_names = []
         for c, (ci, rot, ls) in enumerate(zip(clusters, rotations, labels_swaps)):
             d_names.extend([f'cifar10-c{c}'] * len(ci))
 
             for i in ci:
-                c_x_train[i] = [np.rot90(img, 2) for img in c_x_train[i]]
-                c_x_test[i] = [np.rot90(img, 2) for img in c_x_test[i]]
+                c_x_train[i] = [np.rot90(img, int(rot/90)) for img in c_x_train[i]]
+                c_x_test[i] = [np.rot90(img, int(rot/90)) for img in c_x_test[i]]
                 for l_swap in ls:
                     swap_labels(c_y_train[i], l_swap)
                     swap_labels(c_y_test[i], l_swap)
