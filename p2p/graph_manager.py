@@ -158,55 +158,19 @@ def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_c
     return g
 
 
-def create_acc_conns(n, create_using, **kwargs):
+def create_empty(n, create_using, **kwargs):
     return nx.empty_graph(n, create_using=create_using)
 
 
-def start_acc_conns(gm):
-    nodes = gm.nodes
-    num_neighbors = gm.num_neighbors
-
-    import tensorflow as tf
-
-    adj_mx = np.zeros((len(nodes), len(nodes)))
-    prob = np.zeros(adj_mx.shape)
-
-    data = gm.kwargs.get('data', 'train')
-    for i, ni in enumerate(nodes):
-        neigh_i = []
-
-        tf.keras.backend.clear_session()
-        ni_model = tf.keras.models.clone_model(ni.model)
-        ni_model.compile(optimizer=ni.model.optimizer.from_config(ni.model.optimizer.get_config()),
-                         loss=ni.model.loss,
-                         metrics=ni.model.metrics)
-
-        ni_model.fit(ni.train, epochs=10,
-                     validation_data=ni.test, verbose=0,
-                     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=1,
-                                                                 restore_best_weights=True)])
-
-        for j, nj in enumerate(nodes):
-            if i == j:
-                neigh_i.append(0)
-                continue
-            # acc_i = list(ni.eval_model(ni.model, nj.train if data == 'train' else nj.val).values())[0]
-            acc_i = list(nj.eval_model(ni_model, nj.train if data == 'train' else nj.val).values())[0]
-            neigh_i.append(acc_i)
-        del ni_model
-        prob[i] = np.array(neigh_i)
-
-    for i in range(len(prob)):
-        for ind in np.flip(np.argsort(prob[i])):
+def create_graph_from_conn_history(m, num_neighbors, create_using):
+    adj_mx = np.zeros(m.shape)
+    for i in np.flip(np.argsort(np.sum(m, axis=0))):
+        for ind in np.flip(np.argsort(m[:, i])):
             if sum(adj_mx[:, ind] > 0) < num_neighbors and i != ind:
                 adj_mx[i, ind] = 1
             if sum(adj_mx[i, :] > 0) == num_neighbors:
                 break
-    print("Final Send-Receive")
-    for i in range(len(adj_mx)):
-        print(i, "{}-{}".format(sum(adj_mx[i, :] > 0), sum(adj_mx[:, i] > 0)))
-    g = nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=nx.DiGraph() if gm._nx_graph.is_directed() else nx.Graph())
-    gm._nx_graph = g
+    return nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
 
 
 def prepare_for_clustering(nodes, use_data='data points'):
@@ -334,7 +298,7 @@ _graph_type_dict = {
     'torus': create_torus,
     'grid': create_grid,
     'sparse_clusters': lambda **kwargs: create_sparse_clusters(**kwargs),
-    'acc_conns': lambda **kwargs: create_acc_conns(**kwargs),
+    'acc_conns': lambda **kwargs: create_empty(**kwargs),
     'aucccr': lambda **kwargs: aucccr_clusters(**kwargs),
 }
 
@@ -361,6 +325,14 @@ class GraphManager:
             print('Changing graph communication matrix')
             self._nx_graph = self._resolve_graph_type()
             self._resolve_weights_mixing()
+        if self.graph_type == 'acc_conns' and time_iter == self.nodes[0].rounds and self.nodes[0].fixed_comm:
+            m = np.zeros((self.nodes_num, self.nodes_num))
+            for i, n in enumerate(self.nodes):
+                expected_samples = (n.top_m / self.nodes_num) * n.rounds
+                peers = {k.id: v for k, v in n.selected_peers.items() if v > expected_samples}
+                m[i, list(peers.keys())] = list(peers.values())
+            self._nx_graph = create_graph_from_conn_history(m, self.nodes[0].n_peers,
+                                                            nx.DiGraph() if gm._nx_graph.is_directed() else nx.Graph())
 
     def _resolve_graph_type(self,  **kwargs):
         assert self.graph_type in _graph_type_dict
@@ -411,8 +383,7 @@ class GraphManager:
         return self.nodes[node_id]
 
     def start(self):
-        if self.graph_type == 'acc_conns':
-            start_acc_conns(self)
+        pass
 
     def draw(self):
         nx.draw(self._nx_graph, pos=nx.spring_layout(self._nx_graph), with_labels=True)
