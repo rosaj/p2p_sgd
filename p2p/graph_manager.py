@@ -173,7 +173,7 @@ def create_graph_from_conn_history(m, num_neighbors, create_using):
     return nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
 
 
-def create_aucccr_graph(n, num_neighbors, create_using, nodes, clusters=2):
+def create_aucccr_graph(n, num_neighbors, create_using, nodes, clusters=2, **kwargs):
     import tensorflow as tf
     from data.metrics.aucccr import recommend_agent_clusters
     from collections import namedtuple
