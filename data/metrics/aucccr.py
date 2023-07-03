@@ -166,15 +166,15 @@ def recommend_agent_clusters(agents, clusters=2, **kwargs):
             a_data.append(vj)
         data.append(a_data)
 
-    def euc(i, j):
-        if isinstance(j, int):
-            return np.linalg.norm(data[i][j] - data[j][i])
-        return np.linalg.norm(data[i][i] - j)
+    def euc(x, y):
+        if isinstance(y, int):
+            return np.linalg.norm(data[x][y] - data[y][x])
+        return np.linalg.norm(data[x][x] - y)
 
-    def projection(i):
-        if isinstance(i, int):
-            return data[i][i]
-        return i
+    def projection(x):
+        if isinstance(x, int):
+            return data[x][x]
+        return x
 
     threshold = int(len(agents) / clusters)
     return recommend_clusters(list(range(len(agents))),

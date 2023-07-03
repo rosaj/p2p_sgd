@@ -173,120 +173,41 @@ def create_graph_from_conn_history(m, num_neighbors, create_using):
     return nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
 
 
-def prepare_for_clustering(nodes, use_data='data points'):
-    from data.metrics import convert_to_global_vector
-    if use_data == 'data points':
-        train = []
-        for a in nodes:
-            a_t = []
-            for dsi in list(a.train):
-                a_t.extend(dsi[1])
-            train.append(np.array(a_t))
+def create_aucccr_graph(n, num_neighbors, create_using, nodes, clusters=2):
+    import tensorflow as tf
+    from data.metrics.aucccr import recommend_agent_clusters
+    from collections import namedtuple
+    Agent = namedtuple("Agent", "model test")
+    agents = []
 
-        v_space = nodes[0].model.layers[-1].units
-        if v_space == 10_002:
-            train_ds = [t[t > 1] for t in train]  # 1-> OOV token, 0-> padding
-            labels = np.asarray(convert_to_global_vector([a - 2 for a in train_ds], 10_000))
-        else:
-            labels = np.asarray(convert_to_global_vector(train, v_space))
-    else:
-        v_space = []
-        for a in nodes:
-            v_space.extend(a._data['metadata-subreddits'])
-        v_space = np.unique(v_space)
-        labels = np.asarray(convert_to_global_vector([list(map(lambda x: list(v_space).index(x), a._data['metadata-subreddits'])) for a in nodes], len(v_space)))
+    for ni in nodes:
+        tf.keras.backend.clear_session()
+        ni_model = tf.keras.models.clone_model(ni.model)
+        ni_model.compile(optimizer=ni.model.optimizer.from_config(ni.model.optimizer.get_config()),
+                         loss=ni.model.loss,
+                         metrics=ni.model.metrics)
 
-    for i in range(len(labels)):
-        labels[i] /= labels[i].sum()
-    return labels
+        ni_model.fit(ni.train, epochs=20,
+                     validation_data=ni.test, verbose=0,
+                     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=1,
+                                                                 restore_best_weights=True)])
+        agents.append(Agent(ni_model, ni.test))
+    clusters = recommend_agent_clusters(agents, clusters=clusters)
+    print("AUCCCR clusters:", clusters)
+    if len(clusters) == 0:
+        raise ValueError("No clusters found")
 
+    if sum([len(c) for c in clusters]) != n:
+        print("Not all agents are clustered")
 
-def build_from_classes(pred, num_neighbors, create_using):
-
-    prob = np.zeros((len(pred), len(pred)))
-    for i in range(prob.shape[0]):
-        for j in range(prob.shape[1]):
-            if i == j:
-                continue
-            diff = abs(pred[i]-pred[j]) + 1
-            prob[i, j] = 1 / diff**2
-    return build_from_probabilities(prob, num_neighbors, create_using)
-
-
-def build_from_probabilities(prob, num_neighbors, create_using):
-    searches = 0
-    while True:
-        adj_mx = np.zeros(prob.shape)
-        for i in range(adj_mx.shape[0]):
-            p = np.copy(prob[i])
-
-            # remove all nodes that already have enough receiving neighbors
-            for j in range(p.shape[0]):
-                if p[j] > 0 and sum(adj_mx[:, j] > 0) >= num_neighbors:
-                    p[j] = 0
-
-            if sum(p > 0) < num_neighbors:
-                for j in range(p.shape[0]):
-                    if p[j] == 0 and sum(adj_mx[:, j] > 0) < num_neighbors:
-                        p[j] = 1e-10
-
-            p /= p.sum()  # Normalize
-            choices = np.random.choice(np.arange(0, prob[i].shape[0]), size=min(num_neighbors, sum(p > 0)), p=p, replace=False)
-            adj_mx[i, choices] = prob[i, choices]
-            # print(i, [prob[i, ki] for ki, k in enumerate(adj_mx[i]) if k])
-            searches += 1
-
-        np.fill_diagonal(adj_mx, 0)
-        if all([sum(adj_mx[a, :] > 0) == num_neighbors for a in range(adj_mx.shape[0])]) and all([sum(adj_mx[:, a] > 0) == num_neighbors for a in range(adj_mx.shape[0])])\
-                or searches > 10_000:
-            print(searches, "searches")
-            if searches > 10_000:
-                print("Suboptimal solution found")
-                for i in range(len(adj_mx)):
-                    print(i, "{}-{}".format(sum(adj_mx[i, :] > 0), sum(adj_mx[:, i] > 0)))
-            break
-
-    # for i in range(len(adj_mx)):
-    #     print(i, "{}-{}".format(sum(adj_mx[i, :] > 0), sum(adj_mx[:, i] > 0)))
-    graph = nx.from_numpy_matrix(adj_mx, create_using=create_using)
-    # nx.draw(graph, node_color=[["blue", "green", "red", "yellow", "black"][c] for c in pred], with_labels=True)
-    return graph
-
-
-def build_from_clusters(clusters, num_neighbors, create_using):
-    num_nodes = sum([len(c) for c in clusters])
-    adj_mx = np.zeros((num_nodes, num_nodes))
-    for cl in clusters:
-        g = sparse_graph(n=len(cl), num_neighbors=num_neighbors, create_using=create_using)
-        g_mx = nx.to_numpy_array(g)
-        for i in range(len(cl)):
-            adj_mx[cl[i]][np.array(cl)[g_mx[i].astype(np.int) > 0]] = 1
-
-    graph = nx.from_numpy_matrix(adj_mx, create_using=create_using)
-    """
-    pred = np.zeros(num_nodes)
-    for ci, c in enumerate(clusters):
-        for cl in c:
-            pred[cl] = ci
-    pred = pred.astype(np.int)
-    nx.draw(graph, node_color=[["blue", "green", "red", "yellow", "black"][c] for c in pred], with_labels=True)
-    # """
-    return graph
-
-
-def aucccr_clusters(nodes, create_using, num_neighbors, use_data='data points', form_clusters=False, **kwargs):
-    labels = prepare_for_clustering(nodes, use_data)
-    from data.metrics.aucccr import recommend_clusters, scf, thd
-    clusters = recommend_clusters(labels, v=lambda x: np.sqrt(scf*thd) if x > thd else np.sqrt(scf*x))
-    print("AUCCCR produced", len(clusters), "clusters with cluster lenghts:", [len(c) for c in clusters])
-    if not form_clusters:
-        pred = np.zeros(len(labels))
-        for ci, c in enumerate(clusters):
-            for cl in c:
-                pred[cl] = ci
-        return build_from_classes(pred, num_neighbors, create_using)
-    else:
-        return build_from_clusters(clusters, num_neighbors, create_using)
+    adj_mx = np.zeros((n, n))
+    for i, nc in enumerate(clusters):
+        nc_l = len(nc)
+        g = sparse_graph(nc_l, num_neighbors, create_using)
+        m = nx.to_numpy_matrix(g)
+        adj_mx[i*nc_l:nc_l*(i+1), i*nc_l:nc_l*(i+1)] = m
+    g = nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
+    return g
 
 
 _graph_type_dict = {
@@ -299,7 +220,7 @@ _graph_type_dict = {
     'grid': create_grid,
     'sparse_clusters': lambda **kwargs: create_sparse_clusters(**kwargs),
     'acc_conns': lambda **kwargs: create_empty(**kwargs),
-    'aucccr': lambda **kwargs: aucccr_clusters(**kwargs),
+    'aucccr': lambda **kwargs: create_aucccr_graph(**kwargs),
 }
 
 
@@ -332,7 +253,7 @@ class GraphManager:
                 peers = {k.id: v for k, v in n.selected_peers.items() if v > expected_samples}
                 m[i, list(peers.keys())] = list(peers.values())
             self._nx_graph = create_graph_from_conn_history(m, self.nodes[0].n_peers,
-                                                            nx.DiGraph() if gm._nx_graph.is_directed() else nx.Graph())
+                                                            nx.DiGraph() if self._nx_graph.is_directed() else nx.Graph())
 
     def _resolve_graph_type(self,  **kwargs):
         assert self.graph_type in _graph_type_dict
