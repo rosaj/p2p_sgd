@@ -59,8 +59,8 @@ class DacAgent(P2PAgent):
             neighbour_list = np.arange(self.graph.nodes_num)
             new_neighbours = []
             for peer_n, _ in self.saved_models.values():
-                new_neighbours += list(set(neighbour_list[peer_n.priors > 0])
-                                       - set(neighbour_list[self.selected_peers > 0])
+                new_neighbours += list(set(neighbour_list[np.array(peer_n.priors) > 0])
+                                       - set(neighbour_list[np.array(self.selected_peers) > 0])
                                        - {self.id})
             new_neighbours = np.unique(new_neighbours)
             for j in new_neighbours:
