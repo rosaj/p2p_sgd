@@ -23,7 +23,7 @@ class DacAgent(P2PAgent):
 
     def start(self):
         self.selected_peers = [0] * self.graph.nodes_num
-        super(DacAgent, self).start()
+        return super(DacAgent, self).start()
 
     @property
     def priors_norm(self):
