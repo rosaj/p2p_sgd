@@ -28,7 +28,7 @@ class DacAgent(P2PAgent):
     @property
     def priors_norm(self):
         if self.priors is None:
-            priors = np.ones(self.graph.nodes_num) / len(self.graph.nodes_num)
+            priors = np.ones(self.graph.nodes_num) / self.graph.nodes_num
             priors[self.id] = 0.0
             return priors / np.sum(priors)
 
