@@ -15,19 +15,20 @@ def tau_function(x, a, b):
 class DacAgent(P2PAgent):
     def __init__(self, tau=1, n_sampled=3, **kwargs):
         super(DacAgent, self).__init__(**kwargs)
-        self.priors = None
         self.tau = tau
         self.n_sampled = n_sampled
         self.saved_models = {}
         self.selected_peers = None
+        self.priors = None
 
     def start(self):
         self.selected_peers = [0] * self.graph.nodes_num
+        self.priors = [0] * self.graph.nodes_num
         return super(DacAgent, self).start()
 
     @property
     def priors_norm(self):
-        if self.priors is None:
+        if sum(self.priors) == 0:
             priors = np.ones(self.graph.nodes_num) / self.graph.nodes_num
             priors[self.id] = 0.0
             return priors / np.sum(priors)
@@ -52,9 +53,6 @@ class DacAgent(P2PAgent):
 
                 # We want to receive more messages from this peer so mark us as selected peer
                 peer.selected_peers[self.id] += 1
-
-                if self.priors is None:
-                    self.priors = [0] * self.graph.nodes_num
                 self.priors[peer.id] = 1 / peer_loss
 
             # Two-hop neighbor priors estimation
