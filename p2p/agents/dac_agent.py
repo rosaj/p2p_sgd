@@ -37,7 +37,7 @@ class DacAgent(P2PAgent):
         return softmax_scale(self.priors[not_i_idx], self.tau)
 
     def send_to_peers(self):
-        pn = list(self.priors_norm)
+        pn = np.copy(self.priors_norm)
         del pn[self.id]
         peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False, p=pn)
         for peer in peers:
