@@ -13,9 +13,10 @@ def tau_function(x, a, b):
 
 
 class DacAgent(P2PAgent):
-    def __init__(self, tau=1, n_sampled=3, **kwargs):
+    def __init__(self, tau=30, dac_var=True, n_sampled=3, **kwargs):
         super(DacAgent, self).__init__(**kwargs)
         self.tau = tau
+        self.dac_var = dac_var
         self.n_sampled = n_sampled
         self.saved_models = {}
         self.selected_peers = None
@@ -35,7 +36,10 @@ class DacAgent(P2PAgent):
             return priors[np.arange(len(priors)) != self.id]
 
         not_i_idx = np.arange(len(self.priors)) != self.id
-        return softmax_scale(self.priors[not_i_idx], self.tau)
+        tau = self.tau
+        if self.dac_var:
+            tau = tau_function(len(self.hist['examples'])-1, self.tau, 0.2)
+        return softmax_scale(self.priors[not_i_idx], tau)
 
     def send_to_peers(self):
         peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False, p=self.priors_norm)
