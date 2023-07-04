@@ -186,12 +186,9 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, clusters=2, **kwa
         ni_model.compile(optimizer=ni.model.optimizer.from_config(ni.model.optimizer.get_config()),
                          loss=ni.model.loss,
                          metrics=ni.model.metrics)
-
-        ni_model.fit(ni.train, epochs=20,
-                     validation_data=ni.test, verbose=0,
-                     callbacks=[tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=1,
-                                                                 restore_best_weights=True)])
+        ni_model.fit(ni.train, epochs=15, verbose=0)
         agents.append(Agent(ni_model, ni.test))
+
     clusters = recommend_agent_clusters(agents, clusters=clusters)
     print("AUCCCR clusters:", clusters)
     if len(clusters) == 0:

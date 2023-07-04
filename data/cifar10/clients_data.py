@@ -53,7 +53,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
             lbls_0 = y[pos_0]
             lbls_1 = y[pos_1]
             pos = np.concatenate([pos_0, pos_1])
-            y[pos] = np.concatenate([lbls_0, lbls_1])
+            y[pos] = np.concatenate([lbls_1, lbls_0])
 
         d_names = []
         for c, (ci, rot, ls) in enumerate(zip(clusters, rotations, labels_swaps)):

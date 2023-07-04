@@ -157,7 +157,7 @@ def build_vector(model, dataset):
     return np.concatenate([np.mean(ri, axis=0) for ri in r])
 
 
-def recommend_agent_clusters(agents, clusters=2, **kwargs):
+def recommend_agent_clusters(agents, clusters=2, threshold=-1, **kwargs):
     data = []
     for i in range(len(agents)):
         a_data = []
@@ -176,7 +176,8 @@ def recommend_agent_clusters(agents, clusters=2, **kwargs):
             return data[x][x]
         return x
 
-    threshold = int(len(agents) / clusters)
+    if threshold < 0:
+        threshold = int(len(agents) / clusters)
     return recommend_clusters(list(range(len(agents))),
                               d=euc,
                               p_vector=projection,
