@@ -31,14 +31,14 @@ class DacAgent(P2PAgent):
         if sum(self.priors) == 0:
             priors = np.ones(self.graph.nodes_num) / self.graph.nodes_num
             priors[self.id] = 0.0
-            return priors / np.sum(priors)
+            priors = priors / np.sum(priors)
+            return priors[np.arange(len(priors)) != self.id]
 
         not_i_idx = np.arange(len(self.priors)) != self.id
         return softmax_scale(self.priors[not_i_idx], self.tau)
 
     def send_to_peers(self):
-        pn = self.priors_norm[np.arange(len(self.priors)) != self.id]
-        peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False, p=pn)
+        peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False, p=self.priors_norm)
         for peer in peers:
             peer.receive_message(self)
 
