@@ -17,13 +17,15 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
     if mode == 'clusters':
         clusters = kwargs.get('clusters', [list(range(int(num_clients/2))), list(range(int(num_clients/2)))])
         if isinstance(clusters, int):
-            clusters = [list(range(int(_/clusters))) for _ in clusters]
+            clusters = [list(range(int(_/clusters))) for _ in range(clusters)]
 
-        rotations = kwargs.get('rotations', [0, 180])
-        labels_swaps = kwargs.get('labels_swaps', [[], []])
+        rotations = kwargs.get('rotations', [0] * len(clusters))
+        label_swaps = kwargs.get('label_swaps', [[] for _ in clusters])
+        label_partitions = kwargs.get('label_partitions', [np.array(list(set(y_train))) for _ in clusters])
         # seed = kwargs.get('seed', 123)
         cluster_num = len(clusters)
         assert num_clients/cluster_num == int(num_clients/cluster_num)
+        assert cluster_num == len(rotations) == len(label_swaps) == len(label_partitions)
         c_x_train, c_y_train = [[] for _ in range(num_clients)], [[] for _ in range(num_clients)]
         c_x_test, c_y_test = [[] for _ in range(num_clients)], [[] for _ in range(num_clients)]
 
@@ -56,7 +58,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
             y[pos] = np.concatenate([lbls_1, lbls_0])
 
         d_names = []
-        for c, (ci, rot, ls) in enumerate(zip(clusters, rotations, labels_swaps)):
+        for c, (ci, rot, ls, lp) in enumerate(zip(clusters, rotations, label_swaps, label_partitions)):
             d_names.extend([f'cifar10-c{c}'] * len(ci))
 
             for i in ci:
@@ -65,6 +67,14 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
                 for l_swap in ls:
                     swap_labels(c_y_train[i], l_swap)
                     swap_labels(c_y_test[i], l_swap)
+
+                train_i = np.isin(c_y_train[i], lp)
+                c_x_train[i] = c_x_train[i][train_i]
+                c_y_train[i] = c_y_train[i][train_i]
+
+                test_i = np.isin(c_y_test[i], lp)
+                c_x_test[i] = c_x_test[i][test_i]
+                c_y_test[i] = c_y_test[i][test_i]
 
         c_train = list(zip(c_x_train, c_y_train))
         c_test = list(zip(c_x_test, c_y_test))
