@@ -15,9 +15,13 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
     y_test = np.squeeze(y_test)
 
     if mode == 'clusters':
-        clusters = kwargs.get('clusters', [list(range(int(num_clients/2))), list(range(int(num_clients/2)))])
+        clusters = kwargs.get('clusters', 2)
         if isinstance(clusters, int):
-            clusters = [list(range(int(_/clusters))) for _ in range(clusters)]
+            cluster_num = clusters
+            clusters = []
+            for c in range(cluster_num):
+                cli_num = int(num_clients / cluster_num)
+                clusters.append(list(range(cli_num*c, cli_num*(c+1))))
 
         rotations = kwargs.get('rotations', [0] * len(clusters))
         label_swaps = kwargs.get('label_swaps', [[] for _ in clusters])
@@ -62,8 +66,8 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
             d_names.extend([f'cifar10-c{c}'] * len(ci))
 
             for i in ci:
-                c_x_train[i] = [np.rot90(img, int(rot/90)) for img in c_x_train[i]]
-                c_x_test[i] = [np.rot90(img, int(rot/90)) for img in c_x_test[i]]
+                c_x_train[i] = np.array([np.rot90(img, int(rot/90)) for img in c_x_train[i]])
+                c_x_test[i] = np.array([np.rot90(img, int(rot/90)) for img in c_x_test[i]])
                 for l_swap in ls:
                     swap_labels(c_y_train[i], l_swap)
                     swap_labels(c_y_test[i], l_swap)
