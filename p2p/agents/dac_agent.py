@@ -14,7 +14,7 @@ def tau_function(x, a, b):
 
 
 class DacAgent(SyncAgent):
-    def __init__(self, tau=30, dac_var=True, n_sampled=3, **kwargs):
+    def __init__(self, tau=30, dac_var=False, n_sampled=3, **kwargs):
         super(DacAgent, self).__init__(**kwargs)
         self.tau = tau
         self.dac_var = dac_var
