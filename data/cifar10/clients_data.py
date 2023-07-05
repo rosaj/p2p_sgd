@@ -37,7 +37,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
             ds_label = x_ds[np.squeeze(np.argwhere(y_ds == lbl))]
             dx_split = np.split(ds_label, num_clients)
             for i, x in enumerate(dx_split):
-                c_x[i].extend(x)
+                c_x[i].extend(np.copy(x))
                 c_y[i].extend([lbl] * len(x))
 
         for label in set(y_train):
