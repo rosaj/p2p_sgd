@@ -1,8 +1,9 @@
-from p2p.agents.p2p_agent import *
+from p2p.agents.sync_agent import *
+from models.abstract_model import weights_average
 import numpy as np
 
 
-class PensAgent(P2PAgent):
+class PensAgent(SyncAgent):
     def __init__(self, rounds=100, n_sampled=6, top_m=3, n_peers=3, fixed_comm=False, **kwargs):
         super(PensAgent, self).__init__(**kwargs)
         self.rounds = rounds
@@ -11,14 +12,17 @@ class PensAgent(P2PAgent):
         self.n_peers = n_peers
         self.fixed_comm = fixed_comm
         self.iteration = 0
-        self.saved_models = {}
         self.selected_peers = {}
+        self.new_weights = None
 
     def train_fn(self):
+        if self.new_weights is not None:
+            self.set_model_weights(self.new_weights)
+            self.new_weights = None
         self.iteration += 1
         return super(PensAgent, self).train_fn()
 
-    def send_to_peers(self):
+    def pull_from_peers(self):
         if self.iteration < self.rounds:
             peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False)
         else:
@@ -31,31 +35,21 @@ class PensAgent(P2PAgent):
                 if len(graph_peers) != 0:
                     peers = graph_peers
         for peer in peers:
-            peer.receive_message(self)
+            super(PensAgent, self).receive_message(peer)
 
-    def receive_message(self, other_agent):
         if self.iteration < self.rounds:
-            loss = self.eval_model_loss(other_agent.model, self.train)
-            self.saved_models[loss] = [other_agent, other_agent.get_model_weights()]
-            if len(self.saved_models) == self.n_sampled:
-                top_m = list(dict(sorted(self.saved_models.items())).values())[:self.top_m]
-                weights = self.get_model_weights()
-                for peer, peer_weights in top_m:
-                    weights = tf.nest.map_structure(lambda a, b: (a + b) / 2.0, weights, peer_weights)
+            saved_models = {self.eval_model_loss(p.model, self.train): p for p in peers}
+            peers = list(dict(sorted(saved_models.items())).values())[:self.top_m]
+            for peer in peers:
+                # We want to receive more messages from this peer so mark as selected peer
+                if peer not in self.selected_peers:
+                    self.selected_peers[peer] = 0
+                self.selected_peers[peer] += 1
 
-                    # We want to receive more messages from this peer so mark us as selected peer
-                    if self not in peer.selected_peers:
-                        peer.selected_peers[self] = 0
-                    peer.selected_peers[self] += 1
-                # weights = weights_average([self.get_model_weights()] + [peer.get_model_weights() for peer in top_m])
+        alphas = [self.train_len] + [peer.train_len for peer in peers]
+        ws = [self.get_model_weights()] + [peer.get_model_weights() for peer in peers]
+        self.new_weights = weights_average(ws, alphas)
 
-                if self.received_msg:
-                    self.send_to_peers()
-                self.set_model_weights(weights)
-                self.saved_models.clear()
-                self.received_msg = True
-                self.train_rounds = 1
-            return super(P2PAgent, self).receive_message(other_agent)
-        else:
-            return super(PensAgent, self).receive_message(other_agent)
+    def sync_parameters(self):
+        self.pull_from_peers()
 

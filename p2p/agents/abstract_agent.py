@@ -27,6 +27,7 @@ class Agent:
         self.hist = {"examples":      [0],
                      "train_len":     self.train_len,
                      "useful_msg":    [0],
+                     "sent_msg":      [0],
                      "useless_msg":   [0],
                      "model_name":    self.model.name,
                      }
@@ -161,6 +162,7 @@ class Agent:
 
     def receive_message(self, other_agent):
         self.hist["useful_msg"][-1] += 1
+        other_agent.hist["sent_msg"][-1] += 1
         return True
 
     def reject_message(self, other_agent):
@@ -188,6 +190,7 @@ class Agent:
     def calc_new_metrics(self, metrics_names=None):
         self.hist["examples"].append(self.trained_examples)
         self.hist["useful_msg"].append(0)
+        self.hist["sent_msg"].append(0)
         self.hist["useless_msg"].append(0)
 
         self._add_hist_metric(self._eval_train_metrics(self.model), "train_model", metrics_names)
