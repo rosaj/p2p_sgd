@@ -26,6 +26,9 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
         rotations = kwargs.get('rotations', [0] * len(clusters))
         label_swaps = kwargs.get('label_swaps', [[] for _ in clusters])
         label_partitions = kwargs.get('label_partitions', [np.array(list(set(y_train))) for _ in clusters])
+        samples = kwargs.get('samples', -1)
+        val_ratio = kwargs.get('val_ratio', 0.2)
+
         # seed = kwargs.get('seed', 123)
         cluster_num = len(clusters)
         assert num_clients/cluster_num == int(num_clients/cluster_num)
@@ -62,6 +65,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
             y[pos] = np.concatenate([lbls_1, lbls_0])
 
         d_names = []
+        c_x_val, c_y_val = [[] for _ in range(num_clients)], [[] for _ in range(num_clients)]
         for c, (ci, rot, ls, lp) in enumerate(zip(clusters, rotations, label_swaps, label_partitions)):
             d_names.extend([f'cifar10-c{c}'] * len(ci))
 
@@ -80,9 +84,31 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
                 c_x_test[i] = c_x_test[i][test_i]
                 c_y_test[i] = c_y_test[i][test_i]
 
+                tr_len = len(c_y_train[i])
+                val_i = np.random.choice(np.arange(tr_len), int(tr_len*val_ratio), replace=False)
+                c_x_val[i] = c_x_train[i][val_i]
+                c_y_val[i] = c_y_train[i][val_i]
+                tr_i = np.logical_not(np.isin(np.arange(tr_len), val_i))
+                c_x_train[i] = c_x_train[i][tr_i]
+                c_y_train[i] = c_y_train[i][tr_i]
+
+                if samples > 0:
+                    if samples > len(c_y_train[i]):
+                        raise ValueError(f"Samples required: {samples}, samples required: {c_y_train[i]}")
+                    labels = list(set(c_y_train[i]))
+                    samples_per_label = int(samples/len(labels))
+                    inds = []
+                    for label in labels:
+                        li = np.random.choice(np.squeeze(np.argwhere(c_y_train[i] == label)),
+                                              samples_per_label, replace=False)
+                        inds.extend(li)
+                    c_x_train[i] = c_x_train[i][inds]
+                    c_y_train[i] = c_y_train[i][inds]
+
         c_train = list(zip(c_x_train, c_y_train))
         c_test = list(zip(c_x_test, c_y_test))
-        c_val = list(zip(np.array_split(x_test, num_clients), np.array_split(y_test, num_clients)))
+        c_val = list(zip(c_x_val, c_y_val))
+        # c_val = list(zip(np.array_split(x_test, num_clients), np.array_split(y_test, num_clients)))
         data = {
             "train": c_train,
             "val": c_val,

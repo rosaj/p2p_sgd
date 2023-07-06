@@ -187,7 +187,7 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, clusters=2, **kwa
                          loss=ni.model.loss,
                          metrics=ni.model.metrics)
         ni_model.fit(ni.train, epochs=15, verbose=0)
-        agents.append(Agent(ni_model, ni.test))
+        agents.append(Agent(ni_model, ni.val))
 
     clusters = recommend_agent_clusters(agents, clusters=clusters)
     print("AUCCCR clusters:", clusters)
