@@ -8,3 +8,4 @@ from .async_agent import AsyncAgent
 from .bert_agent import BertAgent
 from .pens_agent import PensAgent
 from .dac_agent import DacAgent
+from .gossip_pull_agent import GossipPullAgent
