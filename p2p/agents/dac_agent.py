@@ -69,11 +69,13 @@ class DacAgent(SyncAgent):
                                    - {self.id})
         new_neighbours = np.unique(new_neighbours)
         for j in new_neighbours:
-            prior_j = 0
+            prior_j = []
             for k, peer_k in enumerate(peers):
                 score_kj = self.graph.nodes[peer_k.id].priors[j]
-                prior_j = max(prior_j, score_kj)
-            self.priors[j] = prior_j
+                if score_kj > 0:
+                    prior_j.append((self.priors[peer_k.id], score_kj))
+            prior_j.sort(key=lambda x: x[0])
+            self.priors[j] = prior_j[-1][1]
 
     def sync_parameters(self):
         self.pull_from_peers()
