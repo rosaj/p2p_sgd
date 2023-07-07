@@ -24,11 +24,17 @@ class PensAgent(SyncAgent):
 
     def pull_from_peers(self):
         if self.iteration < self.rounds:
-            peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False)
+            p = np.arange(self.graph.nodes_num)
+            p = p[p != self.id]
+            indx = np.random.choice(p, self.n_sampled, replace=False)
+            peers = [p for p in self.graph.nodes if p.id in indx]
+            # peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False)
         else:
             expected_samples = (self.top_m / self.graph.nodes_num) * self.rounds
             peers = [k for k, v in self.selected_peers.items() if v > expected_samples]
-            peers = np.random.choice(peers, size=self.n_peers, replace=False)
+            indx = np.random.choice(np.array([p.id for p in peers]), self.n_peers, replace=False)
+            peers = [p for p in peers if p.id in indx]
+            # peers = np.random.choice(peers, size=self.n_peers, replace=False)
             if self.fixed_comm:
                 graph_peers = self.graph.get_peers(self.id)
                 # If the comm matrix is built, use that peers in fixed communication
@@ -49,6 +55,8 @@ class PensAgent(SyncAgent):
         alphas = [self.train_len] + [peer.train_len for peer in peers]
         ws = [self.get_model_weights()] + [peer.get_model_weights() for peer in peers]
         self.new_weights = weights_average(ws, alphas)
+
+        self.hist['selected_peers'] = self.selected_peers
 
     def sync_parameters(self):
         self.pull_from_peers()

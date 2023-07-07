@@ -49,7 +49,11 @@ class DacAgent(SyncAgent):
         return softmax_scale(self.priors[not_i_idx], tau)
 
     def pull_from_peers(self):
-        peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False, p=self.priors_norm)
+        p = np.arange(self.graph.nodes_num)
+        p = p[p != self.id]
+        indx = np.random.choice(p, self.n_sampled, replace=False, p=self.priors_norm)
+        peers = [p for p in self.graph.nodes if p.id in indx]
+        # peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False, p=self.priors_norm)
         for other_agent in peers:
             super(DacAgent, self).receive_message(other_agent)
             loss = self.eval_model_loss(other_agent.model, self.train)
@@ -76,6 +80,9 @@ class DacAgent(SyncAgent):
                     prior_j.append((self.priors[peer_k.id], score_kj))
             prior_j.sort(key=lambda x: x[0])
             self.priors[j] = prior_j[-1][1]
+        
+        self.hist['selected_peers'] = self.selected_peers
+        self.hist['priors'] = self.priors
 
     def sync_parameters(self):
         self.pull_from_peers()
