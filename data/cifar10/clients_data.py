@@ -1,6 +1,5 @@
 from tensorflow import keras
 import numpy as np
-from data.util import random_choice_with_seed
 
 
 def load_clients_data(num_clients=100, mode='clusters', **kwargs):
@@ -38,8 +37,10 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
 
         def do_split(x_ds, y_ds, c_x, c_y, lbl):
             ds_label = x_ds[np.squeeze(np.argwhere(y_ds == lbl))]
-            dx_split = np.split(ds_label, num_clients)
-            for i, x in enumerate(dx_split):
+            cli_ind = [cl for cl, lp in zip(clusters, label_partitions) if lbl in lp]
+            cli_ind = [subitem for item in cli_ind for subitem in item]
+            dx_split = np.split(ds_label, len(cli_ind))
+            for i, x in zip(cli_ind, dx_split):
                 c_x[i].extend(np.copy(x))
                 c_y[i].extend([lbl] * len(x))
 
@@ -66,7 +67,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
 
         d_names = []
         c_x_val, c_y_val = [[] for _ in range(num_clients)], [[] for _ in range(num_clients)]
-        for c, (ci, rot, ls, lp) in enumerate(zip(clusters, rotations, label_swaps, label_partitions)):
+        for c, (ci, rot, ls) in enumerate(zip(clusters, rotations, label_swaps)):
             d_names.extend([f'cifar10-c{c}'] * len(ci))
 
             for i in ci:
@@ -76,21 +77,15 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
                     swap_labels(c_y_train[i], l_swap)
                     swap_labels(c_y_test[i], l_swap)
 
-                train_i = np.isin(c_y_train[i], lp)
-                c_x_train[i] = c_x_train[i][train_i]
-                c_y_train[i] = c_y_train[i][train_i]
+                for label in set(c_y_train[i]):
+                    lbl_inds = np.squeeze(np.argwhere(c_y_train[i] == label))
+                    l_ind = np.random.choice(lbl_inds, int(val_ratio*len(lbl_inds)), replace=False)
+                    c_x_val[i].extend(c_x_train[i][l_ind])
+                    c_y_val[i].extend(c_y_train[i][l_ind])
 
-                test_i = np.isin(c_y_test[i], lp)
-                c_x_test[i] = c_x_test[i][test_i]
-                c_y_test[i] = c_y_test[i][test_i]
-
-                tr_len = len(c_y_train[i])
-                val_i = np.random.choice(np.arange(tr_len), int(tr_len*val_ratio), replace=False)
-                c_x_val[i] = c_x_train[i][val_i]
-                c_y_val[i] = c_y_train[i][val_i]
-                tr_i = np.logical_not(np.isin(np.arange(tr_len), val_i))
-                c_x_train[i] = c_x_train[i][tr_i]
-                c_y_train[i] = c_y_train[i][tr_i]
+                    tr_i = np.logical_not(np.isin(np.arange(len(c_y_train[i])), l_ind))
+                    c_x_train[i] = c_x_train[i][tr_i]
+                    c_y_train[i] = c_y_train[i][tr_i]
 
                 if samples > 0:
                     if samples > len(c_y_train[i]):
