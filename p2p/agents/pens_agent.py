@@ -56,7 +56,7 @@ class PensAgent(SyncAgent):
         ws = [self.get_model_weights()] + [peer.get_model_weights() for peer in peers]
         self.new_weights = weights_average(ws, alphas)
 
-        self.hist['selected_peers'] = self.selected_peers
+        self.hist['selected_peers'] = {p.id: v for p, v in self.selected_peers.items()}
 
     def sync_parameters(self):
         self.pull_from_peers()
