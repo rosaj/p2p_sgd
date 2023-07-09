@@ -40,10 +40,10 @@ class PanmAgent(SyncAgent):
         self.neighbor_bag = []
 
     def start(self):
-        super(PanmAgent, self).start()
         self.initial_weights = self.get_model_weights()
         self.new_weights = self.initial_weights
         self.similar_peers = np.zeros(self.graph.nodes_num)
+        return super(PanmAgent, self).start()
 
     def train_fn(self):
         if self.new_weights is not None:
