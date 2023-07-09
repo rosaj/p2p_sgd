@@ -9,3 +9,4 @@ from .bert_agent import BertAgent
 from .pens_agent import PensAgent
 from .dac_agent import DacAgent
 from .gossip_pull_agent import GossipPullAgent
+from .panm_agent import PanmAgent
