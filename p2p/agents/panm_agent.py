@@ -23,7 +23,7 @@ def calc_vectorized_updates(weights, initial_weights):
 
 
 class PanmAgent(SyncAgent):
-    def __init__(self, method='loss', rounds=50, top_m=3, n_sampled=6, theta=10, alpha=0.5, **kwargs):
+    def __init__(self, method='loss', rounds=100, top_m=3, n_sampled=6, theta=10, alpha=0.5, **kwargs):
         super(PanmAgent, self).__init__(**kwargs)
         assert method in ['loss', 'grad']
         self.method = method

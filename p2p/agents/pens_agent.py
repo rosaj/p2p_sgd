@@ -4,7 +4,7 @@ import numpy as np
 
 
 class PensAgent(SyncAgent):
-    def __init__(self, rounds=50, n_sampled=6, top_m=3, n_peers=3, fixed_comm=False, **kwargs):
+    def __init__(self, rounds=100, n_sampled=6, top_m=3, n_peers=3, fixed_comm=False, **kwargs):
         super(PensAgent, self).__init__(**kwargs)
         self.rounds = rounds
         self.n_sampled = n_sampled
