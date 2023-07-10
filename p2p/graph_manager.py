@@ -211,6 +211,66 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, clusters=None, **
     return g
 
 
+def create_d_cliques(n, nodes, k_steps=50, clique_size=10, **kwargs):
+    num_labels = nodes.model.layers[-1].units
+    agents = np.zeros((n, num_labels))
+    for i, a in enumerate(nodes):
+        a_labels = np.array([y for x, y in a.train]).flatten()
+        values, counts = np.unique(a_labels, return_counts=True)
+        agents[i, values] = counts
+
+    dc = []
+    # Random sparation into cliques
+    a_ind = np.arange(len(agents))
+    while len(a_ind) > 0:
+        dc.append(np.random.choice(a_ind, size=clique_size, replace=False))
+        a_ind = a_ind[np.logical_not(np.isin(a_ind, dc[-1]))]
+
+    def skew(clique):
+        return [abs(1/len(clique)*sum([agents[c][l] for c in clique]) - 1/len(agents)*sum([agents[c][l] for c in np.array(dc).flatten()]))
+                for l in range(num_labels)]
+
+    for k in range(k_steps):
+        c_ind = np.random.choice(np.arange(len(dc)), size=2, replace=False)
+        c1, c2 = dc[c_ind[0]], dc[c_ind[1]]
+        s = skew(c1) + skew(c2)
+        swaps = []
+        for i, j in zip(c1, c2):
+            s_ = skew(np.concatenate([c1[c1 != i], [j]])) + skew(np.concatenate([c2[c2 != j], [i]]))
+            if s_ < s:
+                swaps.append(((c1, i), (c2, j)))
+        if len(swaps) > 0:
+            (c1, i), (c2, j) = swaps[np.random.choice(np.arange(len(swaps)), size=1, replace=False)[0]]
+            np.concatenate([c1[c1 != i], [j]])
+            c1_ind = np.squeeze(np.argwhere(c1 == i))
+            val = c2[np.squeeze(np.argwhere(c2 == j))]
+            c2[np.squeeze(np.argwhere(c2 == j))] = c1[c1_ind]
+            c1[c1_ind] = val
+
+    # fully connected inter-clique
+    adj_mx = np.zeros((n, n))
+    for i, nc in enumerate(dc):
+        nc_l = len(nc)
+        g = _graph_type_dict['complete'](n=nc_l, create_using=nx.Graph())
+        m = nx.to_numpy_array(g)
+        nc = np.sort(nc)
+        for nci, mi in zip(nc, m):
+            adj_mx[nci, nc[mi > 0]] = 1
+
+    for ci in range(len(dc)):
+        for cj in range(ci+1, len(dc)):
+            ci_ind = dc[ci][np.argsort([sum(adj_mx[i, :] > 0) for i in dc[ci]])[0]]
+            cj_ind = dc[cj][np.argsort([sum(adj_mx[j, :] > 0) for j in dc[cj]])[0]]
+            adj_mx[ci_ind, cj_ind] = 1
+            adj_mx[cj_ind, ci_ind] = 1
+
+    # for i in range(len(adj_mx)):
+    #     print(i, "{}-{}".format(sum(adj_mx[i, :] > 0), sum(adj_mx[:, i] > 0)))
+
+    g = nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=nx.Graph())
+    return g, dc
+
+
 _graph_type_dict = {
     'complete': lambda **kwargs: nx.complete_graph(kwargs['n'], create_using=kwargs['create_using']),
     'ring': lambda **kwargs: create_ring(kwargs['n'], create_using=kwargs['create_using']),
@@ -222,6 +282,7 @@ _graph_type_dict = {
     'sparse_clusters': lambda **kwargs: create_sparse_clusters(**kwargs),
     'acc_conns': lambda **kwargs: create_empty(**kwargs),
     'aucccr': lambda **kwargs: create_aucccr_graph(**kwargs),
+    'd-cliques': create_d_cliques
 }
 
 
@@ -234,6 +295,7 @@ class GraphManager:
         self.time_varying = time_varying
         self.num_neighbors = num_neighbors
         self.graph_type = graph_type
+        self.graph_data = None
         self.kwargs = kwargs
         self._nx_graph = self._resolve_graph_type(**kwargs)
         self._resolve_weights_mixing()
@@ -268,6 +330,8 @@ class GraphManager:
                   }
         kwargs.update(params)
         graph = graph_fn(**kwargs)
+        if isinstance(graph, list) or isinstance(graph, tuple):
+            graph, self.graph_data = graph
         return graph
 
     def _resolve_weights_mixing(self):

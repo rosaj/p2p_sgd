@@ -86,3 +86,6 @@ class DacAgent(SyncAgent):
 
     def sync_parameters(self):
         self.pull_from_peers()
+
+    def update_parameters(self):
+        pass

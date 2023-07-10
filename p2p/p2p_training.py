@@ -71,6 +71,8 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
                     pbar.update(agent.train_fn())
             for agent in agents:
                 agent.sync_parameters()
+            for agent in agents:
+                agent.update_parameters()
         else:
             possible_a = [a for a in agents if a.can_be_awaken()]
             if len(possible_a) == 0:

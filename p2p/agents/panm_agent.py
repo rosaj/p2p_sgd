@@ -46,9 +46,7 @@ class PanmAgent(SyncAgent):
         return super(PanmAgent, self).start()
 
     def train_fn(self):
-        if self.new_weights is not None:
-            self.set_model_weights(self.new_weights)
-            self.new_weights = None
+        self.set_model_weights(self.new_weights)
         self.iteration += 1
         return super(PanmAgent, self).train_fn()
 
@@ -66,7 +64,7 @@ class PanmAgent(SyncAgent):
             hj = calc_vectorized_updates(peer.get_model_weights(), self.initial_weights)
             cos_2 = tf.keras.losses.cosine_similarity(hi, hj, axis=1)
 
-            return cos_1*self.alpha + (1-self.alpha)*cos_2
+            return float((cos_1*self.alpha + (1-self.alpha)*cos_2).numpy())
 
         raise ValueError(f"Invalid method {self.method}")
 
@@ -114,7 +112,7 @@ class PanmAgent(SyncAgent):
             h_peers = list(np.array(combined_ind)[np.squeeze(np.argwhere(labels == h_label))])
             self.neighbor_bag = list((set(self.neighbor_bag) - set(selected_peers)).union(set(h_peers)))
 
-        n_i = np.random.choice(self.neighbor_bag, self.top_m, replace=False)
+        n_i = np.random.choice(self.neighbor_bag, min(self.top_m, len(self.neighbor_bag)), replace=False)
         peers = [p for p in self.graph.nodes if p.id in n_i]
         return peers
 
@@ -131,4 +129,6 @@ class PanmAgent(SyncAgent):
     def sync_parameters(self):
         self.pull_from_peers()
 
+    def update_parameters(self):
+        pass
 
