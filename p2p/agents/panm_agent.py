@@ -107,8 +107,8 @@ class PanmAgent(SyncAgent):
             gm = GaussianMixtureModel(n_components=2, initial_resp=[[1, 0] for _ in indx] + [[0, 1] for _ in selected_peers])
             labels = gm.fit_predict(X=sims)
             sims = np.array(sims)
-            h_label = np.argsort(np.array([np.squeeze(sims[np.argwhere(labels == 0)]).sum(),
-                                           np.squeeze(sims[np.argwhere(labels == 1)]).sum()]))[-1]
+            h_label = np.argsort(np.array([np.squeeze(sims[np.argwhere(labels == 0)]).mean(),
+                                           np.squeeze(sims[np.argwhere(labels == 1)]).mean()]))[-1]
             h_peers = list(np.array(combined_ind)[np.squeeze(np.argwhere(labels == h_label))])
             self.neighbor_bag = list((set(self.neighbor_bag) - set(selected_peers)).union(set(h_peers)))
 
