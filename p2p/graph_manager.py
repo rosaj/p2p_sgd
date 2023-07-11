@@ -212,7 +212,7 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, clusters=None, **
 
 
 def create_d_cliques(n, nodes, k_steps=50, clique_size=10, **kwargs):
-    num_labels = nodes.model.layers[-1].units
+    num_labels = nodes[0].model.layers[-1].units
     agents = np.zeros((n, num_labels))
     for i, a in enumerate(nodes):
         a_labels = np.array([y for x, y in a.train]).flatten()
