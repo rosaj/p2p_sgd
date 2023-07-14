@@ -88,11 +88,8 @@ class L2CAgent(SyncAgent):
         # Cut K_0 peers from communication matrix
         if self.iteration == self.t_0:
             inds = np.argsort(mixing_weights)
-            if self.id in inds[self.k_0:]:
-                print(f"SELF {self.id} is in top k")
-                self.mixing_weight_mask = np.sort(inds[self.k_0 - 1:])
-            else:
-                self.mixing_weight_mask = np.sort(inds[self.k_0:])
+            inds = inds[inds != self.id]
+            self.mixing_weight_mask = np.sort(inds)[self.k_0:]
 
     def sync_parameters(self):
         self.aggregation()
