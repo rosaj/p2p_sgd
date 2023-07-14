@@ -215,7 +215,11 @@ def create_d_cliques(n, nodes, k_steps=50, clique_size=10, **kwargs):
     num_labels = nodes[0].model.layers[-1].units
     agents = np.zeros((n, num_labels))
     for i, a in enumerate(nodes):
-        a_labels = np.array([y for x, y in a.train]).flatten()
+        # a_labels = np.array([y for x, y in a.train]).flatten()
+        a_labels = []
+        for x, y in a.train:
+            a_labels.extend(y)
+        a_labels = np.array(a_labels)
         values, counts = np.unique(a_labels, return_counts=True)
         agents[i, values] = counts
 
