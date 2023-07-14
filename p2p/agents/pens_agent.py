@@ -2,6 +2,12 @@ from p2p.agents.sync_agent import *
 from models.abstract_model import weights_average
 import numpy as np
 
+# Decentralized federated learning of deep neural networks on non-iid data
+# Authors: Onoszko, Noa
+#          Karlsson, Gustav
+#          Mogren, Olof
+#          Zec, Edvin Listo
+
 
 class PensAgent(SyncAgent):
     def __init__(self, rounds=100, n_sampled=6, top_m=3, n_peers=3, fixed_comm=False, **kwargs):

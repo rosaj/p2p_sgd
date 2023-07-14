@@ -43,6 +43,7 @@ class DCliqueAgent(SyncAgent):
 
     def update_parameters(self):
         self.pull_models()
+        self.hist['clique'] = self.clique
 
     def pull_models(self):
         peers = self.graph.get_peers(self.id)

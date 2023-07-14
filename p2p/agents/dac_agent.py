@@ -2,6 +2,13 @@ from p2p.agents.sync_agent import *
 from models.abstract_model import weights_average
 import numpy as np
 
+# Decentralized adaptive clustering of deep nets is beneficial for client collaboration
+# Authors: Zec, Edvin Listo
+#          Ekblom, Ebba
+#          Willbo, Martin
+#          Mogren, Olof
+#          Girdzijauskas, Sarunas
+
 
 def softmax_scale(x, tau):
     x_new = np.exp(x * tau) / sum(np.exp(x * tau))

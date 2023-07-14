@@ -356,6 +356,12 @@ class GraphManager:
     def _graph_neighbors(self, node_id):
         return list(self._nx_graph.neighbors(node_id))
 
+    def get_peers_weights(self, node_id, include_self=False):
+        nb = self._graph_neighbors(node_id)
+        if not include_self:
+            nb = [n for n in nb if n != node_id]
+        return {n: self.get_edge_weight(node_id, n) for n in nb}
+
     def get_peers(self, node_id):
         nb = self._graph_neighbors(node_id)
         return [n for n in self.nodes if n.id in nb and n.id != node_id]

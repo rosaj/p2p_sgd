@@ -59,7 +59,7 @@ def eval_model_loss(m, dataset):
     total_loss = 0
     num_batches = 0
     for x, y in dataset:
-        logits = m(x, training=True)
+        logits = m(x, training=False)
         loss = m.loss(y, logits)
         total_loss += loss
         num_batches += 1

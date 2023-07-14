@@ -89,7 +89,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
 
                 if samples > 0:
                     if samples > len(c_y_train[i]):
-                        raise ValueError(f"Samples required: {samples}, samples required: {c_y_train[i]}")
+                        raise ValueError(f"Samples required: {samples}, samples available: {c_y_train[i]}")
                     labels = list(set(c_y_train[i]))
                     samples_per_label = int(samples/len(labels))
                     inds = []

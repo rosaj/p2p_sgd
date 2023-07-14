@@ -3,6 +3,17 @@ from models.abstract_model import weights_average
 import numpy as np
 from sklearn.mixture import GaussianMixture
 
+# Towards Effective Clustered Federated Learning: A Peer-to-peer Framework with Adaptive Neighbor Matching
+# Authors: Li, Zexi
+#          Lu, Jiaxun
+#          Luo, Shuang
+#          Zhu, Didi
+#          Shao, Yunfeng
+#          Li, Yinchuan
+#          Zhang, Zhimeng
+#          Wang, Yongheng
+#          Wu, Chao
+
 
 class GaussianMixtureModel(GaussianMixture):
     def __init__(self, initial_resp=None, **kwargs):
@@ -34,15 +45,16 @@ class PanmAgent(SyncAgent):
         self.theta = theta
         self.initial_weights = None
         self.new_weights = None
-        self.similar_peers = None
+        # self.similar_peers = None
         self.iteration = 0
         self.previous_peers = []
         self.neighbor_bag = []
+        self.hist['neighbor_bag'] = []
 
     def start(self):
         self.initial_weights = self.get_model_weights()
         self.new_weights = self.initial_weights
-        self.similar_peers = np.zeros(self.graph.nodes_num)
+        # self.similar_peers = np.zeros(self.graph.nodes_num)
         return super(PanmAgent, self).start()
 
     def train_fn(self):
@@ -78,8 +90,8 @@ class PanmAgent(SyncAgent):
             super(PanmAgent, self).receive_message(peer)
 
         saved_models = {self.calc_similarity(p): p for p in peers}
-        for k, v in saved_models.items():
-            self.similar_peers[v.id] = k
+        # for k, v in saved_models.items():
+        #     self.similar_peers[v.id] = k
         peers = list(dict(sorted(saved_models.items())).values())[-self.top_m:]
         self.previous_peers = [p.id for p in peers]
         return peers
@@ -130,5 +142,6 @@ class PanmAgent(SyncAgent):
         self.pull_from_peers()
 
     def update_parameters(self):
-        pass
+        # self.hist['similar_peers'] = self.similar_peers
+        self.hist['neighbor_bag'].append(self.neighbor_bag)
 
