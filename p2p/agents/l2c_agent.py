@@ -89,7 +89,7 @@ class L2CAgent(SyncAgent):
         if self.iteration == self.t_0:
             inds = np.argsort(mixing_weights)
             inds = inds[inds != self.id]
-            self.mixing_weight_mask = np.sort(inds)[self.k_0:]
+            self.mixing_weight_mask = np.sort(inds[self.k_0:])
 
     def sync_parameters(self):
         self.aggregation()
