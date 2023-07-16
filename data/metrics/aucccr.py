@@ -148,16 +148,37 @@ def recommend_clusters(testr, d: Callable = lambda x, y: np.linalg.norm(x - y),
 
 
 def build_vector(model, dataset):
-    r = [np.empty((0, model.layers[-1].units)) for _ in range(model.layers[-1].units)]
+    r = [np.zeros((0, model.layers[-1].units)) for _ in range(model.layers[-1].units)]
     for x, y in dataset:
         logits = model(x, training=False)
         for i in range(len(r)):
             r[i] = np.concatenate([r[i], logits[np.squeeze(y) == i]], axis=0)
 
-    return np.concatenate([np.mean(ri, axis=0) for ri in r])
+    return np.concatenate([np.mean(ri, axis=0) if len(ri) > 0 else np.zeros(model.layers[-1].units) for ri in r])
 
 
-def recommend_agent_clusters(agents, clusters=2, threshold=-1, **kwargs):
+def recommend_agent_clusters_centralized(agents, dataset, **kwargs):
+    data = []
+    for i in range(len(agents)):
+        v = build_vector(agents[i].model, dataset)
+        data.append(v)
+
+    def euc(x, y):
+        if isinstance(y, int):
+            return np.linalg.norm(data[x] - data[y])
+        return np.linalg.norm(data[x] - y)
+
+    def projection(x):
+        if isinstance(x, int):
+            return data[x]
+        return x
+    return recommend_clusters(list(range(len(agents))),
+                              d=euc,
+                              p_vector=projection,
+                              **kwargs)
+
+
+def recommend_agent_clusters_decentralized(agents, threshold=-1, **kwargs):
     data = []
     for i in range(len(agents)):
         a_data = []
@@ -176,12 +197,14 @@ def recommend_agent_clusters(agents, clusters=2, threshold=-1, **kwargs):
             return data[x][x]
         return x
 
-    if threshold < 0:
-        threshold = int(len(agents) / clusters)
+    if threshold > 0:
+        v = lambda x: np.sqrt(threshold) if x > threshold else np.sqrt(x),
+    else:
+        v = lambda x: np.sqrt(x)
     return recommend_clusters(list(range(len(agents))),
                               d=euc,
                               p_vector=projection,
-                              v=lambda x: np.sqrt(threshold) if x > threshold else np.sqrt(x),
+                              v=v,
                               **kwargs)
 
 
