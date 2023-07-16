@@ -195,7 +195,7 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
     concat_ds = nodes[0].test
     ti = 1
     while ds_len(concat_ds) < num_test_examples:
-        concat_ds = concat_ds.concatenate(nodes[ti])
+        concat_ds = concat_ds.concatenate(nodes[ti].test)
         ti += 1
 
     clusters = recommend_agent_clusters_centralized(agents, concat_ds)
