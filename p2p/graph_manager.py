@@ -201,7 +201,7 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
     clusters = recommend_agent_clusters_centralized(agents, concat_ds)
     print("-------------- AUCCCR clusters --------------")
     for i, cl in enumerate(clusters):
-        print(f'\t{i}. {len(clusters)}')
+        print(f'\t{i}. {len(clusters)}', clusters)
 
     if len(clusters) == 0:
         raise ValueError("No clusters found")
