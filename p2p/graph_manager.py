@@ -173,13 +173,9 @@ def create_graph_from_conn_history(m, num_neighbors, create_using):
     return nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
 
 
-def create_aucccr_graph(n, num_neighbors, create_using, nodes, clusters=None, **kwargs):
-    if clusters is None:
-        clusters = len(set([a.dataset_name for a in nodes]))
-        print(f"{clusters} clusters")
-    
+def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples=1_000, epochs=15, **kwargs):
     import tensorflow as tf
-    from data.metrics.aucccr import recommend_agent_clusters
+    from data.metrics.aucccr import recommend_agent_clusters_centralized
     from collections import namedtuple
     Agent = namedtuple("Agent", "model test")
     agents = []
@@ -187,14 +183,26 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, clusters=None, **
     for ni in nodes:
         tf.keras.backend.clear_session()
         ni_model = tf.keras.models.clone_model(ni.model)
+        ni_model.set_weights(ni.model.get_weights())
         ni_model.compile(optimizer=ni.model.optimizer.from_config(ni.model.optimizer.get_config()),
-                         loss=ni.model.loss,
-                         metrics=ni.model.metrics)
-        ni_model.fit(ni.train, epochs=15, verbose=0)
-        agents.append(Agent(ni_model, ni.val))
+                         loss=ni.model.loss.from_config(ni.model.loss.get_config()))
+        ni_model.fit(ni.train, epochs=epochs, verbose=0)
+        agents.append(Agent(ni_model, ni.test))
 
-    clusters = recommend_agent_clusters(agents, clusters=clusters)
-    print("AUCCCR clusters:", clusters)
+    def ds_len(ds):
+        return sum([len(y) for x, y in ds])
+
+    concat_ds = nodes[0].test
+    ti = 1
+    while ds_len(concat_ds) < num_test_examples:
+        concat_ds = concat_ds.concatenate(nodes[ti])
+        ti += 1
+
+    clusters = recommend_agent_clusters_centralized(agents, concat_ds)
+    print("-------------- AUCCCR clusters --------------")
+    for i, cl in enumerate(clusters):
+        print(f'\t{i}. {len(clusters)}')
+
     if len(clusters) == 0:
         raise ValueError("No clusters found")
 
