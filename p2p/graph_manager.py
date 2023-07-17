@@ -175,6 +175,7 @@ def create_graph_from_conn_history(m, num_neighbors, create_using):
 
 def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples=1_000, epochs=15, **kwargs):
     import tensorflow as tf
+    import math
     from data.metrics.aucccr import recommend_agent_clusters_centralized
     from collections import namedtuple
     Agent = namedtuple("Agent", "model test")
@@ -187,7 +188,7 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
         ni_model.compile(optimizer=ni.model.optimizer.from_config(ni.model.optimizer.get_config()),
                          loss=ni.model.loss.from_config(ni.model.loss.get_config()))
         ni_model.fit(ni.train, epochs=epochs, verbose=0)
-        agents.append(Agent(ni_model, ni.test))
+        agents.append(Agent(ni_model, ni.val))
 
     def ds_len(ds):
         return sum([len(y) for x, y in ds])
@@ -198,10 +199,10 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
         concat_ds = concat_ds.concatenate(nodes[ti].test)
         ti += 1
 
-    clusters = recommend_agent_clusters_centralized(agents, concat_ds)
+    clusters = recommend_agent_clusters_centralized(agents, concat_ds, v=lambda x: math.pow(x, 1/10))
     print("-------------- AUCCCR clusters --------------")
     for i, cl in enumerate(clusters):
-        print(f'\t{i}. {len(clusters)}', clusters)
+        print(f'\t{i}. {len(cl)}', cl)
 
     if len(clusters) == 0:
         raise ValueError("No clusters found")

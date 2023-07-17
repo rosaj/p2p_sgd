@@ -163,19 +163,7 @@ def recommend_agent_clusters_centralized(agents, dataset, **kwargs):
         v = build_vector(agents[i].model, dataset)
         data.append(v)
 
-    def euc(x, y):
-        if isinstance(y, int):
-            return np.linalg.norm(data[x] - data[y])
-        return np.linalg.norm(data[x] - y)
-
-    def projection(x):
-        if isinstance(x, int):
-            return data[x]
-        return x
-    return recommend_clusters(list(range(len(agents))),
-                              d=euc,
-                              p_vector=projection,
-                              **kwargs)
+    return recommend_clusters(data, **kwargs)
 
 
 def recommend_agent_clusters_decentralized(agents, threshold=-1, **kwargs):
