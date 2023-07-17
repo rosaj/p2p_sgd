@@ -188,7 +188,7 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
         ni_model.compile(optimizer=ni.model.optimizer.from_config(ni.model.optimizer.get_config()),
                          loss=ni.model.loss.from_config(ni.model.loss.get_config()))
         ni_model.fit(ni.train, epochs=epochs, verbose=0)
-        agents.append(Agent(ni_model, ni.val))
+        agents.append(Agent(ni_model, ni.test))
 
     def ds_len(ds):
         return sum([len(y) for x, y in ds])
