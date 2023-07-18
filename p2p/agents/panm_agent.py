@@ -17,7 +17,7 @@ from scipy import stats
 
 
 class PanmAgent(SyncAgent):
-    def __init__(self, method='loss', rounds=10, top_m=3, n_sampled=6, theta=10, alpha=0.5, **kwargs):
+    def __init__(self, method='loss', rounds=100, top_m=3, n_sampled=6, theta=10, alpha=0.5, **kwargs):
         super(PanmAgent, self).__init__(**kwargs)
         assert method in ['loss', 'grad']
         self.method = method
@@ -198,11 +198,15 @@ def em_step(bon_dict, candidate_dict):
 
         miu_0 = 0 if len(list(list_0.values())) == 0 else np.mean(list(list_0.values()))
         sigma_0 = 0 if len(list(list_0.values())) == 0 else np.std(list(list_0.values()))
+        if miu_0 == 0:
+            miu_0 = 0.0001
         if sigma_0 == 0:
             sigma_0 = 0.0001
 
         miu_1 = 0 if len(list(list_1.values())) == 0 else np.mean(list(list_1.values()))
         sigma_1 = 0 if len(list(list_1.values())) == 0 else np.std(list(list_1.values()))
+        if miu_1 == 0:
+            miu_1 = 0.0001
         if sigma_1 == 0:
             sigma_1 = 0.0001
 
