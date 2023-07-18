@@ -213,11 +213,11 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
         print("Not all agents are clustered")
 
     adj_mx = np.zeros((n, n))
-    for i, nc in enumerate(clusters):
-        nc_l = len(nc)
-        g = sparse_graph(nc_l, num_neighbors, create_using)
+    for cl in clusters:
+        g = sparse_graph(len(cl), num_neighbors, create_using)
         m = nx.to_numpy_matrix(g)
-        adj_mx[nc, nc] = m
+        for ic, c in enumerate(cl):
+            adj_mx[c, cl] = m[np.squeeze(np.argwhere(np.squeeze(cl) == c))]
     g = nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
     return g
 
