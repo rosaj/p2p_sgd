@@ -196,13 +196,13 @@ def em_step(bon_dict, candidate_dict):
                 if i in candidate_dict.keys():
                     list_1[i] = candidate_dict[i]
 
-        miu_0 = np.mean(list(list_0.values()))
-        sigma_0 = np.std(list(list_0.values()))
+        miu_0 = 0 if len(list(list_0.values())) == 0 else np.mean(list(list_0.values()))
+        sigma_0 = 0 if len(list(list_0.values())) == 0 else np.std(list(list_0.values()))
         if sigma_0 == 0:
             sigma_0 = 0.0001
 
-        miu_1 = np.mean(list(list_1.values()))
-        sigma_1 = np.std(list(list_1.values()))
+        miu_1 = 0 if len(list(list_1.values())) == 0 else np.mean(list(list_1.values()))
+        sigma_1 = 0 if len(list(list_1.values())) == 0 else np.std(list(list_1.values()))
         if sigma_1 == 0:
             sigma_1 = 0.0001
 
