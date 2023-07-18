@@ -177,7 +177,7 @@ def recommend_agent_clusters_decentralized(agents, threshold=-1, **kwargs):
 
     def euc(x, y):
         if isinstance(y, int):
-            return np.linalg.norm(data[x][y] - data[y][x])
+            return np.linalg.norm(data[x][y] - data[x][y])
         return np.linalg.norm(data[x][x] - y)
 
     def projection(x):

@@ -173,9 +173,8 @@ def create_graph_from_conn_history(m, num_neighbors, create_using):
     return nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
 
 
-def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples=1_000, epochs=15, **kwargs):
+def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples=100, epochs=15, **kwargs):
     import tensorflow as tf
-    import math
     from data.metrics.aucccr import recommend_agent_clusters_centralized
     from collections import namedtuple
     Agent = namedtuple("Agent", "model test")
@@ -199,7 +198,10 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
         concat_ds = concat_ds.concatenate(nodes[ti].test)
         ti += 1
 
-    clusters = recommend_agent_clusters_centralized(agents, concat_ds, v=lambda x: math.pow(x, 1/10))
+    threshold = 40 if len(set([a.dataset_name for a in nodes])) > 2 else 20
+    clusters = recommend_agent_clusters_centralized(agents, concat_ds,
+                                                    v=lambda x: np.sqrt(threshold) if x > threshold else np.sqrt(x)
+                                                    )
     print("-------------- AUCCCR clusters --------------")
     for i, cl in enumerate(clusters):
         print(f'\t{i}. {len(cl)}', cl)
