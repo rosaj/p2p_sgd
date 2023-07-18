@@ -198,7 +198,7 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
         concat_ds = concat_ds.concatenate(nodes[ti].test)
         ti += 1
 
-    threshold = 40 if len(set([a.dataset_name for a in nodes])) > 2 else 20
+    threshold = 20 if len(set([a.dataset_name for a in nodes])) > 2 else 40
     clusters = recommend_agent_clusters_centralized(agents, concat_ds,
                                                     v=lambda x: np.sqrt(threshold) if x > threshold else np.sqrt(x)
                                                     )
@@ -217,7 +217,7 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
         nc_l = len(nc)
         g = sparse_graph(nc_l, num_neighbors, create_using)
         m = nx.to_numpy_matrix(g)
-        adj_mx[i*nc_l:nc_l*(i+1), i*nc_l:nc_l*(i+1)] = m
+        adj_mx[nc, nc] = m
     g = nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
     return g
 
