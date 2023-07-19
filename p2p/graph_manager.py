@@ -82,7 +82,10 @@ def create_grid(**kwargs):
         raise NotImplementedError()
 
 
-def create_sparse_clusters(n, num_neighbors, create_using, clusters=2, cluster_conns=1, **kwargs):
+def create_sparse_clusters(n, num_neighbors, create_using, nodes, clusters=None, cluster_conns=1, **kwargs):
+    if clusters is None:
+        clusters = len(set([a.dataset_name for a in nodes]))
+        print(f"Auto detected num clusters={clusters}")
     # if 'cluster_directed' in kwargs:
     #     create_using = nx.DiGraph() if kwargs['cluster_directed'] else nx.Graph()
     # else:
