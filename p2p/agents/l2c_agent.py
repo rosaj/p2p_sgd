@@ -1,5 +1,5 @@
 from p2p.agents.sync_agent import *
-from models.abstract_model import _default_weights
+from models.abstract_model import _default_weights, weights_average
 import numpy as np
 import copy
 
@@ -12,16 +12,19 @@ import copy
 
 
 class L2CAgent(SyncAgent):
-    def __init__(self, k_0=90, t_0=10, **kwargs):
+    def __init__(self, k_0=90, t_0=10, agg='avg', **kwargs):
         super(L2CAgent, self).__init__(**kwargs)
+        assert agg in ['grad', 'avg']
         self.k_0 = k_0
         self.t_0 = t_0
+        self.agg = agg
         self.iteration = 0
         self.weights_delta = None
         self.new_weights = None
         self.mixing_net = None
         self.mixing_weight_mask = []
         self.mixing_optimizer = tf.keras.optimizers.Adam(learning_rate=0.1, decay=0.01)
+        self.hist['mixing_weight_mask'] = []
 
     def start(self):
         if 0 < self.k_0 < 1:
@@ -30,16 +33,14 @@ class L2CAgent(SyncAgent):
 
         self.mixing_net = GCN(self.graph.nodes_num)
         # assert self.graph.graph_type == "complete", "Graph type not set to complete"
+        self.new_weights = self.get_model_weights()
         return super(L2CAgent, self).start()
 
     def train_fn(self):
-        if self.new_weights is not None:
-            self.set_model_weights(self.new_weights)
-            self.new_weights = None
+        self.set_model_weights(self.new_weights)
         self.iteration += 1
-        pre_weights = self.get_model_weights()
         res = super(L2CAgent, self).train_fn()
-        self.weights_delta = tf.nest.map_structure(lambda w1, w2: w1 - w2, pre_weights, self.get_model_weights())
+        self.weights_delta = tf.nest.map_structure(lambda w1, w2: w1 - w2, self.new_weights, self.get_model_weights())
         return res
 
     def aggregation(self):
@@ -66,20 +67,24 @@ class L2CAgent(SyncAgent):
 
         mixing_weight_pred = self.update_mixing_model(mixing_weights, model_update_group)
         final_mixing_weight = mixing_weight_process(mixing_weight_pred, y, self.mixing_weight_mask)
-        if len(self.mixing_weight_mask) > 0:
-            grad_group = [grad_group[i] for i in self.mixing_weight_mask]
-        new_grad = combine_weights_deltas(grad_group, final_mixing_weight)
-
-        self.new_weights = tf.nest.map_structure(lambda w1, w2: w1 - w2, self.get_model_weights(), new_grad)
+        if self.agg == 'grad':
+            if len(self.mixing_weight_mask) > 0:
+                grad_group = [grad_group[i] for i in self.mixing_weight_mask]
+            new_grad = combine_weights_deltas(grad_group, final_mixing_weight)
+            self.new_weights = tf.nest.map_structure(lambda w1, w2: w1 - w2, self.new_weights, new_grad)
+        else:
+            self.new_weights = weights_average([peer.get_model_weights() for peer in peers], final_mixing_weight)
         self.cut_peers(mixing_weights)
 
     def update_mixing_model(self, mixing_weights, model_update_group):
         with tf.GradientTape() as tape:
-            mixing_weight_pred = self.mixing_net([model_update_group, self.mixing_weight_mask])
             masked_weights = tf.convert_to_tensor(mixing_weight_to_masked(mixing_weights, self.mixing_weight_mask))
             mixing_weight_obj = tf.reshape(masked_weights, [-1])
+
+            mixing_weight_pred = self.mixing_net([model_update_group, self.mixing_weight_mask])
             log_pred = -tf.math.log(tf.reshape(mixing_weight_pred, [-1]) + 1e-10)
             l_g_meta = tf.reduce_sum(tf.cast(log_pred, mixing_weight_obj.dtype) * mixing_weight_obj)
+
         gradients = tape.gradient(l_g_meta, self.mixing_net.trainable_variables)
         self.mixing_optimizer.apply_gradients(zip(gradients, self.mixing_net.trainable_variables))
         return mixing_weight_pred
@@ -89,13 +94,13 @@ class L2CAgent(SyncAgent):
         if self.iteration == self.t_0:
             inds = np.argsort(mixing_weights)
             inds = inds[inds != self.id]
-            self.mixing_weight_mask = np.sort(inds[self.k_0:])
+            self.mixing_weight_mask = np.sort(np.concatenate([inds[self.k_0-1:], [self.id]]))
 
     def sync_parameters(self):
         self.aggregation()
 
     def update_parameters(self):
-        self.hist['mixing_weight_mask'] = self.mixing_weight_mask
+        self.hist['mixing_weight_mask'].append(self.mixing_weight_mask)
 
 
 class GCN(tf.keras.Model):
