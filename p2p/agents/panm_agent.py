@@ -100,11 +100,11 @@ class PanmAgent(SyncAgent):
             peers = [p for p in self.graph.nodes if p.id in combined_ind]
             for peer in peers:
                 super(PanmAgent, self).receive_message(peer)
-
+            """
             bag_loss = {p_id: self.calc_similarity(self.graph.nodes[p_id]) for p_id in selected_peers}
             sample_loss = {p_id: self.calc_similarity(self.graph.nodes[p_id]) for p_id in indx}
             self.neighbor_bag = em_step(bag_loss, sample_loss)
-            """
+            # """
             sims = [[self.calc_similarity(self.graph.nodes[p_id])] for p_id in combined_ind]
             gm = GaussianMixtureModel(n_components=2, initial_resp=[[1, 0] for _ in indx] + [[0, 1] for _ in selected_peers])
             labels = gm.fit_predict(X=sims)
@@ -117,9 +117,6 @@ class PanmAgent(SyncAgent):
                 h_label = np.argsort(np.array([np.squeeze(sims[np.argwhere(labels == 0)]).mean(),
                                                np.squeeze(sims[np.argwhere(labels == 1)]).mean()]))[0]
             h_peers = list(np.reshape(np.array(combined_ind)[np.squeeze(np.argwhere(labels == h_label))], [-1]))
-            print("EM\t", np.sort(self.neighbor_bag))
-            print("GM\t", np.sort(h_peers))
-            print()
             self.neighbor_bag = list((set(self.neighbor_bag) - set(selected_peers)).union(set(h_peers)))
             # """
 
