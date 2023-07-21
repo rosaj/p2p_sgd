@@ -30,6 +30,8 @@ class Agent:
                      "sent_msg":      [0],
                      "useless_msg":   [0],
                      "model_name":    self.model.name,
+                     "sent_to":       [[]],
+                     "received_from": [[]],
                      }
         if 'dataset_name' in self._data:
             self.hist['dataset_name'] = self._data['dataset_name']
@@ -163,6 +165,8 @@ class Agent:
     def receive_message(self, other_agent):
         self.hist["useful_msg"][-1] += 1
         other_agent.hist["sent_msg"][-1] += 1
+        self.hist["received_from"][-1].append(other_agent.id)
+        other_agent.hist["sent_to"][-1].append(self.id)
         return True
 
     def reject_message(self, other_agent):
@@ -192,6 +196,8 @@ class Agent:
         self.hist["useful_msg"].append(0)
         self.hist["sent_msg"].append(0)
         self.hist["useless_msg"].append(0)
+        self.hist["received_from"].append([])
+        self.hist["sent_to"].append([])
 
         self._add_hist_metric(self._eval_train_metrics(self.model), "train_model", metrics_names)
         self._add_hist_metric(self._eval_val_metrics(self.model), "val_model", metrics_names)
