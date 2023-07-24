@@ -11,8 +11,9 @@ import numpy as np
 
 
 def softmax_scale(x, tau):
-    x_new = np.exp(x * tau) / sum(np.exp(x * tau))
-    return x_new
+    num = np.exp(np.float128(x * tau))
+    x_new = num / sum(num)
+    return x_new.astype(np.float32)
 
 
 def tau_function(x, a, b):
