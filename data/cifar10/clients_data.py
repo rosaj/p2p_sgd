@@ -165,6 +165,12 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
         c_x_train, c_y_train = shard_split(x_train, y_train)
         c_x_test, c_y_test = shard_split(x_test, y_test)
 
+        ord_ind = [g for h in range(0, int(num_cls/shards)) for g in range(h, num_clients, int(num_cls/shards))]
+        c_x_train = [c_x_train[_] for _ in ord_ind]
+        c_y_train = [c_y_train[_] for _ in ord_ind]
+        c_x_test = [c_x_test[_] for _ in ord_ind]
+        c_y_test = [c_y_test[_] for _ in ord_ind]
+
         c_x_val, c_y_val = [[] for _ in range(num_clients)], [[] for _ in range(num_clients)]
         for i in range(len(c_y_train)):
             for label in set(c_y_train[i]):
@@ -191,8 +197,8 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
                 c_y_train[i] = c_y_train[i][inds]
 
         d_names = []
-        for _ in range(int(shards * num_cls)):
-            d_names.extend([f'cifar10-c{c}' for c in range(int(num_cls/shards))])
+        for c in range(int(num_cls/shards)):
+            d_names.extend([f'cifar10-c{c}'] * int(num_clients/int(num_cls/shards)))
         # for yt, ytt in zip(c_y_train, c_y_test):
         #     print(np.unique(yt, return_counts=True), np.unique(ytt))
 
