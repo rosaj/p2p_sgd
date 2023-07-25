@@ -11,9 +11,13 @@ import numpy as np
 
 
 def softmax_scale(x, tau):
-    num = np.exp(np.float128(x * tau))
+    num = (x * tau).astype(np.float128)
+    # 11356 => max value, higher values result in np.inf
+    num[num > 11356] = 11356
+    num = np.exp(num)
+    # num[num == np.inf] = np.finfo(np.float128).max
     x_new = num / sum(num)
-    return x_new.astype(np.float32)
+    return x_new.astype(np.float64)
 
 
 def tau_function(x, a, b):
@@ -59,7 +63,8 @@ class DacAgent(SyncAgent):
     def pull_from_peers(self):
         p = np.arange(self.graph.nodes_num)
         p = p[p != self.id]
-        indx = np.random.choice(p, self.n_sampled, replace=False, p=self.priors_norm)
+        p_norm = self.priors_norm
+        indx = np.random.choice(p, min((p_norm > 0).sum(), self.n_sampled), replace=False, p=p_norm)
         peers = [p for p in self.graph.nodes if p.id in indx]
         # peers = np.random.choice(list(set(self.graph.nodes) - {self}), self.n_sampled, replace=False, p=self.priors_norm)
         for other_agent in peers:
