@@ -176,8 +176,11 @@ def create_graph_from_conn_history(m, num_neighbors, create_using):
     return nx.from_numpy_matrix(np.asmatrix(adj_mx), create_using=create_using)
 
 
-def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples=100, epochs=15, **kwargs):
+def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples=100, epochs=15, np_type=np.float64, **kwargs):
     import tensorflow as tf
+    from data.metrics.aucccr import recommend_clusters, build_vector
+
+    """
     from data.metrics.aucccr import recommend_agent_clusters_centralized
     from collections import namedtuple
     Agent = namedtuple("Agent", "model test")
@@ -205,6 +208,33 @@ def create_aucccr_graph(n, num_neighbors, create_using, nodes, num_test_examples
     clusters = recommend_agent_clusters_centralized(agents, concat_ds,
                                                     v=lambda x: np.sqrt(threshold) if x > threshold else np.sqrt(x)
                                                     )
+    """
+
+    def ds_len(ds):
+        return sum([len(y) for x, y in ds])
+
+    concat_ds = nodes[0].test
+    ti = 1
+    while ds_len(concat_ds) < num_test_examples:
+        concat_ds = concat_ds.concatenate(nodes[ti].test)
+        ti += 1
+
+    data = []
+    for ni in nodes:
+        tf.keras.backend.clear_session()
+        ni_model = tf.keras.models.clone_model(ni.model)
+        ni_model.set_weights(ni.model.get_weights())
+        ni_model.compile(optimizer=ni.model.optimizer.from_config(ni.model.optimizer.get_config()),
+                         loss=ni.model.loss.from_config(ni.model.loss.get_config()))
+        ni_model.fit(ni.train, epochs=epochs, verbose=0)
+
+        v = build_vector(ni_model, concat_ds).astype(np_type)
+        data.append(v)
+    print('--Data vector created--')
+
+    threshold = 20 if len(set([a.dataset_name for a in nodes])) > 2 else 40
+    clusters = recommend_clusters(data, v=lambda x: np.sqrt(threshold) if x > threshold else np.sqrt(x))
+
     print("-------------- AUCCCR clusters --------------")
     for i, cl in enumerate(clusters):
         print(f'\t{i}. {len(cl)}', cl)

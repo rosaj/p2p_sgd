@@ -155,7 +155,7 @@ class P2PAgent(AsyncAgent):
             self._add_hist_metric(self._eval_val_metrics(self.private_model), "val_private", metrics_names)
             self._add_hist_metric(self._eval_test_metrics(self.private_model), "test_private", metrics_names)
 
-            if 'ensemble_metrics' in self.private_model_pars:
+            if 'ensemble_metrics' in self.private_model_pars and self.private_model_pars['ensemble_metrics'] is not None:
                 for key, dataset in zip(["train_ensemble", "val_ensemble", "test_ensemble"], [self.train, self.val, self.test]):
                     self._add_hist_metric(
                         self.model_pars['model_mod'].eval_ensemble_metrics([self.model, self.private_model], dataset, self.private_model_pars['ensemble_metrics']),
@@ -245,7 +245,7 @@ def model_train_student_teacher(teacher_model, student_model, x, y, kl_loss, tem
         s_loss = student_model.loss(y, s_logits)
 
         s_total_loss = distillation_loss(t_logits, s_logits, s_loss, kl_loss, temperature, alpha) / 2.0
-        t_total_loss = distillation_loss(s_logits, t_logits, t_loss, kl_loss, temperature, 1.0-alpha) / 2.0
+        t_total_loss = distillation_loss(s_logits, t_logits, t_loss, kl_loss, temperature, alpha) / 2.0
 
     s_grads = tape.gradient(s_total_loss, student_model.trainable_variables)
     student_model.optimizer.apply_gradients(zip(s_grads, student_model.trainable_variables))

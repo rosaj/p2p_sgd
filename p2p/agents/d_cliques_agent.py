@@ -65,7 +65,8 @@ class DCliqueAgent(SyncAgent):
         clique_peers = [p for p in peers if p.id in self.clique]
         for peer in clique_peers:
             self.receive_message(peer)
-            self.grads = tf.nest.map_structure(lambda g1, g2: g1+g2, self.grads, peer.grads)
+            self.grads = tf.nest.map_structure(lambda g1, g2: tf.convert_to_tensor(g1)+tf.convert_to_tensor(g2),
+                                               self.grads, peer.grads)
         self.grads = tf.nest.map_structure(lambda g: g / len(clique_peers), self.grads)
 
         self.model.optimizer.apply_gradients(zip(self.grads, self.model.trainable_variables))
