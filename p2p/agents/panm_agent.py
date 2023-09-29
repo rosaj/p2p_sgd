@@ -89,7 +89,7 @@ class PanmAgent(SyncAgent):
         if self.iteration % self.theta == 0:
             p = np.arange(self.graph.nodes_num)
             p = p[list(set(p).difference([self.id]+self.neighbor_bag))]
-            indx = np.random.choice(p, self.n_sampled, replace=False)
+            indx = np.random.choice(p, min(len(p), self.n_sampled), replace=False)
 
             if len(self.neighbor_bag) < self.n_sampled:
                 selected_peers = self.neighbor_bag
