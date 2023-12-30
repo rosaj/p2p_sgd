@@ -12,10 +12,7 @@ def shuffle_samples(x_samples, y_samples):
 def shuffle_clients_data(ds_x, ds_y):
     assert len(ds_x) == len(ds_y)
     for i in range(len(ds_y)):
-        indices = np.arange(len(ds_y[i]))
-        np.random.shuffle(indices)
-        ds_x[i] = [ds_x[i][j] for j in indices]
-        ds_y[i] = [ds_y[i][j] for j in indices]
+        ds_x[i], ds_y[i] = shuffle_samples(ds_x[i], ds_y[i])
     return ds_x, ds_y
 
 
@@ -327,7 +324,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
     else:
         raise ValueError("Invalid mode")
 
-    c_x_train, c_y_train = shuffle_clients_data(c_x_train, c_x_test)
+    c_x_train, c_y_train = shuffle_clients_data(c_x_train, c_y_train)
     c_x_test, c_y_test = shuffle_clients_data(c_x_test, c_y_test)
 
     c_train = list(zip(c_x_train, c_y_train))
