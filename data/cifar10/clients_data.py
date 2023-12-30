@@ -140,11 +140,16 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
         return data
 
     elif mode == 'IID':
+
+        c_x_train, c_y_train = split_uniform_per_label(x_train, y_train, num_clients)
+        c_x_test, c_y_test = split_uniform_per_label(x_test, y_test, num_clients)
+        """
         c_x_train = np.array_split(x_train, num_clients)
         c_y_train = np.array_split(y_train, num_clients)
         c_x_test = np.array_split(x_test, num_clients)
         c_y_test = np.array_split(y_test, num_clients)
         c_x_val, c_y_val = c_x_test, c_y_test
+        """
         d_names = ['cifar10-{}'.format(mode)] * num_clients,
     elif mode == 'pathological non-IID':
         # BrendanMcMahan2017
