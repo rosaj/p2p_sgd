@@ -150,7 +150,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
         c_y_test = np.array_split(y_test, num_clients)
         c_x_val, c_y_val = c_x_test, c_y_test
         """
-        d_names = ['cifar10-{}'.format(mode)] * num_clients,
+        d_names = ['cifar10-{}'.format(mode)] * num_clients
     elif mode == 'pathological non-IID':
         # BrendanMcMahan2017
         # Non-IID, where we first sort the data by digit label,
