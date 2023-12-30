@@ -2,6 +2,36 @@ from tensorflow import keras
 import numpy as np
 
 
+def shuffle_samples(x_samples, y_samples):
+    assert len(x_samples) == len(y_samples)
+    indices = np.arange(len(y_samples))
+    np.random.shuffle(indices)
+    return [x_samples[j] for j in indices], [y_samples[j] for j in indices]
+
+
+def shuffle_clients_data(ds_x, ds_y):
+    assert len(ds_x) == len(ds_y)
+    for i in range(len(ds_y)):
+        indices = np.arange(len(ds_y[i]))
+        np.random.shuffle(indices)
+        ds_x[i] = [ds_x[i][j] for j in indices]
+        ds_y[i] = [ds_y[i][j] for j in indices]
+    return ds_x, ds_y
+
+
+def split_uniform_per_label(x_data, y_data, num_splits):
+    ds_x = [[] for _ in range(num_splits)]
+    ds_y = [[] for _ in range(num_splits)]
+    for label in np.unique(y_data):
+        s = np.array_split(np.argwhere(y_data == label), num_splits)
+        for i in range(num_splits):
+            si = np.squeeze(s[i])
+            ds_x[i].extend(x_data[si])
+            ds_y[i].extend(y_data[si])
+
+    return shuffle_clients_data(ds_x, ds_y)
+
+
 def load_clients_data(num_clients=100, mode='clusters', **kwargs):
     # Mode: IID, pathological non-IID, practical non-IID
     (x_train, y_train), (x_test, y_test) = keras.datasets.cifar10.load_data()
@@ -297,8 +327,14 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
     else:
         raise ValueError("Invalid mode")
 
+    c_x_train, c_y_train = shuffle_clients_data(c_x_train, c_x_test)
+    c_x_test, c_y_test = shuffle_clients_data(c_x_test, c_y_test)
+
     c_train = list(zip(c_x_train, c_y_train))
     c_test = list(zip(c_x_test, c_y_test))
+    val_ratio = kwargs.get('val_ratio', 0.2)
+    if val_ratio == 0.0:
+        c_x_val, c_y_val = split_uniform_per_label(x_test, y_test, num_clients)
     c_val = list(zip(c_x_val, c_y_val))
     # c_val = list(zip(np.array_split(x_test, num_clients), np.array_split(y_test, num_clients)))
     # c_val = [([], []) for _ in range(len(c_train))]

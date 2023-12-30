@@ -16,7 +16,11 @@ def softmax_scale(x, tau):
     num[num > 11356] = 11356
     num = np.exp(num)
     # num[num == np.inf] = np.finfo(np.float128).max
-    x_new = num / sum(num)
+    num_sum = sum(num)
+    if num_sum == np.inf:
+        num = (num / max(num)) * np.finfo(np.float64).max
+        num_sum = sum(num)
+    x_new = num / num_sum
     return x_new.astype(np.float64)
 
 
