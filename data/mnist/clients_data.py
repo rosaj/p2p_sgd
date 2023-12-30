@@ -164,8 +164,6 @@ def load_clients_data(num_clients=100, mode='IID'):
         raise ValueError("Invalid mode")
 
     c_x_train, c_y_train = shuffle_clients_data(c_x_train, c_y_train)
-    c_x_test, c_y_test = shuffle_clients_data(c_x_test, c_y_test)
-
     c_train = list(zip(c_x_train, c_y_train))
     c_test = list(zip(c_x_test, c_y_test))
     c_x_val, c_y_val = split_uniform_per_label(x_test, y_test, num_clients)

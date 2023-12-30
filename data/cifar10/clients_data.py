@@ -127,6 +127,7 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
                     c_x_train[i] = c_x_train[i][inds]
                     c_y_train[i] = c_y_train[i][inds]
 
+        c_x_train, c_y_train = shuffle_clients_data(c_x_train, c_y_train)
         c_train = list(zip(c_x_train, c_y_train))
         c_test = list(zip(c_x_test, c_y_test))
         c_val = list(zip(c_x_val, c_y_val))
@@ -330,8 +331,6 @@ def load_clients_data(num_clients=100, mode='clusters', **kwargs):
         raise ValueError("Invalid mode")
 
     c_x_train, c_y_train = shuffle_clients_data(c_x_train, c_y_train)
-    c_x_test, c_y_test = shuffle_clients_data(c_x_test, c_y_test)
-
     c_train = list(zip(c_x_train, c_y_train))
     c_test = list(zip(c_x_test, c_y_test))
     val_ratio = kwargs.get('val_ratio', 0.2)
