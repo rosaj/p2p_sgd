@@ -244,7 +244,7 @@ def model_train_student_teacher(teacher_model, student_model, x, y, kl_loss, tem
         t_loss = teacher_model.loss(y, t_logits)
         s_loss = student_model.loss(y, s_logits)
 
-        s_total_loss = distillation_loss(t_logits, s_logits, s_loss, kl_loss, temperature, alpha) / 2.0
+        s_total_loss = distillation_loss(t_logits, s_logits, s_loss, kl_loss, temperature, 1-alpha) / 2.0
         t_total_loss = distillation_loss(s_logits, t_logits, t_loss, kl_loss, temperature, alpha) / 2.0
 
     s_grads = tape.gradient(s_total_loss, student_model.trainable_variables)
@@ -252,6 +252,6 @@ def model_train_student_teacher(teacher_model, student_model, x, y, kl_loss, tem
     student_model.compiled_metrics.update_state(y, s_logits)
 
     t_grads = tape.gradient(t_total_loss, teacher_model.trainable_variables)
-    student_model.optimizer.apply_gradients(zip(t_grads, teacher_model.trainable_variables))
+    teacher_model.optimizer.apply_gradients(zip(t_grads, teacher_model.trainable_variables))
     teacher_model.compiled_metrics.update_state(y, t_logits)
     return tf.divide(tf.add(t_total_loss, s_total_loss), 2)
