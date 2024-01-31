@@ -52,6 +52,8 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
     max_examples = epochs * examples
     total_examples, round_num = 0, 0
 
+    global saved_logs
+    saved_logs = []
     tf.get_logger().setLevel(logging.ERROR)
 
     pbar = new_progress_bar(examples, 'Training')
