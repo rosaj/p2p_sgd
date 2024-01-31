@@ -110,4 +110,4 @@ def dump_acc_hist(filename, agents, graph, info={}):
                 info[k] = {ki: str(vi) for ki, vi in v.items()}
             else:
                 info[k] = str(v)
-    save_json(filename, {'agents': {a.id: a.hist for a in agents}, 'graph': graph, 'info': info})
+    return save_json(filename, {'agents': {a.id: a.hist for a in agents}, 'graph': graph, 'info': info})

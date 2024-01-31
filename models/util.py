@@ -90,3 +90,4 @@ def save_json(filename, json_dict):
     with open(parsed_name(), "w") as outfile:
         json.dump(json_dict, outfile, indent=None, cls=NumpyValuesEncoder)
     print("Saved to", parsed_name())
+    return parsed_name()

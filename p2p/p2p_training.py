@@ -125,17 +125,17 @@ def save_log(agents, graph_manager, agent_pars, agent_data_pars, model_pars, gra
         datetime.now().strftime("%d-%m-%Y_%H_%M"))
 
     sim_pars['sim_time'] = time.time() - start_time
-    dump_acc_hist('log/' + filename + '.json',
-                  agents,
-                  graph_manager.as_numpy_array(),
-                  {'agent_pars': agent_pars,
-                   'agent_data_pars': agent_data_pars,
-                   'model_pars': model_pars,
-                   'graph_pars': graph_pars,
-                   'sim_pars': sim_pars})
+    filename = dump_acc_hist('log/' + filename + '.json',
+                             agents,
+                             graph_manager.as_numpy_array(),
+                             {'agent_pars': agent_pars,
+                              'agent_data_pars': agent_data_pars,
+                              'model_pars': model_pars,
+                              'graph_pars': graph_pars,
+                              'sim_pars': sim_pars})
     global saved_logs
     if saved_logs:
         for sl in saved_logs:
-            if filename != sl and os.path.exists('log/' + sl + '.json'):
-                os.remove('log/' + sl + '.json')
+            if filename != sl and os.path.exists(sl):
+                os.remove(sl)
     saved_logs = [filename]
