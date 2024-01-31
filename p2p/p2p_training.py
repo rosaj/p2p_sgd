@@ -134,6 +134,6 @@ def save_log(agents, graph_manager, agent_pars, agent_data_pars, model_pars, gra
     global saved_logs
     if saved_logs:
         for sl in saved_logs:
-            if os.path.exists('log/' + sl + '.json'):
+            if filename != sl and os.path.exists('log/' + sl + '.json'):
                 os.remove('log/' + sl + '.json')
     saved_logs = [filename]
