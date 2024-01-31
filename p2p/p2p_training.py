@@ -90,7 +90,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
                 pbar.update(agent.train_fn())
 
         is_check, pbar, round_num, total_examples = checkpoint(pbar, agents, round_num, examples, total_examples, **print_args)
-        if save_freq > 0 and save_freq % round_num == 0:
+        if save_freq > 0 and round_num % save_freq == 0:
             save_log(agents, graph_manager, agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars, epochs, start_time, agent_class)
         if is_check:
             graph_manager.check_time_varying(round_num)
