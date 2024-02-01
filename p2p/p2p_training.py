@@ -93,7 +93,7 @@ def train_loop(agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars):
         if is_check:
             graph_manager.check_time_varying(round_num)
             if save_freq > 0 and round_num % save_freq == 0:
-                save_log(agents, graph_manager, agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars, epochs, start_time, agent_class)
+                save_log(agents, graph_manager, agent_pars, agent_data_pars, model_pars, graph_pars, sim_pars, round_num, start_time, agent_class)
 
     pbar.close()
     print("Train time: {}".format(time_elapsed_info(start_time)), flush=True)
