@@ -55,7 +55,7 @@ class Agent:
     @staticmethod
     def _create_dataset(xy, batch_size, use_caching=False):
         if isinstance(xy[0], tf.data.Dataset):
-            return xy.shuffle(batch_size).batch(batch_size)
+            return xy[0].shuffle(batch_size).batch(batch_size)
 
         ds = tf.data.Dataset.from_tensor_slices((xy[0], xy[1])).shuffle(batch_size).batch(batch_size)
         if use_caching:
