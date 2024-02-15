@@ -12,7 +12,7 @@ class Agent:
         train, val, test = data.pop('train'), data.pop('val'), data.pop('test')
         self.train = self._create_dataset(train[0], train[1], self.batch_size, self.data_pars.get('caching', False))
         self.val = self._create_dataset(val[0], val[1], self.eval_batch_size, True)
-        self.test = self._create_dataset(test[0], val[1], self.eval_batch_size, True)
+        self.test = self._create_dataset(test[0], test[1], self.eval_batch_size, True)
 
         temp_train = train[1]
         while isinstance(temp_train, tuple):
