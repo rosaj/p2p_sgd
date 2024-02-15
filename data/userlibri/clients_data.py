@@ -49,6 +49,6 @@ def load_clients_data(num_clients=50):
     }
     for cli_dir in os.listdir(root_path)[:num_clients]:
         train, test, train_size = parse_cli_dir(cli_dir)
-        data['train'].append((train, [range(train_size)]))
+        data['train'].append((train, (range(train_size))))
         data['test'].append((test, []))
     return data
