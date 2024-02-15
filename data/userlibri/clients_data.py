@@ -30,13 +30,31 @@ def parse_cli_dir(cli_dir, test_split=0.3):
             for ci, c in enumerate(tsv_data):
                 cli_paths.write(f"{c[0]}\t{c[1]}" + ('\n' if ci != len(tsv_data)-1 else ""))
 
-    tr_ind = random.choices(range(len(cli_data)), k=int(len(cli_data)*(1-test_split)))
-    write_tsv([cli for ci, cli in enumerate(cli_data) if ci in tr_ind], "train")
-    write_tsv([cli for ci, cli in enumerate(cli_data) if ci not in tr_ind], "test")
+    # tr_ind = random.choices(range(len(cli_data)), k=int(len(cli_data)*(1-test_split)))
+    # write_tsv([cli for ci, cli in enumerate(cli_data) if ci in tr_ind], "train")
+    # write_tsv([cli for ci, cli in enumerate(cli_data) if ci not in tr_ind], "test")
 
-    train_ds = get_dataset(f"{root_path + cli_dir}/{cli_dir}-train.tsv", 'flac', sample_rate=16000, tokenizer=tokenizer)
-    test_ds = get_dataset(f"{root_path + cli_dir}/{cli_dir}-test.tsv", 'flac', sample_rate=16000, tokenizer=tokenizer)
-    return train_ds, test_ds, len(tr_ind)
+    write_tsv(cli_data, "all")
+    ds = get_dataset(f"{root_path + cli_dir}/{cli_dir}-all.tsv", 'flac', sample_rate=16000, tokenizer=tokenizer)
+
+    np_iter = ds.as_numpy_iterator()
+    data_x, data_y = [], []
+
+    while True:
+        da = next(np_iter, None)
+        if da is None:
+            break
+        data_x.append(da[0])
+        data_y.append(da[1])
+    assert len(data_x) == len(data_y) == len(cli_data), "Something went wrong when parsing audios"
+
+    tr_ind = random.choices(range(len(cli_data)), k=int(len(cli_data)*(1-test_split)))
+    train = [[x for xi, x in enumerate(data_x) if xi in tr_ind],
+             [y for yi, y in enumerate(data_y) if yi in tr_ind]]
+    test = [[x for xi, x in enumerate(data_x) if xi not in tr_ind],
+           [y for yi, y in enumerate(data_y) if yi not in tr_ind]]
+
+    return train, test
 
 
 def load_clients_data(num_clients=50):
@@ -48,7 +66,7 @@ def load_clients_data(num_clients=50):
         "dataset_name": ['userlibri'] * num_clients,
     }
     for cli_dir in os.listdir(root_path)[:num_clients]:
-        train, test, train_size = parse_cli_dir(cli_dir)
-        data['train'].append((train, (range(train_size))))
-        data['test'].append((test, []))
+        train, test = parse_cli_dir(cli_dir)
+        data['train'].append(train)
+        data['test'].append(test)
     return data
