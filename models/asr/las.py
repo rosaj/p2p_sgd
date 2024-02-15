@@ -1,5 +1,5 @@
 from typing import List, Optional, Tuple, Union
-
+from models.abstract_model import *
 import tensorflow as tf
 from tensorflow.keras.layers import GRU, LSTM, BatchNormalization, Conv2D, Dense, Dropout, Embedding, SimpleRNN
 
@@ -77,12 +77,12 @@ class BiRNN(tf.keras.layers.Layer):
     """
 
     def __init__(
-        self,
-        rnn_type: str,
-        units: int,
-        dropout: float = 0.0,
-        recurrent_dropout: float = 0.0,
-        **kwargs,
+            self,
+            rnn_type: str,
+            units: int,
+            dropout: float = 0.0,
+            recurrent_dropout: float = 0.0,
+            **kwargs,
     ):
         super(BiRNN, self).__init__(**kwargs)
 
@@ -106,7 +106,7 @@ class BiRNN(tf.keras.layers.Layer):
         )
 
     def call(
-        self, inputs: tf.Tensor, mask: tf.Tensor, initial_state: Optional[tf.Tensor] = None, training: bool = False
+            self, inputs: tf.Tensor, mask: tf.Tensor, initial_state: Optional[tf.Tensor] = None, training: bool = False
     ) -> List:
         if initial_state is None:
             forward_states = None
@@ -146,13 +146,13 @@ class Listener(tf.keras.layers.Layer):
     """
 
     def __init__(
-        self,
-        rnn_type: str,
-        encoder_hidden_dim: int,
-        decoder_hidden_dim: int,
-        num_encoder_layers: int,
-        dropout: float,
-        **kwargs,
+            self,
+            rnn_type: str,
+            encoder_hidden_dim: int,
+            decoder_hidden_dim: int,
+            num_encoder_layers: int,
+            dropout: float,
+            **kwargs,
     ):
         super(Listener, self).__init__(**kwargs)
 
@@ -210,9 +210,9 @@ class Listener(tf.keras.layers.Layer):
         sequence_length = sequence_length // self.strides
         sequence_length -= kernel_size - self.strides
         sequence_length = sequence_length // self.strides
-        sequence_length *= self.strides**2
+        sequence_length *= self.strides ** 2
 
-        mask = tf.reshape(mask[:, :sequence_length], [batch_size, -1, self.strides**2])
+        mask = tf.reshape(mask[:, :sequence_length], [batch_size, -1, self.strides ** 2])
         mask = tf.reduce_any(mask, axis=2)
         return mask
 
@@ -241,14 +241,14 @@ class AttendAndSpeller(tf.keras.layers.Layer):
     """
 
     def __init__(
-        self,
-        rnn_type: str,
-        vocab_size: int,
-        hidden_dim: int,
-        num_decoder_layers: int,
-        dropout: float,
-        pad_id: int,
-        **kwargs,
+            self,
+            rnn_type: str,
+            vocab_size: int,
+            hidden_dim: int,
+            num_decoder_layers: int,
+            dropout: float,
+            pad_id: int,
+            **kwargs,
     ):
         super(AttendAndSpeller, self).__init__(**kwargs)
 
@@ -265,12 +265,12 @@ class AttendAndSpeller(tf.keras.layers.Layer):
         self.dropout = Dropout(dropout, name="dropout")
 
     def call(
-        self,
-        audio_output: tf.Tensor,
-        decoder_input: tf.Tensor,
-        attention_mask: tf.Tensor,
-        states: List,
-        training: Optional[bool] = None,
+            self,
+            audio_output: tf.Tensor,
+            decoder_input: tf.Tensor,
+            attention_mask: tf.Tensor,
+            states: List,
+            training: Optional[bool] = None,
     ) -> tf.Tensor:
         # [BatchSize, 1]
         mask = tf.expand_dims(decoder_input != self.pad_id, axis=1)
@@ -321,17 +321,17 @@ class LAS(ModelProto):
     model_checkpoint_path = "model-{epoch}epoch-{val_loss:.4f}loss_{val_accuracy:.4f}acc.ckpt"
 
     def __init__(
-        self,
-        rnn_type: str,
-        vocab_size: int,
-        encoder_hidden_dim: int,
-        decoder_hidden_dim: int,
-        num_encoder_layers: int,
-        num_decoder_layers: int,
-        dropout: float,
-        teacher_forcing_rate: float,
-        pad_id: int = 0,
-        **kwargs,
+            self,
+            rnn_type: str,
+            vocab_size: int,
+            encoder_hidden_dim: int,
+            decoder_hidden_dim: int,
+            num_encoder_layers: int,
+            num_decoder_layers: int,
+            dropout: float,
+            teacher_forcing_rate: float,
+            pad_id: int = 0,
+            **kwargs,
     ):
         super(LAS, self).__init__(**kwargs)
 
@@ -387,7 +387,7 @@ class LAS(ModelProto):
 
     @staticmethod
     def get_batching_shape(
-        audio_pad_length: Optional[int], token_pad_length: Optional[int], frequency_dim: int, feature_dim: int
+            audio_pad_length: Optional[int], token_pad_length: Optional[int], frequency_dim: int, feature_dim: int
     ):
         if token_pad_length is not None:
             token_pad_length = token_pad_length - 1
@@ -404,3 +404,28 @@ class LAS(ModelProto):
         :returns: return input as output by default
         """
         return (audio, tokens[:-1]), tokens[1:]
+
+
+def create_model(rnn_type='lstm',
+                 encoder_hidden_dim=256,
+                 decoder_hidden_dim=256,
+                 num_encoder_layers=3,
+                 lr=1e-4, decay=0,
+                 default_weights=True):
+    model = LAS(rnn_type,
+                vocab_size=16000,
+                encoder_hidden_dim=encoder_hidden_dim,
+                decoder_hidden_dim=decoder_hidden_dim,
+                num_encoder_layers=num_encoder_layers,
+                num_decoder_layers=2,
+                dropout=0.15,
+                teacher_forcing_rate=0.99)
+
+    model.compile(optimizer=tf.optimizers.Adam(learning_rate=lr, decay=decay),
+                  loss=model.get_loss_fn(),
+                  metrics=model.get_metrics())
+
+    if default_weights:
+        assign_default_weights(model, 'las')
+
+    return model
