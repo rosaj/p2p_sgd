@@ -128,7 +128,7 @@ def load_clients_data(num_clients=50, test_split=0.3):
     # clients = load_from_file('clients.h5')[:num_clients]
     tokenizer = get_tokenizer()
     for ci, cli_dir in enumerate(os.listdir(root_path)[:num_clients]):
-        print(ci, cli_dir)
+        # print(ci, cli_dir)
         x, y, = parse_cli_dir(cli_dir, tokenizer)
         tr_ind = random.choices(range(len(x)), k=int(len(x)*(1-test_split)))
         train = ([x for xi, x in enumerate(x) if xi in tr_ind],
@@ -151,6 +151,6 @@ def post_process_dataset(tf_dataset, data_pars):
         return (audio, tokens[0]), tokens[1]
     tf_dataset = tf_dataset.map(make_example, num_parallel_calls=tf.data.experimental.AUTOTUNE)
     padded_shape = (([2048, 80, 1], [127]), [127])
-    tf_dataset = tf_dataset.shuffle(data_pars['batch_size']).tf_dataset.padded_batch(data_pars['batch_size'], padded_shape)
+    tf_dataset = tf_dataset.shuffle(data_pars['batch_size']).padded_batch(data_pars['batch_size'], padded_shape)
     # tf_dataset = tf_dataset.padded_batch(data_pars['batch_size'], (([2048, 80, 1], [127]), [127]))
     return tf_dataset
