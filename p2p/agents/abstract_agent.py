@@ -55,7 +55,9 @@ class Agent:
     def _create_dataset(self, x, y, batch_size, use_caching=False):
         ds = tf.data.Dataset.from_tensor_slices((x, y))
         if hasattr(self.data_pars['agents_data'], "post_process_dataset"):
-            ds = self.data_pars['agents_data'].post_process_dataset(ds, self.data_pars)
+            dp = self.data_pars.copy()
+            dp['batch_size'] = batch_size
+            ds = self.data_pars['agents_data'].post_process_dataset(ds, dp)
         else:
             ds = ds.shuffle(batch_size).batch(batch_size)
         if use_caching:
