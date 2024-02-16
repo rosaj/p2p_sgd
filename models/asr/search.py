@@ -1,12 +1,10 @@
 import tensorflow as tf
 
-from models.asr import LAS, DeepSpeech2
-
 
 class LAS_Searcher:
     """Provide search functions for LAS model"""
 
-    def __init__(self, model: LAS, max_token_length: int, bos_id: int, eos_id: int, pad_id: int = 0):
+    def __init__(self, model, max_token_length: int, bos_id: int, eos_id: int, pad_id: int = 0):
         """
         :param model: LAS model instance.
         :param max_token_length: max sequence length of decoded sequences.
@@ -212,7 +210,7 @@ class LAS_Searcher:
 class DeepSpeechSearcher:
     """Provide search functions for DeepSpeech2 model"""
 
-    def __init__(self, model: DeepSpeech2, blank_index: int):
+    def __init__(self, model, blank_index: int):
         """
         :param model: DeepSpeech2 model instance.
         :param blank_index: ctc blank index
