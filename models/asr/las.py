@@ -1,10 +1,14 @@
 from typing import List, Optional, Tuple, Union
 from models.abstract_model import *
+from models.abstract_model import eval_model_metrics as base_eval_model_metrics
 import tensorflow as tf
 from tensorflow.keras.layers import GRU, LSTM, BatchNormalization, Conv2D, Dense, Dropout, Embedding, SimpleRNN
 
 from .measure import SparseCategoricalAccuracy, SparseCategoricalCrossentropy
 from .model_proto import ModelProto
+from .search import LAS_Searcher
+from data.userlibri.clients_data import get_tokenizer
+from .utils import get_device_strategy, get_logger, levenshtein_distance
 
 
 def get_rnn_cls(rnn_type: str) -> Union[SimpleRNN, LSTM, GRU]:
@@ -429,3 +433,38 @@ def create_model(rnn_type='lstm',
         assign_default_weights(model, 'las')
 
     return model
+
+
+tokenizer = get_tokenizer()
+beam_size = 0
+
+
+def eval_model_metrics(m, dataset):
+    results = base_eval_model_metrics(m, dataset)
+
+    bos_id, eos_id = tokenizer.tokenize("").numpy().tolist()
+    searcher = LAS_Searcher(m, 128, bos_id, eos_id, pad_id=0)
+
+    outputs = []
+    for batch_input, target in dataset:
+        if beam_size > 0:
+            batch_output = searcher.beam_search(batch_input, beam_size)
+            batch_output = batch_output[0][:, 0, :]
+        else:
+            batch_output = searcher.greedy_search(batch_input)[0]
+        outputs.extend(zip(batch_output, target))
+
+    to_str = lambda tokens: tokenizer.detokenize(tokens).numpy().decode("UTF8")
+    outputs = [(to_str(pred), to_str(target)) for pred, target in outputs]
+
+    # Calc metrics
+    wers = []
+    cers = []
+    for pred, target in outputs:
+        wers.append(levenshtein_distance(target.split(), pred.split(), True))
+        cers.append(levenshtein_distance(target, pred, True))
+
+    results['wer'] = np.array(round(sum(wers) / len(wers) * 100, 4))
+    results['cer'] = np.array(round(sum(cers) / len(cers) * 100, 4))
+
+    return results
