@@ -4,11 +4,11 @@ from models.abstract_model import eval_model_metrics as base_eval_model_metrics
 import tensorflow as tf
 from tensorflow.keras.layers import GRU, LSTM, BatchNormalization, Conv2D, Dense, Dropout, Embedding, SimpleRNN
 
-from .measure import SparseCategoricalAccuracy, SparseCategoricalCrossentropy
-from .model_proto import ModelProto
-from .search import LAS_Searcher
+from models.asr.measure import SparseCategoricalAccuracy, SparseCategoricalCrossentropy
+from models.asr.model_proto import ModelProto
+from models.asr.search import LAS_Searcher
 from data.userlibri.clients_data import get_tokenizer
-from .utils import get_device_strategy, get_logger, levenshtein_distance
+from models.asr.utils import get_device_strategy, get_logger, levenshtein_distance
 
 
 def get_rnn_cls(rnn_type: str) -> Union[SimpleRNN, LSTM, GRU]:
@@ -414,6 +414,9 @@ def create_model(rnn_type='lstm',
                  encoder_hidden_dim=256,
                  decoder_hidden_dim=256,
                  num_encoder_layers=3,
+                 num_decoder_layers=2,
+                 dropout=0.15,
+                 teacher_forcing_rate=0.99,
                  lr=1e-4, decay=0,
                  default_weights=True):
     model = LAS(rnn_type,
@@ -421,9 +424,9 @@ def create_model(rnn_type='lstm',
                 encoder_hidden_dim=encoder_hidden_dim,
                 decoder_hidden_dim=decoder_hidden_dim,
                 num_encoder_layers=num_encoder_layers,
-                num_decoder_layers=2,
-                dropout=0.15,
-                teacher_forcing_rate=0.99)
+                num_decoder_layers=num_decoder_layers,
+                dropout=dropout,
+                teacher_forcing_rate=teacher_forcing_rate)
 
     model.compile(optimizer=tf.optimizers.Adam(learning_rate=lr, decay=decay),
                   loss=model.get_loss_fn(),
@@ -435,18 +438,26 @@ def create_model(rnn_type='lstm',
     return model
 
 
-tokenizer = get_tokenizer()
-beam_size = 0
-
-
 def eval_model_metrics(m, dataset):
     results = base_eval_model_metrics(m, dataset)
+
+    if next(iter(dataset), None) is None:
+        results["wer"] = 0.0
+        results["cer"] = 0.0
+        return results
+
+    tokenizer = get_tokenizer()
+    beam_size = 0
 
     bos_id, eos_id = tokenizer.tokenize("").numpy().tolist()
     searcher = LAS_Searcher(m, 128, bos_id, eos_id, pad_id=0)
 
+    def reshape(x: Tuple[tf.Tensor, tf.Tensor], y: tf.Tensor) -> Tuple[tf.Tensor, tf.Tensor]:
+        return x[0], tf.concat([x[1], tf.expand_dims(y[:, -1], axis=-1)], axis=1)
+    ds = dataset.map(reshape, num_parallel_calls=tf.data.experimental.AUTOTUNE)
+
     outputs = []
-    for batch_input, target in dataset:
+    for batch_input, target in ds:
         if beam_size > 0:
             batch_output = searcher.beam_search(batch_input, beam_size)
             batch_output = batch_output[0][:, 0, :]
@@ -464,7 +475,8 @@ def eval_model_metrics(m, dataset):
         wers.append(levenshtein_distance(target.split(), pred.split(), True))
         cers.append(levenshtein_distance(target, pred, True))
 
-    results['wer'] = np.array(round(sum(wers) / len(wers) * 100, 4))
-    results['cer'] = np.array(round(sum(cers) / len(cers) * 100, 4))
+    results['wer'] = round(sum(wers) / len(wers), 4)
+    results['cer'] = round(sum(cers) / len(cers), 4)
+    print(results['wer'], results['cer'])
 
     return results
