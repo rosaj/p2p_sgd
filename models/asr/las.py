@@ -477,6 +477,5 @@ def eval_model_metrics(m, dataset):
 
     results['wer'] = round(sum(wers) / len(wers), 4)
     results['cer'] = round(sum(cers) / len(cers), 4)
-    print(results['wer'], results['cer'])
 
     return results
