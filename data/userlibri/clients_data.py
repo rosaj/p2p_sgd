@@ -130,11 +130,11 @@ def load_clients_data(num_clients=50, test_split=0.3):
     for ci, cli_dir in enumerate(os.listdir(root_path)[:num_clients]):
         # print(ci, cli_dir)
         x, y, = parse_cli_dir(cli_dir, tokenizer)
-        tr_ind = random.choices(range(len(x)), k=int(len(x)*(1-test_split)))
-        train = ([x for xi, x in enumerate(x) if xi in tr_ind],
-                 [y for yi, y in enumerate(y) if yi in tr_ind])
-        test = ([x for xi, x in enumerate(x) if xi not in tr_ind],
-                [y for yi, y in enumerate(y) if yi not in tr_ind])
+        tr_ind = random.sample(range(len(x)), k=int(len(x)*(1-test_split)))
+        train = ([train_cx for xi, train_cx in enumerate(x) if xi in tr_ind],
+                 [train_cy for yi, train_cy in enumerate(y) if yi in tr_ind])
+        test = ([test_cx for test_xi, test_cx in enumerate(x) if test_xi not in tr_ind],
+                [test_cy for test_yi, test_cy in enumerate(y) if test_yi not in tr_ind])
 
         data['train'].append(train)
         data['test'].append(test)
