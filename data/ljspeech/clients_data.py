@@ -44,7 +44,7 @@ def encode_single_sample(wav_file_path, label, frame_length=256, frame_step=160,
     ##  Process the label
     ##########################################
     # 7. Convert label to Lower case
-    label = tf.strings.lower(label)
+    label = tf.strings.upper(label)
     # 8. Split the label
     label = tf.strings.unicode_split(label, input_encoding="UTF-8")
     # 9. Map the characters in label to numbers
@@ -92,6 +92,7 @@ def post_process_dataset(tf_dataset, data_pars):
     # map_fn = lambda x: encode_single_sample(x, data_pars)
     tf_dataset = (
         tf_dataset.map(encode_single_sample, num_parallel_calls=tf.data.AUTOTUNE)
+        .shuffle(data_pars['batch_size'])
         .padded_batch(data_pars['batch_size'])
     )
     return tf_dataset
