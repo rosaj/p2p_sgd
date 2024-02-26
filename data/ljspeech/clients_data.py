@@ -62,7 +62,7 @@ def load_clients_data(num_clients=100, test_split=0.3, train_size=-1, **kwargs):
     }
 
     metadata_df, wavs_path = read_data()
-    split = int(len(metadata_df) * test_split)
+    split = int(len(metadata_df) * (1-test_split))
     df_train = metadata_df[:split]
     df_test = metadata_df[split:]
 
