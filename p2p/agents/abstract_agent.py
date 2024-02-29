@@ -136,8 +136,10 @@ class Agent:
         return self.train_len
 
     def fit(self, epochs=1):
+        tr_len = 0
         for _ in range(epochs):
-            self.train_epoch()
+            tr_len += self.train_epoch()
+        return tr_len
 
     def start(self):
         """

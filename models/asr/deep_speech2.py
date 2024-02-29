@@ -66,11 +66,9 @@ def build_model(input_dim, output_dim, rnn_layers=5, rnn_units=128):
     for i in range(1, rnn_layers + 1):
         recurrent = layers.GRU(
             units=rnn_units,
-            activation="tanh",
-            recurrent_activation="sigmoid",
-            use_bias=True,
+            # activation="tanh",
+            # recurrent_activation="sigmoid",
             return_sequences=True,
-            reset_after=True,
         )
         x = layers.Bidirectional(
             recurrent, merge_mode="concat"
@@ -112,9 +110,9 @@ def eval_model_metrics(m, dataset):
     results = base_eval_model_metrics(m, dataset)
 
     if next(iter(dataset), None) is None:
-        results["wer"] = 0.0
         return results
-    results["wer"] = calc_wer(m, dataset)
+
+    results['ctc_loss'], results["wer"] = calc_metrics(m, dataset)
     return results
 
 
@@ -130,12 +128,14 @@ def decode_batch_predictions(pred):
     return output_text
 
 
-def calc_wer(m, dataset):
+def calc_metrics(m, dataset):
+    loss = []
     predictions = []
     targets = []
     for batch in dataset:
         x, y = batch
         batch_predictions = m.predict(x)
+        loss.append(tf.reduce_mean(CTCLoss(y, batch_predictions)))
         batch_predictions = decode_batch_predictions(batch_predictions)
         predictions.extend(batch_predictions)
         for label in y:
@@ -153,4 +153,4 @@ def calc_wer(m, dataset):
         print(f"Prediction: {predictions[i]}")
         print("-" * 100)
     """
-    return wer_score
+    return np.mean(loss), wer_score
