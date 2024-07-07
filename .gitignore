@@ -131,3 +131,6 @@ data/sent140/sent140/data/*
 # *.json
 *.md5
 *.h5
+*.flac
+*.txt
+*.tsv
