@@ -449,12 +449,16 @@ def nx_graph_from_saved_lists(np_array, directed=False):
 
 
 if __name__ == "__main__":
-    gm = GraphManager('sparse_clusters', [DummyNode(_) for _ in range(80)], directed=True, num_neighbors=2,
-                      **{'cluster_conns': 0.33, 'clusters': 4, 'cluster_directed': True})
+    gm = GraphManager('sparse', [DummyNode(_) for _ in range(6)], directed=True, num_neighbors=3)
                       # **{'cluster_directed': True, 'clusters': [10, 10, 10, 10]})
-    # gm.draw()
+    gm.draw()
 
     adj_mx = nx.to_numpy_array(gm._nx_graph)
+    adj_mx[adj_mx>0] = 1
+    for i in range(len(adj_mx)):
+        adj_mx[i][i] = 0
+        print(" & ".join([str(int(j)) for j in adj_mx[i]]), "\\\\")
+
     for no in gm.nodes:
         adj_mx[no.id, no.id] = 0
         print(no.id,#  len(gm.get_peers(no.id)),
